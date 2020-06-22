@@ -1,0 +1,9 @@
+
+Id,Dimension,N samples,Min_x,Max_x,Kernel type,n_grid_points,l_scale,Sigma_var,Ker_project,Obs noise
+99509,2d,2,-2,2,rbf,10,1,1,False,0.0001
+Id,Dimension,N samples,Min_x,Max_x,Kernel type,n_grid_points,l_scale,Sigma_var,Ker_project,Obs noise
+35745,2d,100,-2,2,rbf,10,1,1,False,0.0001
+Id,Dimension,N samples,Min_x,Max_x,Kernel type,n_grid_points,l_scale,Sigma_var,Ker_project,Obs noise
+88499,2d,10000,-2,2,rbf,10,1,1,False,0.0001
+Id,Dimension,N samples,Min_x,Max_x,Kernel type,n_grid_points,l_scale,Sigma_var,Ker_project,Obs noise
+37845,2d,10000,-2,2,div_free,10,1,1,False,0.0001
