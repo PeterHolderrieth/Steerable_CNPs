@@ -12,6 +12,8 @@
 #Libraries:
 #Tensors:
 import torch
+import torch.utils.data as utils
+import torch.nn.functional as F
 import numpy as np
 
 #Plotting in 2d/3d:
@@ -553,4 +555,14 @@ def Plot_GP_inference_2d(X,Y,n_context_points=10,l_scale=1,sigma_var=1, kernel_t
         #Plot the Ellipse:
         E=Ellipse(xy=X_Target[j,].numpy(),width=ellip_scale*D[0],height=ellip_scale*D[1],angle=alpha)
         ax[1].add_patch(E)
-
+        
+#A function to load the GP data:
+def load_2d_GP_data(Id,folder='Test_data/2d_GPs/'):
+    X=np.load(folder+"GP_data_X"+Id+".npy")
+    Y=np.load(folder+"GP_data_Y"+Id+".npy")
+    X=torch.tensor(X,dtype=torch.get_default_dtype())
+    Y=torch.tensor(Y,dtype=torch.get_default_dtype())
+    GP_data=utils.TensorDataset(X,Y)
+    GP_data_loader=utils.DataLoader(GP_data,batch_size=1,shuffle=True,drop_last=True)
+    return(GP_data_loader)
+    
