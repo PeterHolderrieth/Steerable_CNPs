@@ -28,10 +28,13 @@ from matplotlib.patches import Ellipse
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
 
+#Tools:
+import datetime
 
 #Own files:
 import Kernel_and_GP_tools as GP
 import My_Tools
+
 
 
 # In[2]:
@@ -140,7 +143,7 @@ class ConvCNP(nn.Module):
         self.decoder=decoder
         
     #Define the forward pass of ConvCNP: 
-    def forward(self,X_context,Y_context,X_Target):
+    def forward(self,X_context,Y_context,X_Target,normalize=True):
         '''
         Inputs:
             X_context: torch.tensor - shape (n_context,2)
@@ -156,7 +159,7 @@ class ConvCNP(nn.Module):
         Final_Feature_Map=self.decoder(Embedding.unsqueeze(0)).squeeze()
         #Split into mean and variance and "make variance positive":
         Means_grid=Final_Feature_Map[:2]
-        Vars_grid=torch.log(1+torch.exp(Final_Feature_Map[2:]))
+        Vars_grid=torch.exp(Final_Feature_Map[2:])
         
         #Reshape from (2,n_y_axis,n_x_axis) to (n_x_axis*n_y_axis,2) 
         Means_grid=Means_grid.permute(dims=(2,1,0))
@@ -169,6 +172,9 @@ class ConvCNP(nn.Module):
         Gram_Target=GP.Gram_matrix(X_Target,self.encoder.grid,kernel_type=self.encoder.kernel_type,B=torch.ones((1)))
         Means_target=torch.mm(Gram_Target,Means_grid)
         Vars_target=torch.mm(Gram_Target,Vars_grid)
+        if normalize:
+            Means_target=Means_target/torch.sum(Gram_Target,1).view(-1,1)
+            Vars_target=Vars_target/torch.sum(Gram_Target,1).view(-1,1)
         return(Means_target, Vars_target)
     
     def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None):
@@ -237,8 +243,9 @@ class ConvCNP_Operator(nn.Module):
         self.log_ll_memory=None
         self.trained=False
         self.n_iterat_per_epoch=n_iterat_per_epoch
+        self.saved_to=None
         
-    def train(self):
+    def train(self,filename=None):
         '''
         Output:
           self.ConvCNP is trained (inplace)
@@ -321,11 +328,15 @@ class ConvCNP_Operator(nn.Module):
         
         #Set trained to True:
         self.trained=True
+        #If a filename is given: save the model and add the date and time to the filename:
+        if filename is not None:
+            torch.save(self,filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M'))
+        
         #Return the mean log-likelihood:
         return(self.log_ll_memory)
     
     #A function which tests the ConvCNP by plotting the predictions:
-    def test(self,n_samples=4,compare_with_GP=False):
+    def test(self,n_samples=4,GP_parameters=None):
         for i in range(n_samples):
             plt.figure(plt.gcf().number+1)
             X,Y=next(iter(self.data_loader))
@@ -334,9 +345,9 @@ class ConvCNP_Operator(nn.Module):
                                                                                    Y.squeeze(),
                                                                                    n_context_points)
             self.ConvCNP.plot_Context_Target(x_context,y_context,x_target,y_target)
-            if compare_with_GP:
+            if GP_parameters is not None:
                 plt.figure(plt.gcf().number+1)
-                Means_GP,Cov_Mat_GP,Vars_GP=GP.GP_inference(x_context,y_context,x_target, kernel_type=self.ConvCNP.encoder.kernel_type)
+                Means_GP,Cov_Mat_GP,Vars_GP=GP.GP_inference(x_context,y_context,x_target, **GP_parameters)
                 Cov_Mat_GP=My_Tools.Get_Block_Diagonal(Cov_Mat_GP,size=2)
                 My_Tools.Plot_Inference_2d(x_context,y_context,x_target,y_target,Predict=Means_GP,Cov_Mat=Cov_Mat_GP)
 
@@ -344,19 +355,24 @@ class ConvCNP_Operator(nn.Module):
 # In[13]:
 
 
-GP_data_loader=GP.load_2d_GP_data(Id="88499")
+GP_data_loader=GP.load_2d_GP_data(Id="37845")
+GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
 
 
 # In[14]:
 
 
-decoder=nn.Sequential(nn.Conv2d(3,5,kernel_size=5,stride=1,padding=2),
+decoder=nn.Sequential(nn.Conv2d(3,16,kernel_size=5,stride=1,padding=2),
               nn.ReLU(),
-                nn.MaxPool2d(kernel_size=3,stride=1,padding=1),
-              nn.Conv2d(5,8,kernel_size=7,stride=1,padding=3),
+              nn.Conv2d(16,32,kernel_size=7,stride=1,padding=3),
               nn.ReLU(),
-              nn.MaxPool2d(kernel_size=3,stride=1,padding=1),
-              nn.Conv2d(8,4,kernel_size=5,stride=1,padding=2))
+              nn.Conv2d(32,32,kernel_size=9,stride=1,padding=4),
+              nn.ReLU(),
+              nn.Conv2d(32,16,kernel_size=5,stride=1,padding=2),
+              nn.ReLU(),
+              nn.Conv2d(16,12,kernel_size=7,stride=1,padding=3),
+              nn.ReLU(),
+              nn.Conv2d(12,4,kernel_size=5,stride=1,padding=2))
 #Create a Test ConvCNP:
 Convolut_CNP=ConvCNP(decoder,x_range=[-2,2],y_range=[-2,2],n_x_axis=30,n_y_axis=30)
 
@@ -364,15 +380,15 @@ Convolut_CNP=ConvCNP(decoder,x_range=[-2,2],y_range=[-2,2],n_x_axis=30,n_y_axis=
 # In[15]:
 
 
-Convolut_CNP_Operator=ConvCNP_Operator(Convolut_CNP,data_loader=GP_data_loader,Max_n_context_points=60,n_epochs=1,n_plots=10,n_iterat_per_epoch=2)
+Convolut_CNP_Operator=ConvCNP_Operator(Convolut_CNP,data_loader=GP_data_loader,Max_n_context_points=50,n_epochs=50,n_plots=5,n_iterat_per_epoch=50)
 
 
 # In[16]:
 
+#%%
+#Convolut_CNP_Operator.test(n_samples=1,GP_parameters=GP_parameters)
+Convolut_CNP_Operator.train(filename="Conv_CNP_GP_data_div_free")
+#%%
+Convolut_CNP_Operator.test(GP_parameters=GP_parameters)
 
-Convolut_CNP_Operator.test(n_samples=1,compare_with_GP=True)
-
-
-
-torch.save(Convolut_CNP,"Test_Model_1")
 
