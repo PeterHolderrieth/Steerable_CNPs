@@ -25,6 +25,19 @@ import math
 from numpy import savetxt
 import csv
 
+#HYPERPARAMETERS:
+#Set default as double:
+torch.set_default_dtype(torch.float)
+#Scale for plotting with plt quiver
+quiver_scale=15
+
+#%%
+'''
+____________________________________________________________________________________________________________________
+
+----------------------------General Tools---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
 #Tool to split a function in a context and target set (choice is random but size of context set is given):
 def Rand_Target_Context_Splitter(X,Y,n_context_points):
     '''
@@ -44,7 +57,27 @@ def Rand_Target_Context_Splitter(X,Y,n_context_points):
     X_Target=X[ind_shuffle[n_context_points:,]]
     Y_Target=Y[ind_shuffle[n_context_points:,]]
     return(X_Context,Y_Context,X_Target,Y_Target)
-    
+
+def get_outer_circle_indices(n):
+    '''
+    n - int - size of square
+    '''
+    x_axis=torch.linspace(start=0,end=n-1,steps=n)
+    y_axis=torch.linspace(start=0,end=n-1,steps=n)
+    X1,X2=torch.meshgrid(x_axis,y_axis)
+    Ind=torch.stack((X1,X2),2)
+    Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)>(n-1)/2].long()
+    return(Ind)
+
+
+#%%
+          
+'''
+____________________________________________________________________________________________________________________
+
+----------------------------2d Tools ---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''   
 #A tool to make a 2d_grid:
 def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatten=True):
     '''
@@ -72,15 +105,15 @@ def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatte
     return(X)
            
 #Tool to plot context set, ground truth for target and predictions for target in one plot:
-#!!!This function is still lacking a variance plot (so the second plot will be empty)
-def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=None,Cov_Mat=None):
+def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=None,Cov_Mat=None,title=""):
     '''
     Inputs: X_Context,Y_Context: torch.tensor - shape (n_context_points,2) - given context set
             X_Target,Y_Target: torch.tensor - shape (n_target_points,2) - target locations and outputs vectors 
             Predict: torch.tensor - shape (n_target_points,2) - target predictions (i.e. predicting Y_Target)
             Cov_Mat: torch.tensor - shape (n_target_points,2,2) - set of covariance matrices
                                   or - shape (n_target_points,2) - set of variances 
-    Outputs: None - plots the above tensors
+            title: string -  suptitle
+    Outputs: None - plots the above tensors in two plots: one plots the means against the context sets, the other one the covariances/variances
     '''
     #Function hyperparameters for plotting in notebook:
     size_scale=2
@@ -88,18 +121,26 @@ def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=No
     
     #Create plots:
     fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(size_scale*10,size_scale*5))
+    plt.gca().set_aspect('equal', adjustable='box')
     fig.subplots_adjust(wspace=0.4)
+    #Set titles:
+    fig.suptitle(title)
+    ax[0].set_title("Context set and predictions")
+    ax[1].set_title("Variances")
+    
     #Plot context set in blue:
     ax[0].scatter(X_Context[:,0],X_Context[:,1],color='black')
-    ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],color='black',pivot='mid',label='Context set')
+    ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],
+      color='black',pivot='mid',label='Context set',scale=quiver_scale)
     
     #Plot ground truth in red if given:
     if Y_Target is not None and X_Target is not None:       
-        ax[0].quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],color='blue',pivot='mid',label='Ground truth')
+        ax[0].quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],
+          color='blue',pivot='mid',label='Ground truth',scale=quiver_scale)
     
     #Plot predicted means in green:
     if  Predict is not None and X_Target is not None:
-        ax[0].quiver(X_Target[:,0],X_Target[:,1],Predict[:,0],Predict[:,1],color='red',pivot='mid',label='Predictions')
+        ax[0].quiver(X_Target[:,0],X_Target[:,1],Predict[:,0],Predict[:,1],color='red',pivot='mid',label='Predictions',scale=quiver_scale)
 
     leg = ax[0].legend(bbox_to_anchor=(1., 1.))
     
@@ -134,6 +175,14 @@ def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=No
         blue_ellipse = Ellipse(color='c', label='Confid. ellip.',xy=0,width=1,height=1)
         ax[1].legend(handles=[blue_ellipse])
         leg = ax[1].legend(bbox_to_anchor=(1., 1.))
+
+#%%
+'''
+____________________________________________________________________________________________________________________
+
+---------------------------- Spherical Tools ---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
 #This function project a bunch of vectors Y onto the tangent space of X.
 #We assume that all element in X have norm 1 (i.e. are on the sphere).
 def Tangent_Sphere_Projector(X,Y):
@@ -176,16 +225,14 @@ def Give_Spherical_Grid(n_grid_points=10,flatten=True):
         X=X.view(-1,3)
     return(X)
     
-#A function to load the GP data:
-def load_2d_GP_data(Id,folder='Test_data/2d_GPs/'):
-    X=np.load(folder+"GP_data_X"+Id+".npy")
-    Y=np.load(folder+"GP_data_Y"+Id+".npy")
-    X=torch.tensor(X,dtype=torch.get_default_dtype())
-    Y=torch.tensor(Y,dtype=torch.get_default_dtype())
-    GP_data=utils.TensorDataset(X,Y)
-    GP_data_loader=utils.DataLoader(GP_data,batch_size=1,shuffle=True,drop_last=True)
-    return(GP_data_loader)
-    
+
+'''
+____________________________________________________________________________________________________________________
+
+----------------------------Matrix Tools ---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
+#A function to get the block diagonal matrix from a matrix:
 def Get_Block_Diagonal(X,size=1):
     '''
     Input: X - torch.tensor - shape (n,n)
@@ -197,3 +244,20 @@ def Get_Block_Diagonal(X,size=1):
     for i in range(m):
         Sigma[i]=X[(i*size):(i+1)*size,(i*size):(i+1)*size]
     return Sigma
+
+#A function to create a matrix from block matrices (merges the block matrices):
+def Create_matrix_from_Blocks(X):
+    '''
+    Input:
+        X - torch.tensor - shape (n,m,D_1,D_2)
+    Output:
+        torch-tensor - shape (n*D_1,m*D_2) - block (i,j) of size D_1*D_2 is matrix X[i,j] for i=1,...,n,j=1,...,m
+    '''
+    n=X.size(0)
+    m=X.size(1)
+    D_1=X.size(2)
+    D_2=X.size(3)
+    M=torch.cat([X[:,:,i,:].reshape(n,m*D_2) for i in range(D_1)])
+    ind=torch.cat([torch.arange(i,D_1*n,n,dtype=torch.long) for i in range(n)])
+    return(M[ind])
+

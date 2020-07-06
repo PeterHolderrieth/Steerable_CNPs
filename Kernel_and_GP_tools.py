@@ -2,9 +2,10 @@
 # coding: utf-8
 
 # To do:
-# 1. Define GP inference function for Sphere/3d
-# 2. Export various data sets in 3d
-# 3. Insert in a GitHub Repo
+# 1. Define a Ker_Project in Gram matrix - i.e. a projection on the tangent space of the sphere
+# 2. Define GP inference function for Sphere/3d
+# 3. Export various data sets in 3d
+#
 
 # In[22]:
 
@@ -22,7 +23,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Ellipse
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
-get_ipython().run_line_magic('matplotlib', 'inline')
+#get_ipython().run_line_magic('matplotlib', 'inline')
 
 #Tools:
 from itertools import product, combinations
@@ -30,138 +31,28 @@ import sys
 import math
 from numpy import savetxt
 import csv
+import datetime
+
+#Own files:
+import My_Tools
 
 
 # In[23]:
 
 
-#Data types:
-floattype=torch.double
-inttype=torch.int
+#HYPERPARAMETERS:
+#Set default as double:
+torch.set_default_dtype(torch.float)
 
+#%%
+'''
+____________________________________________________________________________________________________________________
 
-# In[24]:
-
-
-#This function gives different known ONE-dimensional kernels:
-def kernel(x1,x2,l_scale=1,sigma_var=1,kernel_type="rbf"):
-    '''
-    Input:
-    x1,x1: torch.tensor 
-           Shape (d) - d dimension of state space
-    l_scale: scalar 
-             length scale for RBF kernel
-    sigma_var: scalar 
-               var for RBF kernel
-    kernel_type: string
-                 Type of kernel we are using
-    Ouput:
-        torch.tensor
-        Shape: Scalar
-        kernel value K(x1,x2)
-    '''
-    #RBF Kernel:
-    if (kernel_type=="rbf"):
-        diff=torch.sum(torch.pow(x1-x2,2))
-        return(sigma_var*torch.exp(-diff/l_scale))
-    
-    #White noise kernel:
-    elif (kernel_type=="white_noise"):
-        if (x1==x2):
-            return(sigma_var)
-        else:
-            return(torch.tensor(0,dtype=floattype))
-    
-    #Dot product:    
-    elif (kernel_type=="dot product"):
-        return(torch.dot(x1,x2))
-    
-    #Else error:
-    else:
-        sys.exit("No valid kernel")
-
-
-# In[25]:
-
-
-#This function computes a MATRIX-valued kernel: 
-#kernel_type either gives:
-#1. A special matrix-valued kernel
-#2. A one-dimensional kernel type. In this case, we compute the separable kernel K(x,y)=k(x,y)*B where B is a fixed matrix.
-#If B is None, we set B=I_d where d is the dimension of x1,x2
-
-#we also allow the Kernel to be projected on the orthogonal spaces of x,y
-#Ker_project indicates that.
-
-#The divergence free kernel used here can be found in "Kernels for Vector-valued functions: a Review" by  Alvarez et al
-
-def mat_kernel(x1,x2,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False):
-    '''
-    Input:
-    x1,x2: torch.tensor 
-           Shape (d) - d dimension of state space
-    l_scale: scalar 
-             length scale for RBF kernel
-    sigma_var: scalar 
-               var for RBF kernel
-    kernel_type: string
-                 Type of kernel we are using
-    B: torch.tensor or None
-       Shape: (D,D) 
-    project: Boolean
-             Indicates whether we return the projected kernel (I-xx^T)K(x,y)(I-yy^T)
-    Ouput:
-        torch.tensor
-        Shape: [D,D] where D is number of rows of B 
-        Value of separable kernel: k(x1,x2)*B
-        
-    '''
-    #Outer product:
-    if kernel_type=="outer":
-        return(torch.ger(x1,x2)/l_scale**2)
-    
-    #Divergence free kernel:
-    elif kernel_type=="div_free":
-        d=x1.size(0)
-        diff2=torch.sum(torch.pow(x1-x2,2))
-        scalar=torch.exp(-0.5*diff2/l_scale)/l_scale
-        A_x1_x2=torch.ger(x1-x2,x1-x2)/l_scale+((d-1)-diff2/l_scale)*torch.eye(d,dtype=floattype)
-        K=scalar*A_x1_x2
-    
-    #Separable kernel:
-    else:
-        #Dimension of input space:
-        d=x1.size(0)
-        if B is None:
-            B=torch.eye(d,dtype=floattype)
-        K=kernel(x1,x2,l_scale,sigma_var,kernel_type)*B
-        d=x1.size(0)
-    
-    #Either project...
-    if Ker_project:
-        #B needs to be of the same dimension:
-        if B is not None:
-            if B.size(0)!=d:
-                sys.exit("Projection needs B to of same of dimension than x1,x2")
-        #L (resp. R) Projection on orthogonal space of x1 (resp x2)
-        L=torch.eye(d,dtype=floattype)-torch.ger(x1,x1)/torch.norm(x1)**2
-        R=torch.eye(d,dtype=floattype)-torch.ger(x2,x2)/torch.norm(x2)**2
-        return(torch.mm(torch.mm(L,K),R))
-    
-    #....or don't project:
-    else:
-        return(K)
-
-
-# In[26]:
-
-
-#This function computes the Gram-Matrix of a data X based on the function mat_kernel
-#If two data sets X,Y are given: it computes K(X,Y) (covariance matrix)
-
-#Note that: Here, we implicitly assume that the kernel is either separable or if not
-#the dimension of the matrix-valued kernel is the same as the dimension of the data space.
-def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False):
+----------------------------KERNEL TOOLS -------------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
+#%% This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
+def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,flatten=True):
     '''
     Input:
     X: torch.tensor
@@ -172,31 +63,153 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
 
     Output:
     Gram_matrix: torch.tensor
-                 Shape (n*D,n*D) (if Y is given (n*D,m*D))
-                 Block i,j of size dxd gives Kernel value of i-th X-data point and
+                 Shape (n,m,D) (if Y is not given (n,n,D))
+                 Block i,j of size DxD gives Kernel value of i-th X-data point and
                  j-th Y data point
     '''
+    #Get dimension of data space and number of observations from X:
     d=X.size(1)
     n=X.size(0)
+    #If B is not given, set to identity:
     if (B is None):
-        B=torch.eye(d,dtype=floattype)
+        B=torch.eye(d)
+    #If Y is not given, set to X:
     if (Y is None):
         Y=X
+    #Get number of observations from Y and dimension of B:
     m=Y.size(0)
     D=B.size(0)
-    #Create empty matrix:
-    Gram_matrix=torch.empty([n*D,m*D],dtype=floattype)
-    #Fill matrix block-wise:
-    for i in range(n):
-        for j in range(m):
-            Gram_matrix[D*i:(D*i+D),D*j:(D*j+D)]=mat_kernel(x1=X[i,],x2=Y[j,],l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project)
-    return(Gram_matrix)
+    #RBF kernel:
+    if kernel_type=="rbf":
+        #Expand X,Y along different dimension to get a grid shape:
+        X=X.unsqueeze(1).expand(n,m,d)
+        Y=Y.unsqueeze(0).expand(n,m,d)
+        #Compute the squared distance matrix:
+        Dist_mat=torch.sum((X-Y)**2,dim=2)
+        #Compute the RBF kernel from that:
+        Gram_RBF=sigma_var*torch.exp(-0.5*Dist_mat/l_scale)
+        #Expand B such that it has the right shape:
+        B=B.view(1,1,D,D)
+        B=B.expand(n,m,D,D)
+        #Reshape RBF Gram matrix:
+        Gram_RBF=Gram_RBF.view(n,m,1,1)
+        #Multiply scalar Gram matrix with the matrix B:
+        K=Gram_RBF*B
 
+    elif kernel_type=="dot_product":
+        #Get dot product Gram matrix:
+        Gram_one_d=torch.matmul(X,Y.t())
+        #Expand B:
+        B=B.view(1,1,D,D)
+        B=B.expand(n,m,D,D)
+        #Expand one-dimensional Gram:
+        Gram_one_d=Gram_one_d.view(n,m,1,1)
+        #Multiply with B:
+        K=Gram_one_d*B
 
-# In[27]:
+    elif kernel_type=="div_free":
+        '''
+        The following computations are based on equation (24) in
+        "Kernels for Vector-Valued Functions: a Review" by Alvarez et al
+        '''
+        #Create a distance matrix:
+        X=X.unsqueeze(1).expand(n,m,d)
+        Y=Y.unsqueeze(0).expand(n,m,d)
+        #Create distance matrix from that --> shape (n,m)
+        Dist_mat=torch.sum((X-Y)**2,dim=2)
+        #Create the RBF matrix from that --> shape (n,m)
+        Gram_RBF=torch.exp(-0.5*Dist_mat/l_scale)/l_scale
+        #Reshape for later use:
+        Gram_RBF=Gram_RBF.view(n,m,1,1)
+        #Get the differences:
+        Diff=X-Y
+        #Get matrix of outer product --> shape (n,m,d,d)
+        Outer_Prod_Mat=torch.matmul(Diff.unsqueeze(3),Diff.unsqueeze(2))
+        #Get n*m copies of identity matrices in Rd--> shape (n,m,d,d)
+        Ids=torch.eye(d)
+        Ids=Ids.view(1,1,d,d)
+        Ids=Ids.expand(n,m,d,d)
+        #First matrix component for divergence-free kernel-->shape (n,m,d,d)
+        Mat_1=Outer_Prod_Mat/l_scale
+        #Second matrix component for divergence-free kernel --> shape (n,m,d,d)
+        Mat_2=(d-1-Dist_mat.view(n,m,1,1)/l_scale)*Ids
+        #Matrix sum of the two matrices:
+        A=Mat_1+Mat_2
+        #Multiply scalar and matrix part:
+        K=Gram_RBF*A
+       
+    else:
+        sys.exit("Unknown kernel type")
+    
+    if flatten:
+        return(My_Tools.Create_matrix_from_Blocks(K))
+    else:
+        return(K)
+    
+#%%   
+#A function which performs kernel smoothing for 2d matrix-valued kernels:
+#The normalizer for the kernel smoother is a matrix in this case (assuming that it is invertible)
+def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False):
+    '''
+    Inputs: X_Context,Y_Context - torch.tensor -shape (n_context_points,2)
+            X_Target - torch.tensor - shape (n_target_points,2)
+            l_scale,sigma_var,kernel_type,B,Ker_project: Kernel parameters - see Gram_matrix
+    Output:
+            Kernel smooth estimates at X_Target 
+            torch.tensor - shape - (n_target_points,2)
+    '''
+    #Get the number of context and target points:
+    n_context_points=X_Context.size(0)
+    n_target_points=X_Target.size(0)
+    #Get the Gram-matrix between the target and the context set --> shape (n_target_points,n_context_points,2,2):
+    Gram_Blocks=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
+    Gram_Mat=My_Tools.Create_matrix_from_Blocks(Gram_Blocks)
+    #Get a kernel interpolation for the Target set and reshape it --> shape (2*n_target_points):
+    Interpolate=torch.mv(Gram_Mat,Y_Context.flatten())
 
+    #If wanted, normalize the output:
+    if normalize: 
+        #Get the column sum of the matrices
+        Col_Sum_Mats=Gram_Blocks.sum(dim=1)
+        
+        #Get the inverses:
+        Inverses=Col_Sum_Mats.inverse()
+        
+        #Perform batch-wise multiplication with inverses 
+        #(need to reshape vectors to a one-column matrix first and after the multiplication back):
+        Interpolate=torch.matmul(Inverses,Interpolate.view(n_target_points,2,1))
 
-#This function samples a multi-dimensional GP with kernel given by the function mat_kernel:
+    #Return the vector:
+    return(Interpolate.view(n_target_points,2))  
+
+#%% Problem with the kernel smoother for div-free kernel if it is normalizing:
+'''
+X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
+Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,1.],[-1.,1.]])
+X_Target=My_Tools.Give_2d_Grid(min_x=-1,max_x=1,n_x_axis=10)
+Smoother=Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False)
+My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,None,Predict=Smoother,Cov_Mat=None)
+plt.plot(X_Context[:,0].numpy(),Y_Context[:,0].numpy())
+plt.plot(X_Target[:,0].numpy(),Smoother[:,0].numpy(),c="red")
+
+X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
+Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,-1.],[-1.,1.]])
+X_Target=My_Tools.Give_2d_Grid(min_x=-1,max_x=1,n_x_axis=10)
+Smoother=Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="div_free",B=None,Ker_project=False)
+My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,None,Predict=Smoother,Cov_Mat=None)
+plt.plot(X_Context[:,0].numpy(),Y_Context[:,0].numpy())
+plt.plot(X_Target[:,0].numpy(),Smoother[:,0].numpy(),c="red")
+
+'''
+#%%
+'''
+____________________________________________________________________________________________________________________
+
+----------------------------Multi-dimensional Gaussian Processes ---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
+#%%
+#This function samples a multi-dimensional GP with kernel of a type give by the function Gram_matrix
 #Observations are assumed to be noisy versions of the real underlying function:
 def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,chol_noise=1e-4,obs_noise=1e-4):
     '''
@@ -214,7 +227,7 @@ def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pr
     '''
     if (B is None):
         d=X.size(1)
-        B=torch.eye(d,dtype=floattype)
+        B=torch.eye(d)
     
     #Save dimensions:
     n=X.size(0)
@@ -224,20 +237,69 @@ def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pr
     Gram_Mat=Gram_matrix(X,Y=None,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
     
     #Get cholesky decomposition of Gram-Mat (adding some noise to make it numerically stable):
-    L=(Gram_Mat+chol_noise*torch.eye(D*n,dtype=floattype)).cholesky()
+    L=(Gram_Mat+chol_noise*torch.eye(D*n)).cholesky()
     
     #Get multi-dimensional std normal sample:
-    Z=torch.randn(n*D,dtype=floattype)
+    Z=torch.randn(n*D)
     
     #Function values + noise = Observation:
-    Y=torch.mv(L,Z)+math.sqrt(obs_noise)*torch.randn(n*D,dtype=floattype)
+    Y=torch.mv(L,Z)+math.sqrt(obs_noise)*torch.randn(n*D)
     
     #Return reshaped version:
     return(Y.view(n,D))
+    
+#%%
+#This functions perform GP-inference on the function values at X_Target (so no noise for the target value)
+#based on context points X_Context and labels Y_Context:
+def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=1e-4,B=None,Ker_project=False):
+    '''
+    Input:
+        X_Context - torch.tensor - Shape (n_context_points,d)
+        Y_Context - torch.tensor- Shape (n_context_points,D)
+        X_Target - torch.tensor - Shape (n_target_points,d)
+    Output:
+        Means - torch.tensor - Shape (n_target_points, D) - Means of conditional dist.
+        Cov_Mat- torch.tensor - Shape (n_target_points*D,n_target_points*D) - Covariance Matrix of conditional dist.
+        Vars - torch.tensor - Shape (n_target_points,D) - Variance of individual components 
+    '''
+    #Dimensions of data matrices:
+    n_context_points=X_Context.size(0)
+    n_target_points=X_Target.size(0)
+    D=Y_Context.size(1)
+    #Get matrix K(X_Context,X_Context) and add on the diagonal the observation noise:
+    Gram_context=(Gram_matrix(X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)+
+                        obs_noise*torch.eye(n_context_points*D))
+    
+    #Get Gram-matrix K(X_Target,X_Target):
+    Gram_target=Gram_matrix(X_Target,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
+    
+    #Get matrix K(X_Target,X_Context):
+    Gram_target_context=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
+    
+    #Invert Gram-Context matrix:
+    inv_Gram_context=Gram_context.inverse()
+    
+    #Get prediction means and reshape it:
+    Means=torch.mv(Gram_target_context,torch.mv(inv_Gram_context,Y_Context.flatten()))
+    Means=Means.view(n_target_points,D)
 
+    #Get prediction covariance matrix:
+    Cov_Mat=Gram_target-torch.mm(Gram_target_context,torch.mm(inv_Gram_context,Gram_target_context.t()))
+    
+    #Get the variances of the components and reshape it:
+    Vars=torch.diag(Cov_Mat).view(n_target_points,D)
+    
+    return(Means,Cov_Mat,Vars)
 
-# In[28]:
+#%%
+'''
+____________________________________________________________________________________________________________________
 
+----------------------------2d Gaussian Processes ---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
+
+#%%
 
 #This function gives a GP sample in 2d on an evenly spaced grid:
 def vec_GP_sampler_2dim(min_x=-2,max_x=2,n_grid_points=10,l_scale=1,sigma_var=1, 
@@ -255,20 +317,35 @@ def vec_GP_sampler_2dim(min_x=-2,max_x=2,n_grid_points=10,l_scale=1,sigma_var=1,
        Shape (n_grid_points**2,D), D...dimension of label space
     '''
     #Create a grid:
-    grid_vec=torch.linspace(min_x,max_x,n_grid_points,dtype=floattype)
-    X1,X2=torch.meshgrid(grid_vec,grid_vec)
-    X=torch.stack((X1,X2),2).view(n_grid_points**2,2)
+    X=My_Tools.Give_2d_Grid(min_x,max_x,n_x_axis=n_grid_points,flatten=True)
     
     #Sample GP:
     Y=Multidim_GP_sampler(X,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project,obs_noise=obs_noise)
     
     #Return grid and samples:
     return(X,Y)
-
-
+    
+#%%    
+#A function to load the GP data which I sampled:
+def load_2d_GP_data(Id,folder='Test_data/2d_GPs/',batch_size=1,share_test_set=0.2):
+    X=np.load(folder+"GP_data_X"+Id+".npy")
+    Y=np.load(folder+"GP_data_Y"+Id+".npy")
+    X=torch.tensor(X,dtype=torch.get_default_dtype())
+    Y=torch.tensor(Y,dtype=torch.get_default_dtype())
+    n=X.size(0)
+    ind_shuffle=torch.randperm(n)
+    n_test_points=int(n*share_test_set//1)
+    test_ind=ind_shuffle[:n_test_points]
+    train_ind=ind_shuffle[n_test_points:]
+    
+    GP_train_data=utils.TensorDataset(X[train_ind],Y[train_ind])
+    GP_test_data=utils.TensorDataset(X[test_ind],Y[test_ind])
+    GP_train_data_loader=utils.DataLoader(GP_train_data,batch_size=batch_size,shuffle=True,drop_last=True)
+    GP_test_data_loader=utils.DataLoader(GP_test_data,batch_size=batch_size,shuffle=True,drop_last=True)
+    return(GP_train_data_loader,GP_test_data_loader)
+    
+    
 # In[29]:
-
-
 #This function plots a Gaussian process with Gaussian process on 2d with 2d outputs (i.e. a vector field) 
 #in an evenly spaced grid:
 def rand_plot_2d_vec_GP(n_plots=4,min_x=-2,max_x=2,n_grid_points=10,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,obs_noise=1e-4):
@@ -305,36 +382,15 @@ def rand_plot_2d_vec_GP(n_plots=4,min_x=-2,max_x=2,n_grid_points=10,l_scale=1,si
         #Subtitle:
         ax[i//2,i%2].set(title="Sample "+str(i))
     return(fig,ax)
-
-
-# In[30]:
-
-
-#This function project a bunch of vectors Y onto the tangent space of X.
-#We assume that all element in X have norm 1 (i.e. are on the sphere).
-def Tangent_Sphere_Projector(X,Y):
-    '''
-    Input:
-        X torch.tensor
-          Shape (n,d)
-          X[i,] has norm 1 for all i
-        Y torch.tensor
-          Shape (n,d)
-    Output:
-        Z torch.tensor
-        Shape (n)
-        Z[i]=Projection of Y[i,] on orthogonal space of X[i,]
-    '''
-    #Compute dot products:
-    Dot_Products=torch.diag(torch.mm(X,Y.t()))
-    n=X.size(0)
-    #Compute projections:
-    Z=Y-Dot_Products.view(n,1)*X
-    return(Z)    
-
-
+    
 # In[31]:
+#%%
+'''
+____________________________________________________________________________________________________________________
 
+----------------------------Spherical Gaussian Processes ---------------------------------------------------------------------
+____________________________________________________________________________________________________________________
+'''
 
 #This function samples a GP on the Sphere
 #- We take a grid over the sphercal coordinates (angles).
@@ -366,7 +422,7 @@ def vec_GP_sampler_Sphere(l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pr
     
     #If possible, compute projection:
     if Y.size(1)==X.size(1):
-        Proj_Y=Tangent_Sphere_Projector(X,Y)
+        Proj_Y=My_Tools.Tangent_Sphere_Projector(X,Y)
     else:
         Proj_Y=None
     
@@ -421,148 +477,4 @@ def Plot_Spherical_GP(l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_projec
         #Repeat function plot:
         ax2.scatter(X[:,0],X[:,1],X[:,2], color='red', s=8*size_scale)
         ax2.quiver(X[:,0], X[:,1],X[:,2], Proj_Y[:,0], Proj_Y[:,1],Proj_Y[:,2], length=0.15,color='orange',pivot='middle')
-
-
-# In[33]:
-
-
-#This function splits a data set randomly into a target and context set:
-def Rand_Target_Context_Splitter(X,Y,n_context_points):
-    n=X.size(0)
-    ind_shuffle=torch.randperm(n)
-    X_Context=X[ind_shuffle[:n_context_points],]
-    Y_Context=Y[ind_shuffle[:n_context_points],]
-    X_Target=X[ind_shuffle[n_context_points:,]]
-    Y_Target=Y[ind_shuffle[n_context_points:,]]
-    return(X_Context,Y_Context,X_Target,Y_Target)
-
-
-# In[34]:
-
-
-#This functions perform GP-inference on the function values at X_Target (so no noise for the target value)
-#based on context points X_Context and labels Y_Context:
-def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=1e-4,B=None,Ker_project=False):
-    '''
-    Input:
-        X_Context - torch.tensor - Shape (n_context_points,d)
-        Y_Context - torch.tensor- Shape (n_context_points,D)
-        X_Target - torch.tensor - Shape (n_target_points,d)
-    Output:
-        Means - torch.tensor - Shape (n_target_points, D) - Means of conditional dist.
-        Cov_Mat- torch.tensor - Shape (n_target_points*D,n_target_points*D) - Covariance Matrix of conditional dist.
-        Vars - torch.tensor - Shape (n_target_points,D) - Variance of individual components 
-    '''
-    #Dimensions of data matrices:
-    n_context_points=X_Context.size(0)
-    n_target_points=X_Target.size(0)
-    D=Y_Context.size(1)
-    #Get matrix K(X_Context,X_Context) and add on the diagonal the observation noise:
-    Gram_context=(Gram_matrix(X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)+
-                        obs_noise*torch.eye(n_context_points*D,dtype=floattype))
-    
-    #Get Gram-matrix K(X_Target,X_Target):
-    Gram_target=Gram_matrix(X_Target,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
-    
-    #Get matrix K(X_Target,X_Context):
-    Gram_target_context=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
-    
-    #Invert Gram-Context matrix:
-    inv_Gram_context=Gram_context.inverse()
-    
-    #Get prediction means and reshape it:
-    Means=torch.mv(Gram_target_context,torch.mv(inv_Gram_context,Y_Context.flatten()))
-    Means=Means.view(n_target_points,D)
-
-    #Get prediction covariance matrix:
-    Cov_Mat=Gram_target-torch.mm(Gram_target_context,torch.mm(inv_Gram_context,Gram_target_context.t()))
-    
-    #Get the variances of the components and reshape it:
-    Vars=torch.diag(Cov_Mat).view(n_target_points,D)
-    
-    return(Means,Cov_Mat,Vars)
-
-
-# In[35]:
-
-
-def Plot_inference_2d(X_Context,Y_Context,X_Target,Y_Target,Predict):
-    #Function hyperparameters for plotting:
-    size_scale=2
-    
-    #Create subplots:
-    fig, ax = plt.subplots(nrows=1,ncols=1,figsize=(size_scale*10,size_scale*5))
-    #Plot context set in blue:
-    ax[0].scatter(X_Context[:,0],X_Context[:,1],color='blue')
-    ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],color='blue',pivot='mid')
-    #Plot ground truth in red:
-    ax[0].quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],color='red',pivot='mid')
-    #Plot predicted means:
-    ax[0].quiver(X_Target[:,0],X_Target[:,1],Predict[:,0],Predict[:,1],color='green',pivot='mid')
-    
-    
-#This functions plots GP inference for 2d inputs with 2d outputs by randomly splitting data in context
-#and target set and plot ground truth vs. predictions. In addition, a plot showing covariances is made:
-def Plot_GP_inference_2d(X,Y,n_context_points=10,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=1e-4,B=None,Ker_project=False):
-    '''
-    Input: X,Y: torch.tensor - shape (n,2)
-           n_context_points: int - number of context points
-           l_scale,sigma_var,kernel_type,obs_noise,B,Ker_project: see function GP_inference
-    Output: None - only plots
-    '''
-    #Function hyperparameters for plotting:
-    size_scale=2
-    ellip_scale=0.7
-    
-    #Split data randomly in context and target:
-    X_Context,Y_Context,X_Target,Y_Target=Rand_Target_Context_Splitter(X,Y,n_context_points)
-    
-    #Create subplots:
-    fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(size_scale*10,size_scale*5))
-    #Plot context set in blue:
-    ax[0].scatter(X_Context[:,0],X_Context[:,1],color='blue')
-    ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],color='blue',pivot='mid')
-    #Plot ground truth in red:
-    ax[0].quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],color='red',pivot='mid')
-    
-    #Perform inference:
-    Predict,Cov_Mat,Var=GP_inference(X_Context,Y_Context,X_Target,l_scale=l_scale,sigma_var=sigma_var, 
-                             kernel_type=kernel_type,obs_noise=obs_noise,B=B,Ker_project=Ker_project)
-    #Plot predicted means:
-    ax[0].quiver(X_Target[:,0],X_Target[:,1],Predict[:,0],Predict[:,1],color='green',pivot='mid')
-    
-    #Get window limites for plot and set window for second plot:
-    max_x=torch.max(X[0:,])
-    min_x=torch.min(X[0:,])
-    max_y=torch.max(X[1:,])
-    min_y=torch.min(X[1:,])
-    ax[1].set_xlim(min_x,max_x)
-    ax[1].set_ylim(min_y,max_y)
-    
-    #Go over all target points and plot ellipse of continour lines of density of distributions:
-    for j in range(X_Target.size(0)):
-        #Get covarinace matrix:
-        A=Cov_Mat[2*j:(2*j+2),2*j:(2*j+2)]
-        #Get the eigenvector corresponding corresponding to the largest eigenvalue:
-        u=torch.eig(A,eigenvectors=True)[1][:,0]
-
-        #Get the angle of the ellipse in degrees:
-        alpha=360*torch.atan(u[1]/u[0])/(2*math.pi)
-        
-        #Get the width and height of the ellipses (eigenvalues of A):
-        D=torch.sqrt(torch.eig(A,eigenvectors=True)[0][:,0])
-        
-        #Plot the Ellipse:
-        E=Ellipse(xy=X_Target[j,].numpy(),width=ellip_scale*D[0],height=ellip_scale*D[1],angle=alpha)
-        ax[1].add_patch(E)
-        
-#A function to load the GP data:
-def load_2d_GP_data(Id,folder='Test_data/2d_GPs/'):
-    X=np.load(folder+"GP_data_X"+Id+".npy")
-    Y=np.load(folder+"GP_data_Y"+Id+".npy")
-    X=torch.tensor(X,dtype=torch.get_default_dtype())
-    Y=torch.tensor(Y,dtype=torch.get_default_dtype())
-    GP_data=utils.TensorDataset(X,Y)
-    GP_data_loader=utils.DataLoader(GP_data,batch_size=1,shuffle=True,drop_last=True)
-    return(GP_data_loader)
-    
+#%%
