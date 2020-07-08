@@ -190,6 +190,7 @@ ________________________________________________________________________________
 '''
 #This function project a bunch of vectors Y onto the tangent space of X.
 #We assume that all element in X have norm 1 (i.e. are on the sphere).
+#(Otherwise we would need to normalize)
 def Tangent_Sphere_Projector(X,Y):
     '''
     Input:
