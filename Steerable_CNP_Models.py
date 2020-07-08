@@ -288,7 +288,7 @@ class Steerable_CNP(nn.Module):
             Covs_grid=F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
             Covs_grid=Covs_grid.diag_embed()
         else:
-            Covs_grid=My_Tools.cov_activation_function(Pre_Activ_Covs_grid)
+            Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
       
         #Create flattened version for target smoother:
         Covs_grid_flat=Covs_grid.view(self.encoder.n_x_axis*self.encoder.n_y_axis,-1)

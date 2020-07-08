@@ -267,7 +267,7 @@ def Create_matrix_from_Blocks(X):
     return(M[ind])
 
 #Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
-def cov_activation_function(X,activ_type="softplus"):
+def plain_cov_activation_function(X,activ_type="softplus"):
     '''
     Input:
     X- torch.tensor - shape (n,3)
@@ -279,12 +279,44 @@ def cov_activation_function(X,activ_type="softplus"):
     '''
     n=X.size(0)
     M=torch.stack([X[:,0],X[:,1],X[:,1],X[:,2]],dim=1).view(n,2,2)
+    
     eigen_vals,eigen_vecs=torch.symeig(M,eigenvectors=True)
     if activ_type=="softplus":
         eigen_vals=F.softplus(eigen_vals)
     else: 
         sys.exit("Unknown activation type")
     return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
+        
+def stable_cov_activation_function(X,activ_type="softplus",tol=1e-6):
+    '''
+    Input:
+            X- torch.tensor - shape (n,3)
+            activ_type - string -type of activation applied on the diagonal matrix
+            tol - float - giving tolerance level, i.e. the distance to a pure scalar matrix s*Id,
+                          if the distance is below that, no eigendecomposition is computed but instead
+                          the covariance matrix is computed directly.
+    Output: 
+            torch.tensor - shape (n,2,2) - consider X[i] as a symmetric 2x2 matrix
+            we compute the eigendecomposition X[i]=UDU^T of that matrix and 
+            if s is a an function, we apply it componentwise on the diagonal s(D)
+            and return Us(D)U^T (in one batch)
+            The difference to "plain_cov_activation_function" is that we only compute the eigendecomposition
+            for matrices which are not of the form s*Id for s in R but immediately use that (up to some error)
+            This makes the function fully differentiable (however, the gradient is slightly changed)
+    '''
+    n=X.size(0)
+    Out=torch.zeros([n,2,2])   
+    below_tol=(torch.abs(X[:,1])<tol)&(torch.abs(X[:,0]-X[:,2])<tol)
+    above_tol=~below_tol
+    if any(above_tol):
+        Out[above_tol]=plain_cov_activation_function(X[above_tol],activ_type=activ_type)
+    
+    if activ_type=="softplus":
+        Out[below_tol,0,0]=F.softplus(X[below_tol][:,0])
+        Out[below_tol,1,1]=F.softplus(X[below_tol][:,2])
+    else: 
+        sys.exit("Unknown activation type")
+    return(Out)
 
 def batch_multivar_log_ll(Means,Covs,Data,stupid=True):
     '''
