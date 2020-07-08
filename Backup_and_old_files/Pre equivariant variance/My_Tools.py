@@ -25,11 +25,6 @@ import math
 from numpy import savetxt
 import csv
 
-#E(2)-steerable CNNs - librar"y:
-from e2cnn import gspaces    
-import e2cnn
-from e2cnn import nn as G_CNN   
-
 #HYPERPARAMETERS:
 #Set default as double:
 torch.set_default_dtype(torch.float)
@@ -74,6 +69,25 @@ def get_outer_circle_indices(n):
     Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)>(n-1)/2].long()
     return(Ind)
     
+#Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
+def cov_activation_function(X,activ_type="softplus"):
+    '''
+    Input:
+    X- torch.tensor - shape (n,3)
+    activ_type - string -type of activation applied on the diagonal matrix
+    Output: torch.tensor - shape (n,2,2) - consider X[i] as a symmetric 2x2 matrix
+            we compute the eigendecomposition X[i]=UDU^T of that matrix and 
+            if s is a an function, we apply it componentwise on the diagonal s(D)
+            and return Us(D)U^T (in one batch)
+    '''
+    n=X.size(0)
+    M=torch.stack([X[:,0],X[:,1],X[:,1],X[:,2]],dim=1).view(n,2,2)
+    eigen_vals,eigen_vecs=torch.symeig(M,eigenvectors=True)
+    if activ_type=="softplus":
+        eigen_vals=torch.log(1+torch.exp(eigen_vals))
+    else: 
+        sys.exit("Unknown activation type")
+    return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
 
 #%%
           
@@ -266,64 +280,3 @@ def Create_matrix_from_Blocks(X):
     ind=torch.cat([torch.arange(i,D_1*n,n,dtype=torch.long) for i in range(n)])
     return(M[ind])
 
-#Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
-def cov_activation_function(X,activ_type="softplus"):
-    '''
-    Input:
-    X- torch.tensor - shape (n,3)
-    activ_type - string -type of activation applied on the diagonal matrix
-    Output: torch.tensor - shape (n,2,2) - consider X[i] as a symmetric 2x2 matrix
-            we compute the eigendecomposition X[i]=UDU^T of that matrix and 
-            if s is a an function, we apply it componentwise on the diagonal s(D)
-            and return Us(D)U^T (in one batch)
-    '''
-    n=X.size(0)
-    M=torch.stack([X[:,0],X[:,1],X[:,1],X[:,2]],dim=1).view(n,2,2)
-    eigen_vals,eigen_vecs=torch.symeig(M,eigenvectors=True)
-    if activ_type=="softplus":
-        eigen_vals=F.softplus(eigen_vals)
-    else: 
-        sys.exit("Unknown activation type")
-    return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
-
-def batch_multivar_log_ll(Means,Covs,Data,stupid=True):
-    '''
-    Input:
-        Means - torch.tensor - shape (n,D) - Means 
-        Covs - torch.tensor - shape (n,D,D) - Covariances
-        Data - torch.tensor - shape (n,D) - observed data 
-    Output:
-        torch.tensor - shape (n) - log-likelihoods of observations
-    '''
-    n,D=Means.size()
-    Diff=Data-Means
-    Quad_Term=torch.matmul(Diff.unsqueeze(1),torch.matmul(Covs.inverse(),Diff.unsqueeze(2))).squeeze()
-    log_normalizer=-0.5*torch.log(((2*math.pi)**D)*Covs.det())
-    log_ll=log_normalizer-0.5*Quad_Term
-    return(log_ll)
-    
-def get_pre_psd_rep(G_act):
-    '''
-        Input:
-            G_act - instance of e2cnn.gspaces.r2.rot2d_on_r2.Rot2dOnR2 - underlying group
-            
-        Output:
-            psd_rep - instance of e2cnn.group.Representation - group representation of the group representation before the covariance 
-            feat_type_pre_rep - instance of G_CNN.FieldType - corresponding field type
-    '''
-    
-    change_of_basis=np.array([[1,1.,0.],
-                          [0.,0.,1.],
-                          [1,-1.,0.]])
-    if G_act.name=='4-Rotations':
-        psd_rep=e2cnn.group.Representation(group=G_act.fibergroup,name="psd_rep",irreps=['irrep_0','irrep_2','irrep_2'],
-                                   change_of_basis=change_of_basis,
-                                   supported_nonlinearities=['n_relu'])
-    elif G_act.name=='8-Rotations' or G_act.name=='16-Rotations':
-        psd_rep=e2cnn.group.Representation(group=G_act.fibergroup,name="psd_rep",irreps=['irrep_0','irrep_2'],
-                                   change_of_basis=change_of_basis,
-                                   supported_nonlinearities=['n_relu'])
-    else:
-        sys.exit("Group not enabled for a pre psd representation yet.")
-    feat_type_pre_rep=G_CNN.FieldType(G_act,[psd_rep])
-    return(psd_rep,feat_type_pre_rep)

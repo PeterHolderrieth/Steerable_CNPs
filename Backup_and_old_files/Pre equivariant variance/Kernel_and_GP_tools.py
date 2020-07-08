@@ -70,10 +70,10 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
     d=X.size(1)
     n=X.size(0)
     #If B is not given, set to identity:
-    if B is None:
+    if (B is None):
         B=torch.eye(d)
     #If Y is not given, set to X:
-    if Y is None:
+    if (Y is None):
         Y=X
     #Get number of observations from Y and dimension of B:
     m=Y.size(0)
@@ -139,6 +139,7 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
        
     else:
         sys.exit("Unknown kernel type")
+    
     if flatten:
         return(My_Tools.Create_matrix_from_Blocks(K))
     else:
@@ -149,25 +150,22 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
 #The normalizer for the kernel smoother is a matrix in this case (assuming that it is invertible)
 def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False):
     '''
-    Inputs: X_Context - torch.tensor -shape (n_context_points,2)
-            Y_Context - torch.tensor - shape (n_context_points,D)
+    Inputs: X_Context,Y_Context - torch.tensor -shape (n_context_points,2)
             X_Target - torch.tensor - shape (n_target_points,2)
             l_scale,sigma_var,kernel_type,B,Ker_project: Kernel parameters - see Gram_matrix
     Output:
             Kernel smooth estimates at X_Target 
-            torch.tensor - shape - (n_target_points,D)
+            torch.tensor - shape - (n_target_points,2)
     '''
-    #Get the number of context and target points and the dimension of the output space:
+    #Get the number of context and target points:
     n_context_points=X_Context.size(0)
     n_target_points=X_Target.size(0)
-    D=Y_Context.size(1)
-    if B is None:
-        B=torch.eye(D)
     #Get the Gram-matrix between the target and the context set --> shape (n_target_points,n_context_points,2,2):
     Gram_Blocks=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
     Gram_Mat=My_Tools.Create_matrix_from_Blocks(Gram_Blocks)
     #Get a kernel interpolation for the Target set and reshape it --> shape (2*n_target_points):
     Interpolate=torch.mv(Gram_Mat,Y_Context.flatten())
+
     #If wanted, normalize the output:
     if normalize: 
         #Get the column sum of the matrices
@@ -178,10 +176,10 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
         
         #Perform batch-wise multiplication with inverses 
         #(need to reshape vectors to a one-column matrix first and after the multiplication back):
-        Interpolate=torch.matmul(Inverses,Interpolate.view(n_target_points,D,1))
+        Interpolate=torch.matmul(Inverses,Interpolate.view(n_target_points,2,1))
 
     #Return the vector:
-    return(Interpolate.view(n_target_points,D))  
+    return(Interpolate.view(n_target_points,2))  
 
 #%% Problem with the kernel smoother for div-free kernel if it is normalizing:
 '''

@@ -10,10 +10,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
 
-#E(2)-steerable CNNs - librar"y:
-from e2cnn import gspaces    
+#E(2)-steerable CNNs - library:
+from e2cnn import gspaces                                          
 from e2cnn import nn as G_CNN   
-import e2cnn
 
 #Plotting in 2d/3d:
 import matplotlib.pyplot as plt
@@ -39,8 +38,7 @@ quiver_scale=15
 
 
 class Steerable_Encoder(nn.Module):
-    def __init__(self, x_range,y_range=None,n_x_axis=10,n_y_axis=None,kernel_dict={'kernel_type':"rbf"},
-                 l_scale=1.,normalize=True):
+    def __init__(self, x_range,y_range=None,n_x_axis=10,n_y_axis=None,kernel_dict={'kernel_type':"rbf"},l_scale=1.,normalize=True):
         super(Steerable_Encoder, self).__init__()
         '''
         Inputs:
@@ -217,18 +215,13 @@ class Steerable_Decoder(nn.Module):
 # In[4]:
 #A class which defines a ConvCNP:
 class Steerable_CNP(nn.Module):
-    def __init__(self,G_act,feature_in, encoder,decoder, dim_cov_est,
+    def __init__(self,feature_in, G_act, encoder,decoder,
                  kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
         '''
         Inputs:
-            G_act - gspaces.r2.general_r2.GeneralOnR2 - the underlying group under whose equivariance the models is built/tested
-            feature_in  - G_CNN.FieldType - feature type of input (on the data)
-            feature_out -G_CNN.FieldType - feature type of output of the decoder
             encoder - instance of ConvCNP_Enoder 
-            decoder - nn.Module - takes input (batch_size,3,height,width) and gives (batch_size,5,height,width) or (batch_size,3,height,width) 
-                                  as output
+            decoder - nn.Module - with input and output size the same as the grid of the encoder 
             kernel_dict_out - gives parameters for kernel smoother of output
-            l_scale - float - gives initialisation for learnable length parameter
             normalize_output  - Boolean - indicates whether kernel smoothing is performed with normalizing
         '''
 
@@ -240,28 +233,18 @@ class Steerable_CNP(nn.Module):
         #Get the parameters for kernel smoother (after the decoder):
         self.l_scale_out=nn.Parameter(torch.tensor(l_scale,dtype=torch.get_default_dtype()),requires_grad=True)
         self.kernel_dict_out=kernel_dict_out
-        #Control that there is no variable l_scale in the the kernel dictionary:
         if 'l_scale' in kernel_dict_out:
-            sys.exit("l scale is variable and not fixed")
+            sys.exit("l scale if variable and not fixed")
         #Save whether output is normalized:
         self.normalize_output=normalize_output
         
         #Save the group and the feature types for the input, the embedding (output type = input type for now):
         self.G_act=G_act
         self.feature_in=feature_in
-        self.feature_emb=G_CNN.FieldType(G_act, [G_act.trivial_repr,feature_in.representation])
+        self.feature_emb=G_CNN.FieldType(G_act, [G_act.trivial_repr,G_act.irrep(1)])
+        self.feature_out=G_CNN.FieldType(G_act, [G_act.irrep(1),G_act.trivial_repr,G_act.trivial_repr])
         
-        #Save the dimension of the covariance estimator of the last layer:
-        self.dim_cov_est=dim_cov_est
-        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3):
-            sys.exit("The number of output channels of the decoder must be either 3 or 5")
         
-        #Define the feature type on output which depending dim_cov_est either 3 or 5-dimensional
-        if self.dim_cov_est==1:
-            self.feature_out=G_CNN.FieldType(G_act, [feature_in.representation,G_act.trivial_repr])
-        else:
-            self.feature_out=G_CNN.FieldType(G_act, [feature_in.representation,My_Tools.get_pre_psd_rep(G_act)[0]])
-            
     #Define the function taking the output of the decoder and creating
     #predictions on the target set based on kernel smoothing (so it takes predictions on the 
     #grid an makes predictions on the target set out of it):
@@ -270,40 +253,28 @@ class Steerable_CNP(nn.Module):
         Input: X_target - torch.tensor- shape (n_target,2)
                Final_Feature_Map- torch.tensor - shape (4,self.encoder.n_y_axis,self.encoder.n_x_axis)
         Output: Predictions on X_target - Means_target - torch.tensor - shape (n_target,2)
-                Covariances on X_target - Covs_target - torch.tensor - shape (n_target,2,2)
+                Sqrt(Variances) on X_target - Sigmas_target - torch.tensor - shape (n_target,2)
         '''
-        #Split into mean and parameters for covariance (pre-activation) and send it through the activation function:
+        #Split into mean and sd and "make sd positive" with softplus:
         Means_grid=Final_Feature_Map[:2]
-        Pre_Activ_Covs_grid=Final_Feature_Map[2:]
+        #This non-linearity is not equivariant:
+        Sigmas_grid=torch.log(1+torch.exp(Final_Feature_Map[2:]))
         
         #Reshape from (2,n_y_axis,n_x_axis) to (n_x_axis*n_y_axis,2) 
         Means_grid=Means_grid.permute(dims=(2,1,0))
         Means_grid=Means_grid.reshape(self.encoder.n_x_axis*self.encoder.n_y_axis,2)
-        #Reshape from (2,n_y_axis,n_x_axis) to (n_x_axis*n_y_axis,self.dim_cov_est): 
-        Pre_Activ_Covs_grid=Pre_Activ_Covs_grid.permute(dims=(2,1,0))
-        Pre_Activ_Covs_grid=Pre_Activ_Covs_grid.reshape(self.encoder.n_x_axis*self.encoder.n_y_axis,
-                                                        self.dim_cov_est)
-        #Apply activation function on (co)variances -->shape (n_x_axis*n_y_axis,2,2):
-        if self.dim_cov_est==1:
-            Covs_grid=F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
-            Covs_grid=Covs_grid.diag_embed()
-        else:
-            Covs_grid=My_Tools.cov_activation_function(Pre_Activ_Covs_grid)
-      
-        #Create flattened version for target smoother:
-        Covs_grid_flat=Covs_grid.view(self.encoder.n_x_axis*self.encoder.n_y_axis,-1)
-        #3.Means on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,2):
+        Sigmas_grid=Sigmas_grid.permute(dims=(2,1,0))
+        Sigmas_grid=Sigmas_grid.reshape(self.encoder.n_x_axis*self.encoder.n_y_axis,2)
+        
+        #3.Feature Map -> Predictions on Target Set (via Kernel smoothing):
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
                                            l_scale=self.l_scale_out,**self.kernel_dict_out)
-        #3.Covariances on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,4):
-        Covs_target_flat=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
+        Sigmas_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Sigmas_grid,
                                           X_Target=X_target,normalize=self.normalize_output,
                                           l_scale=self.l_scale_out,**self.kernel_dict_out)
-        #Reshape covariance matrices to proper matrices --> shape (n_target,2,2):
-        Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
-        return(Means_target, Covs_target)
- 
+        return(Means_target, Sigmas_target)
+    
     #Define the forward pass of ConvCNP: 
     def forward(self,X_context,Y_context,X_target):
         '''
@@ -330,26 +301,21 @@ class Steerable_CNP(nn.Module):
         
         '''
         #Get predictions:
-        Means,Covs=self.forward(X_Context,Y_Context,X_Target)
+        Means,Sigmas=self.forward(X_Context,Y_Context,X_Target)
         #Plot predictions against ground truth:
-        My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,Y_Target,Predict=Means.detach(),Cov_Mat=Covs.detach())
+        My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,Y_Target,Predict=Means.detach(),Cov_Mat=Sigmas.detach()**2)
     
-    def loss(self,Y_Target,Predict,Covs):
+    def loss(self,Y_Target,Predict,Sigmas):
         '''
             Inputs: X_Target,Y_Target: torch.tensor - shape (n,2) - Target set locations and vectors
                     Predict: torch.tensor - shape (n,2) - Predictions of Y_Target at X_Target
-                    Covs: torch.tensor - shape (n,2,2) - covariance matrices of Y_Target at X_Target
-            Output: -log_ll: log_ll is the log-likelihood at Y_Target given the parameters Predict  and Covs
+            Output: -log_ll: log_ll is the log-likelihood at Y_Target given the parameters Predict as means and Sigma**2 as variances
         '''
-        log_ll_vec=My_Tools.batch_multivar_log_ll(Means=Predict,Covs=Covs,Data=Y_Target)
-        log_ll=log_ll_vec.mean()
+        dist_tuple=torch.distributions.normal.Normal(loc=Predict,scale=Sigmas)
+        log_ll=dist_tuple.log_prob(Y_Target).mean()
         return(-log_ll)
 
 
-
-
-
-#%%
 
 class Steerable_CNP_Operator(nn.Module):
     def __init__(self,Steerable_CNP,train_data_loader,test_data_loader,Max_n_context_points,n_epochs=10,

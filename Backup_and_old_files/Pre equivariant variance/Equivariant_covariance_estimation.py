@@ -49,11 +49,24 @@ quiver_scale=15
 
 
 #Define the group and the group actions:        
-G_act = gspaces.Rot2dOnR2(N=16)
-psd_rep,feat_type_pre_cov=My_Tools.get_pre_psd_rep(G_act)
+G_act = gspaces.Rot2dOnR2(N=8)
+
+#G_act.irreps
+'''change_of_basis=np.array([[0.5,0.,0.5],
+                          [0.5,0.,-0.5],
+                          [0.,1.,0.]])'''
+change_of_basis=np.array([[1,1.,0.],
+                          [0.,0.,1.],
+                          [1,-1.,0.]])
+psd_rep=e2cnn.group.Representation(group=G_act.fibergroup,name="psd_rep",irreps=['irrep_0','irrep_2'],
+                                   change_of_basis=change_of_basis,
+                                   supported_nonlinearities=['n_relu'])
+
+feat_type_pre_cov=G_CNN.FieldType(G_act, [psd_rep])
 feat_type_cov=G_CNN.FieldType(G_act, [G_act.irrep(1)])
 
-
+change_of_basis=psd_rep.change_of_basis
+change_of_basis_inv=psd_rep.change_of_basis_inv
 #%%
 X=torch.randn((100,3))
 size_scale=2
