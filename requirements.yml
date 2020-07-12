@@ -1,6 +1,8 @@
 name: Equivariant_CNPs
 channels:
   - pytorch
+  - matplotlib
+  - e2cnn
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main

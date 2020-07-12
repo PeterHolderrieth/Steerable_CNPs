@@ -7,9 +7,6 @@
 # it gets a mess)
 # 2. Change the architecture su|ch that it allows for minibatches of data sets (so far only: minibatch size is one)
 # 3. Show in an example with plot that equivariance is not fulfilled (maybe one before training, one after traing)
-# |
-
-# In[1]:
 
 #LIBRARIES:
 #Tensors:
@@ -39,16 +36,12 @@ import Kernel_and_GP_tools as GP
 import My_Tools
 import Steerable_CNP_Models as My_Models
 
-# In[2]:
-
-
 #HYPERPARAMETERS:
 #Set default as double:
 torch.set_default_dtype(torch.float)
 #Scale for plotting with plt quiver
 quiver_scale=15
 
-#%%
 def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     
     G_act = gspaces.Rot2dOnR2(N=N)
@@ -101,13 +94,13 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
   #%%-------------------------------------
 #-----Experiment 1
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':20,'n_plots':None,'n_iterat_per_epoch':50,
+Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 loss_Geom_CNP=Geom_CNP.train(filename=None)#filename_1+"_Steerable_CNP_")
 #loss_ConvCNP=Conv_CNP.train(filename=None)#filename_1+"_Conv_CNP_")
 
-#%%
+
 
 Geom_CNP.plot_log_ll_memory()
 #Conv_CNP.plot_log_ll_memory()
@@ -115,7 +108,7 @@ Geom_CNP.plot_log_ll_memory()
 Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 #Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
-Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
+#Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 #Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
 #%%
