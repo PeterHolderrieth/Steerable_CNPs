@@ -41,6 +41,13 @@ import Steerable_CNP_Models as My_Models
 torch.set_default_dtype(torch.float)
 #Scale for plotting with plt quiver
 quiver_scale=15
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")  
+    print("Running on the GPU")
+else:
+    device = torch.device("cpu")
+    print("Running on the CPU")
+
 
 def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     
@@ -86,17 +93,29 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
     geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
     
+    #Send the models to the correct devices:
+    conv_cnp=conv_cnp.to(device)
+    geom_cnp=geom_cnp.to(device)
+
+    #Create Operator model:
     Conv_CNP_Operator=My_Models.Steerable_CNP_Operator(conv_cnp,**Training_par,**Operator_par)
     Geom_CNP_Operator=My_Models.Steerable_CNP_Operator(geom_cnp,**Training_par,**Operator_par)
     
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
+
+
+
+
   #%%-------------------------------------
 #-----Experiment 1
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
+
+
+'''
 loss_Geom_CNP=Geom_CNP.train(filename=None)#filename_1+"_Steerable_CNP_")
 #loss_ConvCNP=Conv_CNP.train(filename=None)#filename_1+"_Conv_CNP_")
 
@@ -111,8 +130,8 @@ Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 #Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 #Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
-#%%
 #That is how to load the model again:
 #Geom_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_Steerable_CNP__2020_07_02_12_39"))
 #Conv_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_ConvCNP__2020_07_02_12_39"))
 
+'''

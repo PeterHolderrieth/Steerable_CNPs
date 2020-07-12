@@ -391,6 +391,8 @@ class Steerable_CNP_Operator(nn.Module):
         self.trained=False
         self.n_iterat_per_epoch=n_iterat_per_epoch
         self.saved_to=None
+        #Get the device of the Steerable CNP (here, we assume that all parameters are on a single device):
+        self.device=next(Steerable_CNP.parameters()).device
                 
     def train(self,filename=None,plot_loss=True):
         '''
@@ -440,7 +442,11 @@ class Steerable_CNP_Operator(nn.Module):
         for epoch in range(self.n_epochs):
             loss_epoch_mean=0.0
             for i in range(self.n_iterat_per_epoch):
+                #Get the next minibatch:
                 features, labels=next(iter(self.train_data_loader))
+                #Send it to the correct device:
+                features=features.to(self.device)
+                labels=labels.to(self.device)
                 #Set the loss to zero:
                 loss=torch.tensor(0.0)
                 #loss_vec=torch.empty(self.minibatch_size) 
