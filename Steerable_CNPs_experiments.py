@@ -113,7 +113,7 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
-
+print("Test print for commiting changes")
 
 '''
 loss_Geom_CNP=Geom_CNP.train(filename=None)#filename_1+"_Steerable_CNP_")
