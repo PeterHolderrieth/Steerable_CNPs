@@ -288,7 +288,7 @@ def plain_cov_activation_function(X,activ_type="softplus"):
         sys.exit("Unknown activation type")
     return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
         
-def stable_cov_activation_function(X,activ_type="softplus",tol=1e-6):
+def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
     '''
     Input:
             X- torch.tensor - shape (n,3)
