@@ -447,6 +447,7 @@ class Steerable_CNP_Operator(nn.Module):
                 #Send it to the correct device:
                 features=features.to(self.device)
                 labels=labels.to(self.device)
+                
                 #Set the loss to zero:
                 loss=torch.tensor(0.0)
                 #loss_vec=torch.empty(self.minibatch_size) 
