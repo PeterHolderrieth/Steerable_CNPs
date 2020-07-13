@@ -41,6 +41,9 @@ import Steerable_CNP_Models as My_Models
 torch.set_default_dtype(torch.float)
 #Scale for plotting with plt quiver
 quiver_scale=15
+print(torch.cuda.device_count())
+print(torch.__version__)
+print(torch.version.cuda)
 if torch.cuda.is_available():
     device = torch.device("cuda:0")  
     print("Running on the GPU")
