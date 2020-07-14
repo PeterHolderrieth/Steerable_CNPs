@@ -108,12 +108,10 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
  
 
 
-
-
-  #%%-------------------------------------
+#-------------------------------------
 #-----Experiment 1
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':10,
+Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':2,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 
@@ -121,13 +119,10 @@ Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,
 loss_Geom_CNP=Geom_CNP.train(filename=None)#filename_1+"_Steerable_CNP_")
 loss_ConvCNP=Conv_CNP.train(filename=None)#filename_1+"_Conv_CNP_")
 
-'''
+#Geom_CNP.plot_log_ll_memory()
+# #Conv_CNP.plot_log_ll_memory()
 
-
-Geom_CNP.plot_log_ll_memory()
-#Conv_CNP.plot_log_ll_memory()
-
-Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
+#Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 #Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
 #Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
@@ -137,4 +132,5 @@ Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 #Geom_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_Steerable_CNP__2020_07_02_12_39"))
 #Conv_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_ConvCNP__2020_07_02_12_39"))
 
-'''
+
+
