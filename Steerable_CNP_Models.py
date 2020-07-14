@@ -94,7 +94,7 @@ class Steerable_Encoder(nn.Module):
         Input: Y - torch.tensor - shape (n,2)
         Output: torch.tensor -shape (n,3) - added a column of ones to Y (at the start) Y[i,j<--[1,Y[i,j]]
         '''
-        return(torch.cat((torch.ones((Y.size(0),1)),Y),dim=1))
+        return(torch.cat((torch.ones((Y.size(0),1),device=Y.device),Y),dim=1))
         
     def forward(self,X,Y):
         '''
@@ -110,7 +110,8 @@ class Steerable_Encoder(nn.Module):
         '''
         #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data 
         #-->shape (n_x_axis*n_y_axis,n)
-        Gram=GP.Gram_matrix(self.grid,X,l_scale=self.l_scale,**self.kernel_dict,B=torch.ones((1)))
+        self.grid=self.grid.to(X.device)
+        Gram=GP.Gram_matrix(self.grid,X,l_scale=self.l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion:
         Expand_Y=self.Psi(Y)
@@ -120,7 +121,7 @@ class Steerable_Encoder(nn.Module):
         #If wanted, normalize the weights for the channel which is not the density channel:
         if self.normalize:
             #Normalize the functional representation:
-            Norm_Feature_Map=torch.empty(Feature_Map.size())
+            Norm_Feature_Map=torch.empty(Feature_Map.size(),device=Feature_Map.device)
             Norm_Feature_Map[:,1:]=Feature_Map[:,1:]/Feature_Map[:,0].unsqueeze(1)
             Norm_Feature_Map[:,0]=Feature_Map[:,0]
             #Reshape the Feature Map to the form (1,n_channels=3,n_y_axis,n_x_axis) (because this is the form required for a CNN):
@@ -218,7 +219,7 @@ class Steerable_Decoder(nn.Module):
 #A class which defines a ConvCNP:
 class Steerable_CNP(nn.Module):
     def __init__(self,G_act,feature_in, encoder,decoder, dim_cov_est,
-                 kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
+                         kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
         '''
         Inputs:
             G_act - gspaces.r2.general_r2.GeneralOnR2 - the underlying group under whose equivariance the models is built/tested
@@ -292,6 +293,7 @@ class Steerable_CNP(nn.Module):
       
         #Create flattened version for target smoother:
         Covs_grid_flat=Covs_grid.view(self.encoder.n_x_axis*self.encoder.n_y_axis,-1)
+
         #3.Means on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,2):
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
@@ -447,9 +449,8 @@ class Steerable_CNP_Operator(nn.Module):
                 #Send it to the correct device:
                 features=features.to(self.device)
                 labels=labels.to(self.device)
-                
                 #Set the loss to zero:
-                loss=torch.tensor(0.0)
+                loss=torch.tensor(0.0,device=self.device)
                 #loss_vec=torch.empty(self.minibatch_size) 
                 for i in range(self.minibatch_size):
                     #Sample the number of context points uniformly: 
@@ -457,7 +458,7 @@ class Steerable_CNP_Operator(nn.Module):
                     
                     x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[i],
                                                                                        labels[i],
-                                                                                       n_context_points)
+                                                                                         n_context_points)
                     #The target set includes the context set here:
                     Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[i]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
                     loss+=self.Steerable_CNP.loss(labels[i],Means,Sigmas)            #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)

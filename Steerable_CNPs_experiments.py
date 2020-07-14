@@ -99,7 +99,7 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     #Send the models to the correct devices:
     conv_cnp=conv_cnp.to(device)
     geom_cnp=geom_cnp.to(device)
-
+    
     #Create Operator model:
     Conv_CNP_Operator=My_Models.Steerable_CNP_Operator(conv_cnp,**Training_par,**Operator_par)
     Geom_CNP_Operator=My_Models.Steerable_CNP_Operator(geom_cnp,**Training_par,**Operator_par)
@@ -113,7 +113,7 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
   #%%-------------------------------------
 #-----Experiment 1
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
+Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':10,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 

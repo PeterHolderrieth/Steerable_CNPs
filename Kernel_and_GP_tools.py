@@ -71,7 +71,7 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
     n=X.size(0)
     #If B is not given, set to identity:
     if B is None:
-        B=torch.eye(d)
+        B=torch.eye(d).to(X.device)
     #If Y is not given, set to X:
     if Y is None:
         Y=X
@@ -162,7 +162,7 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
     n_target_points=X_Target.size(0)
     D=Y_Context.size(1)
     if B is None:
-        B=torch.eye(D)
+        B=torch.eye(D,device=X_Target.device)
     #Get the Gram-matrix between the target and the context set --> shape (n_target_points,n_context_points,2,2):
     Gram_Blocks=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
     Gram_Mat=My_Tools.Create_matrix_from_Blocks(Gram_Blocks)

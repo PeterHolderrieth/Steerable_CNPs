@@ -306,7 +306,7 @@ def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
             This makes the function fully differentiable (however, the gradient is slightly changed)
     '''
     n=X.size(0)
-    Out=torch.zeros([n,2,2])   
+    Out=torch.zeros([n,2,2],device=X.device)   
     below_tol=(torch.abs(X[:,1])<tol)&(torch.abs(X[:,0]-X[:,2])<tol)
     above_tol=~below_tol
     if any(above_tol):
