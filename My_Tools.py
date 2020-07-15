@@ -267,6 +267,29 @@ def Create_matrix_from_Blocks(X):
     ind=torch.cat([torch.arange(i,D_1*n,n,dtype=torch.long) for i in range(n)])
     return(M[ind])
 
+#The following function compute the eigenvalue decomposition of a batch 
+# of symmetric 2d matrices - represented as vector in R3:
+# (torch.symeig is extremely slow on a GPU.)    
+def my_2d_sym_eig(X):
+    '''
+    Input: X - torch.tensor - shape (n,3) - n batch size
+    '''
+    #Trace and determinant of the matrix:
+    T=X[:,0]+X[:,2]
+    D=X[:,0]*X[:,2]-X[:,1]**2
+    #Computer lower and upper eigenvalues and stack them:
+    L_1=T/2-torch.sqrt(T**2/4-D)
+    L_2=T/2+torch.sqrt(T**2/4-D)
+    eigen_val=torch.cat([L_1.view(-1,1),L_2.view(-1,1)],dim=1)
+    #Get one eigenvector, normalize it and get the second one by rotation of 90 degrees:
+    eigen_vec_1=torch.cat([torch.ones((X.size(0),1)),((L_1-X[:,0])/X[:,1]).view(-1,1)],dim=1)
+    eigen_vec_1=eigen_vec_1/torch.norm(eigen_vec_1,dim=1).unsqueeze(1)
+    eigen_vec_2=torch.cat([-eigen_vec_1[:,1].unsqueeze(1),eigen_vec_1[:,0].unsqueeze(1)],dim=1)
+    #Stack the eigenvectors:
+    eigen_vec=torch.cat([eigen_vec_1.unsqueeze(2),eigen_vec_2.unsqueeze(2)],dim=2)
+    return(eigen_val,eigen_vec)
+
+
 #Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
 def plain_cov_activation_function(X,activ_type="softplus"):
     '''
@@ -275,13 +298,10 @@ def plain_cov_activation_function(X,activ_type="softplus"):
     activ_type - string -type of activation applied on the diagonal matrix
     Output: torch.tensor - shape (n,2,2) - consider X[i] as a symmetric 2x2 matrix
             we compute the eigendecomposition X[i]=UDU^T of that matrix and 
-            if s is a an function, we apply it componentwise on the diagonal s(D)
+            if s is a an activation function of type activ_type, we apply it componentwise on the diagonal s(D)
             and return Us(D)U^T (in one batch)
     '''
-    n=X.size(0)
-    M=torch.stack([X[:,0],X[:,1],X[:,1],X[:,2]],dim=1).view(n,2,2)
-    
-    eigen_vals,eigen_vecs=torch.symeig(M,eigenvectors=True)
+    eigen_vals,eigen_vecs=my_2d_sym_eig(X)
     if activ_type=="softplus":
         eigen_vals=F.softplus(eigen_vals)
     else: 
@@ -303,7 +323,8 @@ def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
             and return Us(D)U^T (in one batch)
             The difference to "plain_cov_activation_function" is that we only compute the eigendecomposition
             for matrices which are not of the form s*Id for s in R but immediately use that (up to some error)
-            This makes the function fully differentiable (however, the gradient is slightly changed)
+            This makes the function fully differentiable (however, the gradient is slightly changed for 
+            inputs which are close to a diagonal, namely the gradient w.r.t. to x2 cut to zero.)
     '''
     n=X.size(0)
     Out=torch.zeros([n,2,2],device=X.device)   
