@@ -24,6 +24,7 @@ import sys
 import math
 from numpy import savetxt
 import csv
+import datetime 
 
 #E(2)-steerable CNNs - librar"y:
 from e2cnn import gspaces    
@@ -280,8 +281,9 @@ def plain_cov_activation_function(X,activ_type="softplus"):
     '''
     n=X.size(0)
     M=torch.stack([X[:,0],X[:,1],X[:,1],X[:,2]],dim=1).view(n,2,2)
-    
+    print("Pre torch.symeig: ", datetime.datetime.today()) 
     eigen_vals,eigen_vecs=torch.symeig(M,eigenvectors=True)
+    print("After torch.symeig: ", datetime.datetime.today())
     if activ_type=="softplus":
         eigen_vals=F.softplus(eigen_vals)
     else: 

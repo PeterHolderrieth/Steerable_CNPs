@@ -284,6 +284,7 @@ class Steerable_CNP(nn.Module):
         Pre_Activ_Covs_grid=Pre_Activ_Covs_grid.permute(dims=(2,1,0))
         Pre_Activ_Covs_grid=Pre_Activ_Covs_grid.reshape(self.encoder.n_x_axis*self.encoder.n_y_axis,
                                                         self.dim_cov_est)
+        print("Before activation target smoother: ", datetime.datetime.today())
         #Apply activation function on (co)variances -->shape (n_x_axis*n_y_axis,2,2):
         if self.dim_cov_est==1:
             Covs_grid=F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
@@ -293,7 +294,8 @@ class Steerable_CNP(nn.Module):
       
         #Create flattened version for target smoother:
         Covs_grid_flat=Covs_grid.view(self.encoder.n_x_axis*self.encoder.n_y_axis,-1)
-
+        
+        print("Before kernel smoother: ", datetime.datetime.today())
         #3.Means on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,2):
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
@@ -302,6 +304,7 @@ class Steerable_CNP(nn.Module):
         Covs_target_flat=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
                                           X_Target=X_target,normalize=self.normalize_output,
                                           l_scale=self.l_scale_out,**self.kernel_dict_out)
+        print("After kernel smoother: ", datetime.datetime.today())
         #Reshape covariance matrices to proper matrices --> shape (n_target,2,2):
         Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
         return(Means_target, Covs_target)
@@ -317,10 +320,13 @@ class Steerable_CNP(nn.Module):
             Means_target: torch.tensor - shape (n_target,2) - mean of predictions
             Sigmas_target: torch.tensor -shape (n_target,2) - scale of predictions
         '''
+        print("Before embedding: ", datetime.datetime.today())
         #1.Context Set -> Embedding (via Encoder) --> shape (3,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Embedding=self.encoder(X_context,Y_context)
+        print("After embedding: ", datetime.datetime.today())
         #2.Embedding ->Feature Map (via CNN) --> shape (4,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Final_Feature_Map=self.decoder(Embedding).squeeze()
+        print("After Final Feature Map: ", datetime.datetime.today())
         #Smooth the output:
         return(self.target_smoother(X_target,Final_Feature_Map))
 
@@ -412,6 +418,7 @@ class Steerable_CNP_Operator(nn.Module):
           We choose a random function and random context before training and plot the development
           of the predictions (mean of the distributions) over the training
         '''
+        print("Start training: ", datetime.datetime.today())
         #Save the number of iterations the optimizer used per epoch:
         n_iterat_per_epoch=self.n_train_points//self.minibatch_size+self.train_data_loader.drop_last
 
@@ -442,6 +449,7 @@ class Steerable_CNP_Operator(nn.Module):
                                                                                    n_context_points)
         
         for epoch in range(self.n_epochs):
+            print("Start epoch: "+str(epoch), datetime.datetime.today())
             loss_epoch_mean=0.0
             for i in range(self.n_iterat_per_epoch):
                 #Get the next minibatch:
@@ -452,23 +460,30 @@ class Steerable_CNP_Operator(nn.Module):
                 #Set the loss to zero:
                 loss=torch.tensor(0.0,device=self.device)
                 #loss_vec=torch.empty(self.minibatch_size) 
+                print("Before minibatch: ", datetime.datetime.today())
                 for i in range(self.minibatch_size):
+                    print("Element of minibatch: ", i,datetime.datetime.today())
                     #Sample the number of context points uniformly: 
                     n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
                     
                     x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[i],
                                                                                        labels[i],
-                                                                                         n_context_points)
+                                                                                        n_context_points)
+                    print("After context, target split:", datetime.datetime.today())
                     #The target set includes the context set here:
                     Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[i]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
+                    print("Before loss: ", datetime.datetime.today())
                     loss+=self.Steerable_CNP.loss(labels[i],Means,Sigmas)            #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)
+                    print("After loss: ", datetime.datetime.today())
                 #Set gradients to zero:
                 optimizer.zero_grad()
+                print("Before backward: ", datetime.datetime.today())
                 #Compute gradients:
                 loss.backward()
-
+                print("Before optimizer step: ", datetime.datetime.today())
                 #Perform optimization step:
                 optimizer.step()
+                print("After optimizer step: ", datetime.datetime.today())
                 loss_epoch_mean=loss_epoch_mean+loss.detach().item()/n_iterat_per_epoch
             #Track the loss:
             if (epoch%track_every==0):

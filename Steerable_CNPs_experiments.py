@@ -108,15 +108,15 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
  
 
 
-#-------------------------------------
+#------------------------------------
 #-----Experiment 1
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':2,
+Training_par={'Max_n_context_points':50,'n_epochs':5,'n_plots':None,'n_iterat_per_epoch':1,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 
 
-loss_Geom_CNP=Geom_CNP.train(filename=None)#filename_1+"_Steerable_CNP_")
+#loss_Geom_CNP=Geom_CNP.train(filename=None)#filename_1+"_Steerable_CNP_")
 loss_ConvCNP=Conv_CNP.train(filename=None)#filename_1+"_Conv_CNP_")
 
 #Geom_CNP.plot_log_ll_memory()
