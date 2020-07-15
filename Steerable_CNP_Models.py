@@ -514,7 +514,33 @@ class Steerable_CNP_Operator(nn.Module):
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
             self.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters)
-    
+    #A function which tests the model - i.e. it returns the average
+    #log-likelihood on the test data:
+    def test(self,n_samples=100):
+        with torch.no_grad():
+            n_iterat=n_samples//self.minibatch_size
+            log_ll=torch.tensor(0.0,device=self.device)
+            for i in range(n_iterat):
+                #Get the next minibatch:
+                    features, labels=next(iter(self.test_data_loader))
+                    #Send it to the correct device:
+                    features=features.to(self.device)
+                    labels=labels.to(self.device)
+                    #Set the loss to zero:
+                    loss=torch.tensor(0.0,device=self.device)
+                    #loss_vec=torch.empty(self.minibatch_size) 
+                    for i in range(self.minibatch_size):
+                        #Sample the number of context points uniformly: 
+                        n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
+                        
+                        x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[i],
+                                                                                        labels[i],
+                                                                                            n_context_points)
+                        #Predict the target set:
+                        Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
+                        log_ll-=self.Steerable_CNP.loss(y_target,Means,Sigmas)/n_samples
+        return(log_ll.item())
+
     def test_equivariance_encoder(self,n_samples=1,plot=True,inner_circle=True):
         '''
         Input: n_samples - int - number of context, target samples to consider
