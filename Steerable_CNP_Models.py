@@ -285,7 +285,8 @@ class Steerable_CNP(nn.Module):
                                                         self.dim_cov_est)
         #Apply activation function on (co)variances -->shape (n_x_axis*n_y_axis,2,2):
         if self.dim_cov_est==1:
-            Covs_grid=F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
+            #Apply softplus (add noise such that variance does not become (close to) zero):
+            Covs_grid=1e-5+F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
             Covs_grid=Covs_grid.diag_embed()
         else:
             Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
