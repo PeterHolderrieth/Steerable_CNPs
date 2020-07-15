@@ -104,11 +104,17 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters) 
 
 #Get some models:
+
 Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
 
+print(list(Conv_CNP.state_dict().keys()))
+
+#Conv_CNP=My_Models.Steerable_CNP_Operator()
+
+'''
 #Get the saved models:
 filename_Steerable_CNP="Trained_Models/Initial_ziz_exp_1507/"+"Test_file_saver_1_Steerable_CNP__2020_07_15_11_39"
 filename_ConvCNP="Trained_Models/Initial_ziz_exp_1507/"+"Test_file_saver_1_Conv_CNP__2020_07_15_11_39"
@@ -121,5 +127,5 @@ Conv_CNP.load_state_dict(torch.load(filename_ConvCNP))
 Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
-
+'''
 
