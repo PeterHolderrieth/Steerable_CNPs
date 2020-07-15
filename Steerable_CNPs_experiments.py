@@ -111,7 +111,7 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 #------------------------------------
 #-----Experiment 1
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':30,
+Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':150,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 
