@@ -49,7 +49,6 @@ else:
     device = torch.device("cpu")
     print("Running on the CPU")
 
-
 def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     
     G_act = gspaces.Rot2dOnR2(N=N)
@@ -102,71 +101,25 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     Conv_CNP_Operator=My_Models.Steerable_CNP_Operator(conv_cnp,**Training_par,**Operator_par)
     Geom_CNP_Operator=My_Models.Steerable_CNP_Operator(geom_cnp,**Training_par,**Operator_par)
     
-    return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
- 
+    return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters) 
 
-
-#------------------------------------
-#-----Experiment 1.1:
-#----------------------------------------  
+#Get some models:
 Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
-filename_11="Test_file_saver_1"
-starttime=datetime.datetime.today()
-print("Start training experiment 1.1: ", starttime)
-loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_11+"_Steerable_CNP_")
-loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_11+"_Conv_CNP_")
-endtime=datetime.datetime.today()
-print("Duration of training on device: ",device,": ",endtime-starttime)
-
-#------------------------------------
-#-----Experiment 1.2:
-#----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
-            'learning_rate':1e-3}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
-filename_12="Test_file_saver_2"
-starttime=datetime.datetime.today()
-print("Start training experiment 1.2: ", starttime)
-loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_12+"_Steerable_CNP_")
-loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_12+"_Conv_CNP_")
-endtime=datetime.datetime.today()
-print("Duration of training on device: ",device,": ",endtime-starttime)
-
-#------------------------------------
-#-----Experiment 1.3:
-#----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
-            'learning_rate':1e-5}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
-filename_13="Test_file_saver_3"
-starttime=datetime.datetime.today()
-print("Start training experiment 1.3: ", starttime)
-loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_13+"_Steerable_CNP_")
-loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_13+"_Conv_CNP_")
-endtime=datetime.datetime.today()
-print("Duration of training on device: ",device,": ",endtime-starttime)
-
-
-
-Geom_CNP.plot_log_ll_memory()
-Conv_CNP.plot_log_ll_memory()
-
 GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
+
+#Get the saved models:
+filename_Steerable_CNP="Trained_Models/Initial_ziz_exp_1507/"+"Test_file_saver_1_Steerable_CNP__2020_07_15_11_39"
+filename_ConvCNP="Trained_Models/Initial_ziz_exp_1507/"+"Test_file_saver_1_Conv_CNP__2020_07_15_11_39"
+Geom_CNP.load_state_dict(torch.load(filename_Steerable_CNP))
+Conv_CNP.load_state_dict(torch.load(filename_ConvCNP))
+
+#Geom_CNP.plot_log_ll_memory()
+#Conv_CNP.plot_log_ll_memory()
 
 Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
 Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
-#Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
-#Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
-
-#That is how to load the model again:
-#Geom_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_Steerable_CNP__2020_07_02_12_39"))
-#Conv_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_ConvCNP__2020_07_02_12_39"))
 
 
-
-
-
-# %%

@@ -110,6 +110,7 @@ class Steerable_Encoder(nn.Module):
         '''
         #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data 
         #-->shape (n_x_axis*n_y_axis,n)
+        self.grid=self.grid.to(X.device)
         Gram=GP.Gram_matrix(self.grid,X,l_scale=self.l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion:
@@ -214,7 +215,6 @@ class Steerable_Decoder(nn.Module):
         #Return the resulting tensor:
         return(Out.tensor)
       
-# In[4]:
 #A class which defines a ConvCNP:
 class Steerable_CNP(nn.Module):
     def __init__(self,G_act,feature_in, encoder,decoder, dim_cov_est,
@@ -292,7 +292,7 @@ class Steerable_CNP(nn.Module):
       
         #Create flattened version for target smoother:
         Covs_grid_flat=Covs_grid.view(self.encoder.n_x_axis*self.encoder.n_y_axis,-1)
-        
+
         #3.Means on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,2):
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
@@ -411,9 +411,6 @@ class Steerable_CNP_Operator(nn.Module):
           We choose a random function and random context before training and plot the development
           of the predictions (mean of the distributions) over the training
         '''
-        #Send the grid of the encoder to the device:
-        self.Steerable_CNP.encoder.grid=self.Steerable_CNP.encoder.grid.to(self.device)
-
         #Save the number of iterations the optimizer used per epoch:
         n_iterat_per_epoch=self.n_train_points//self.minibatch_size+self.train_data_loader.drop_last
 
@@ -427,7 +424,7 @@ class Steerable_CNP_Operator(nn.Module):
         
         #Show plots or not? 
         show_plots=(self.n_plots is not None)
-         
+        
         #If yes: pick a random function from the data loader and choose a random subset
         #of context points by saving their indices:
         if show_plots:
@@ -460,7 +457,7 @@ class Steerable_CNP_Operator(nn.Module):
                     
                     x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[i],
                                                                                        labels[i],
-                                                                                        n_context_points)
+                                                                                         n_context_points)
                     #The target set includes the context set here:
                     Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[i]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
                     loss+=self.Steerable_CNP.loss(labels[i],Means,Sigmas)            #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)
@@ -468,6 +465,7 @@ class Steerable_CNP_Operator(nn.Module):
                 optimizer.zero_grad()
                 #Compute gradients:
                 loss.backward()
+
                 #Perform optimization step:
                 optimizer.step()
                 loss_epoch_mean=loss_epoch_mean+loss.detach().item()/n_iterat_per_epoch
