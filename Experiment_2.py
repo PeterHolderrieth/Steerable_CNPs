@@ -100,7 +100,7 @@ def SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':1000,
             'learning_rate':1e-3}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
+Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 filename_21="Exp_2_1"
 starttime=datetime.datetime.today()
 print("Start training experiment 1.1: ", starttime)
@@ -114,7 +114,7 @@ print("Duration of training on device: ",device,": ",endtime-starttime)
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':1000,
             'learning_rate':1e-4}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
+Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
 filename_22="Exp_2_2"
 starttime=datetime.datetime.today()
 print("Start training experiment 1.2: ", starttime)
@@ -128,7 +128,7 @@ print("Duration of training on device: ",device,": ",endtime-starttime)
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':1000,
             'learning_rate':1e-2}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
+Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
 filename_23="Exp_2_3"
 starttime=datetime.datetime.today()
 print("Start training experiment 1.3: ", starttime)
