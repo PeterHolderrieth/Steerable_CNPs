@@ -109,10 +109,10 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 #------------------------------------
 #-----Experiment 1.1:
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
+Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':500,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
-filename_11="Test_file_saver_1"
+filename_11="Exp_1_1"
 starttime=datetime.datetime.today()
 print("Start training experiment 1.1: ", starttime)
 loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_11+"_Steerable_CNP_")
@@ -123,10 +123,10 @@ print("Duration of training on device: ",device,": ",endtime-starttime)
 #------------------------------------
 #-----Experiment 1.2:
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
+Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':500,
             'learning_rate':1e-3}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
-filename_12="Test_file_saver_2"
+filename_12="Exp_1_2"
 starttime=datetime.datetime.today()
 print("Start training experiment 1.2: ", starttime)
 loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_12+"_Steerable_CNP_")
@@ -137,10 +137,10 @@ print("Duration of training on device: ",device,": ",endtime-starttime)
 #------------------------------------
 #-----Experiment 1.3:
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_per_epoch':1,
+Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':500,
             'learning_rate':1e-5}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
-filename_13="Test_file_saver_3"
+filename_13="Exp_1_3"
 starttime=datetime.datetime.today()
 print("Start training experiment 1.3: ", starttime)
 loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_13+"_Steerable_CNP_")
@@ -149,7 +149,7 @@ endtime=datetime.datetime.today()
 print("Duration of training on device: ",device,": ",endtime-starttime)
 
 
-
+'''
 Geom_CNP.plot_log_ll_memory()
 Conv_CNP.plot_log_ll_memory()
 
@@ -164,7 +164,7 @@ Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 #That is how to load the model again:
 #Geom_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_Steerable_CNP__2020_07_02_12_39"))
 #Conv_CNP_Operator.load_state_dict(torch.load("Trained_Models/Initial_comparison_experiment_ConvCNP__2020_07_02_12_39"))
-
+'''
 
 
 

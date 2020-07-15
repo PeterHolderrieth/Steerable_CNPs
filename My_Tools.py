@@ -303,7 +303,6 @@ def plain_cov_activation_function(X,activ_type="softplus"):
             and return Us(D)U^T (in one batch)
     '''
     n=X.size(0)
-    M=torch.stack([X[:,0],X[:,1],X[:,1],X[:,2]],dim=1).view(n,2,2)
     eigen_vals,eigen_vecs=my_2d_sym_eig(X)
     if activ_type=="softplus":
         eigen_vals=F.softplus(eigen_vals)
@@ -330,8 +329,8 @@ def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
             inputs which are close to a diagonal, namely the gradient w.r.t. to x2 cut to zero.)
     '''
     n=X.size(0)
-    Out=torch.zeros([n,2,2],device=X.device)   
-    below_tol=(torch.abs(X[:,1])<tol)&(torch.abs(X[:,0]-X[:,2])<tol)
+    Out=torch.zeros([n,2,2],device=X.device) 
+    below_tol=(torch.abs(X[:,1])<tol)#&(torch.abs(X[:,0]-X[:,2])<tol)
     above_tol=~below_tol
     if any(above_tol):
         Out[above_tol]=plain_cov_activation_function(X[above_tol],activ_type=activ_type)
