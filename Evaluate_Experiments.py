@@ -73,11 +73,11 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
               nn.ReLU(),
               nn.Conv2d(16,12,kernel_size=7,stride=1,padding=3),
               nn.ReLU(),
-              nn.Conv2d(12,5,kernel_size=5,stride=1,padding=2))
+              nn.Conv2d(12,3,kernel_size=5,stride=1,padding=2))
     #---------------------Steerable CNP decoder-----------------------------
     #Define the f||eature types:
-    psd_rep,_=My_Tools.get_pre_psd_rep(G_act)
-    feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),psd_rep])
+    #psd_rep,_=My_Tools.get_pre_psd_rep(G_act)
+    feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),G_act.trivial_repr])
     feat_types=[G_CNN.FieldType(G_act, [G_act.trivial_repr,G_act.irrep(1)]),
                 G_CNN.FieldType(G_act, 2*[G_act.regular_repr]),
                 G_CNN.FieldType(G_act,2*[G_act.regular_repr]),
@@ -90,8 +90,8 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     geom_decoder=My_Models.Steerable_Decoder(feat_types,kernel_sizes)
     
     #Get the convcnp:
-    conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
-    geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
+    conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=1,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
+    geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=1,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
     
     #Send the models to the correct devices:
     conv_cnp=conv_cnp.to(device)
@@ -110,7 +110,9 @@ Training_par={'Max_n_context_points':50,'n_epochs':3,'n_plots':None,'n_iterat_pe
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
 
-print(list(Conv_CNP.state_dict().keys()))
+
+torch.save(Conv_CNP,"Trained_Models/Test_module")
+#print(list(Conv_CNP.state_dict().keys()))
 
 #Conv_CNP=My_Models.Steerable_CNP_Operator()
 
@@ -129,3 +131,6 @@ Conv_CNP.plot_test_random(GP_parameters=GP_parameters)
 
 '''
 
+
+
+# %%
