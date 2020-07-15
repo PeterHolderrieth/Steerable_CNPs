@@ -74,11 +74,11 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
               nn.ReLU(),
               nn.Conv2d(16,12,kernel_size=7,stride=1,padding=3),
               nn.ReLU(),
-              nn.Conv2d(12,5,kernel_size=5,stride=1,padding=2))
+              nn.Conv2d(12,3,kernel_size=5,stride=1,padding=2))
     #---------------------Steerable CNP decoder-----------------------------
     #Define the f||eature types:
-    psd_rep,_=My_Tools.get_pre_psd_rep(G_act)
-    feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),psd_rep])
+    #psd_rep,_=My_Tools.get_pre_psd_rep(G_act)
+    feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),G_act.trivial_repr])
     feat_types=[G_CNN.FieldType(G_act, [G_act.trivial_repr,G_act.irrep(1)]),
                 G_CNN.FieldType(G_act, 2*[G_act.regular_repr]),
                 G_CNN.FieldType(G_act,2*[G_act.regular_repr]),
@@ -91,8 +91,8 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     geom_decoder=My_Models.Steerable_Decoder(feat_types,kernel_sizes)
     
     #Get the convcnp:
-    conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
-    geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
+    conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=1,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
+    geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=1,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
     
     #Send the models to the correct devices:
     conv_cnp=conv_cnp.to(device)
@@ -109,7 +109,7 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 #------------------------------------
 #-----Experiment 1.1:
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':500,
+Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':1000,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 filename_11="Exp_1_1"
@@ -123,7 +123,7 @@ print("Duration of training on device: ",device,": ",endtime-starttime)
 #------------------------------------
 #-----Experiment 1.2:
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':500,
+Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':1000,
             'learning_rate':1e-3}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
 filename_12="Exp_1_2"
@@ -137,7 +137,7 @@ print("Duration of training on device: ",device,": ",endtime-starttime)
 #------------------------------------
 #-----Experiment 1.3:
 #----------------------------------------  
-Training_par={'Max_n_context_points':50,'n_epochs':10,'n_plots':None,'n_iterat_per_epoch':500,
+Training_par={'Max_n_context_points':50,'n_epochs':30,'n_plots':None,'n_iterat_per_epoch':1000,
             'learning_rate':1e-5}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
 filename_13="Exp_1_3"
