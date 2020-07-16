@@ -96,7 +96,7 @@ def SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 #Duration of training throughout all experiments:
 n_epochs=90
 n_iterat=1000
-
+'''
 #------------------------------------
 #-----Experiment 2.1:
 #----------------------------------------  
@@ -124,7 +124,7 @@ loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_22+"_Stee
 loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_22+"_Conv_CNP_")
 endtime=datetime.datetime.today()
 print("Duration of training on device: ",device,": ",endtime-starttime)
-
+'''
 #------------------------------------
 #-----Experiment 2.3:
 #----------------------------------------  
