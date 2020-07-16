@@ -183,7 +183,7 @@ class Steerable_Encoder(nn.Module):
         leg = ax[0].legend()
 
 class Steerable_Decoder(nn.Module):
-    def __init__(self,feat_types,kernel_sizes):
+    def __init__(self,feat_types,kernel_sizes,non_linearity="ReLU"):
         super(Steerable_Decoder, self).__init__()
         #Save kernel sizes:
         self.kernel_sizes=kernel_sizes
@@ -195,7 +195,10 @@ class Steerable_Decoder(nn.Module):
         self.n_layers=len(feat_types)
         layers_list=[G_CNN.R2Conv(feat_types[0],feat_types[1],kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
         for i in range(self.n_layers-2):
-            layers_list.append(G_CNN.ReLU(feat_types[i+1]))
+            if non_linearity=="ReLU":
+                layers_list.append(G_CNN.ReLU(feat_types[i+1]))
+            else:
+                layers_list.append(G_CNN.NormNonLinearity(feat_types[i+1]))
             layers_list.append(G_CNN.R2Conv(feat_types[i+1],feat_types[i+2],kernel_size=kernel_sizes[i],padding=(kernel_sizes[i]-1)//2))
         
         #Create a steerable decoder out of the layers list:
@@ -447,9 +450,9 @@ class Steerable_CNP_Operator(nn.Module):
         
         for epoch in range(self.n_epochs):
             loss_epoch_mean=0.0
-            l_scale_tracker=torch.empty(self.n_iterat_per_epoch,device=self.device)
+            l_scale_tracker=torch.zeros([self.n_iterat_per_epoch],device=self.device)
             #l_scale_grad_tracker=torch.empty(self.n_iterat_per_epoch,device=self.device)
-            for i in range(self.n_iterat_per_epoch):
+            for it in range(self.n_iterat_per_epoch):
                 #Get the next minibatch:
                 features, labels=next(iter(self.train_data_loader))
                 #Send it to the correct device:
@@ -458,29 +461,29 @@ class Steerable_CNP_Operator(nn.Module):
                 #Set the loss to zero:
                 loss=torch.tensor(0.0,device=self.device)
                 #loss_vec=torch.empty(self.minibatch_size) 
-                for i in range(self.minibatch_size):
+                for el in range(self.minibatch_size):
                     #Sample the number of context points uniformly: 
                     n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
                     
-                    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[i],
-                                                                                       labels[i],
+                    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[el],
+                                                                                       labels[el],
                                                                                          n_context_points)
                     #The target set includes the context set here:
-                    Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[i]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
-                    loss+=self.Steerable_CNP.loss(labels[i],Means,Sigmas)/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
+                    Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[el]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
+                    loss+=self.Steerable_CNP.loss(labels[el],Means,Sigmas)/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
                 #Set gradients to zero:
                 optimizer.zero_grad()
                 #Compute gradients:
                 loss.backward()
                 #Print l-scales:
-                l_scale_tracker[i]=self.Steerable_CNP.encoder.log_l_scale
+                l_scale_tracker[it]=self.Steerable_CNP.encoder.log_l_scale
                 #l_scale_grad_tracker[i]=self.Steerable_CNP.encoder.log_l_scale.grad
                 #Perform optimization step:
                 optimizer.step()
                 loss_epoch_mean=loss_epoch_mean+loss.detach().item()/self.n_iterat_per_epoch
                 if self.Steerable_CNP.encoder.log_l_scale.item()!=self.Steerable_CNP.encoder.log_l_scale.item():
-                    print("Tracker: ", l_scale_tracker[:(i+2)])
-                    #print("Gradients :",l_scale_grad_tracker[:(i+2)])
+                    print("Tracker: ", l_scale_tracker[:(it+2)])
+                    #print("Gradients :",l_scale_grad_tracker[:(it+2)])
                     print("Features: ", features)
                     print("Labels: ", labels)
                     print("Norm of features: ", torch.norm(features))
