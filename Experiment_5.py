@@ -43,7 +43,7 @@ else:
     print("Running on the CPU")
 
 
-def SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
+def SETUP_EXP_5_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     
     G_act = gspaces.Rot2dOnR2(N=N)
     feat_type_in=G_CNN.FieldType(G_act, [G_act.irrep(1)])
@@ -64,12 +64,12 @@ def SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
               nn.ReLU(),
               nn.Conv2d(6,6,kernel_size=7,stride=1,padding=3),
               nn.ReLU(),
-              nn.Conv2d(6,3,kernel_size=5,stride=1,padding=2))
+              nn.Conv2d(6,5,kernel_size=5,stride=1,padding=2))
 
     #---------------------Steerable CNP decoder-----------------------------
     #Define the f||eature types:
-    #psd_rep,_=My_Tools.get_pre_psd_rep(G_act)
-    feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),G_act.trivial_repr])
+    psd_rep,_=My_Tools.get_pre_psd_rep(G_act)
+    feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),psd_rep])
     feat_types=[G_CNN.FieldType(G_act, [G_act.trivial_repr,G_act.irrep(1)]),
                 G_CNN.FieldType(G_act, 2*[G_act.regular_repr]),
                 G_CNN.FieldType(G_act,2*[G_act.regular_repr]),
@@ -80,8 +80,8 @@ def SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     geom_decoder=My_Models.Steerable_Decoder(feat_types,kernel_sizes)
     
     #Get the convcnp:
-    conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=1,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
-    geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=1,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
+    conv_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=conv_decoder,kernel_dict_out=kernel_dict_out)    
+    geom_cnp=My_Models.Steerable_CNP(feature_in=feat_type_in,dim_cov_est=3,G_act=G_act,encoder=encoder,decoder=geom_decoder,kernel_dict_out=kernel_dict_out)
     
     #Send the models to the correct devices:
     conv_cnp=conv_cnp.to(device)
@@ -99,33 +99,33 @@ n_iterat=500
 train=True
 evaluate=False
 #------------------------------------
-#-----Experiment 2.1:
+#-----Experiment 5.1:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
             'learning_rate':1e-3}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
+Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_5_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
 if train:
-    filename_21="Exp_2_1"
+    filename_51="Exp_5_1"
     starttime=datetime.datetime.today()
-    print("Start training experiment 1.1: ", starttime)
-    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_21+"_Steerable_CNP_")
-    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_21+"_Conv_CNP_")
+    print("Start training experiment 5.1: ", starttime)
+    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_51+"_Steerable_CNP_")
+    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_51+"_Conv_CNP_")
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
     pass
 #------------------------------------
-#-----Experiment 2.2:
+#-----Experiment 5.2:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat//3,
             'learning_rate':1e-4}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=4,batch_size=3)
+Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_5_Cyclic_GP_div_free(Training_par,N=4,batch_size=3)
 if train:
-    filename_22="Exp_2_2"
+    filename_52="Exp_5_2"
     starttime=datetime.datetime.today()
-    print("Start training experiment 1.2: ", starttime)
-    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_22+"_Steerable_CNP_")
-    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_22+"_Conv_CNP_")
+    print("Start training experiment 5.2: ", starttime)
+    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_52+"_Steerable_CNP_")
+    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_52+"_Conv_CNP_")
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
@@ -135,13 +135,13 @@ if evaluate:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat//5,
             'learning_rate':1e-2}    
-Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_2_Cyclic_GP_div_free(Training_par,N=4,batch_size=5)
+Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_5_Cyclic_GP_div_free(Training_par,N=4,batch_size=5)
 if train:
-    filename_23="Exp_2_3"
+    filename_53="Exp_5_3"
     starttime=datetime.datetime.today()
-    print("Start training experiment 1.3: ", starttime)
-    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_23+"_Steerable_CNP_")
-    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_23+"_Conv_CNP_")
+    print("Start training experiment 5.3: ", starttime)
+    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_53+"_Steerable_CNP_")
+    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_53+"_Conv_CNP_")
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
