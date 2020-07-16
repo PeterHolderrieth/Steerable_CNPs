@@ -1,7 +1,7 @@
 #%%
 #!/usr/bin/env python
 # coding: utf-8
-
+#TEST INSERT
 # To do:
 # 1. Structure the class encoder and ConvCNP better: Allow for variable CNN to be defined
 # (Is it necessary that the height and width of output feature map is the same the input height and width? Otherwise,
