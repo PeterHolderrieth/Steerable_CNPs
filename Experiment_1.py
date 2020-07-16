@@ -105,8 +105,8 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
-n_epochs=4
-n_iterat=2
+n_epochs=100
+n_iterat=300
 train=True
 evaluate=False
 #------------------------------------
@@ -119,8 +119,8 @@ if train:
     filename_11="Exp_1_1"
     starttime=datetime.datetime.today()
     print("Start training experiment 1.1: ", starttime)
-    loss_Geom_CNP=Geom_CNP.train(filename=None)#"Initial_ziz_exp_1507/"+filename_11+"_Steerable_CNP_")
-    loss_ConvCNP=Conv_CNP.train(filename=None)#"Initial_ziz_exp_1507/"+filename_11+"_Conv_CNP_")
+    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_11+"_Steerable_CNP_")
+    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_11+"_Conv_CNP_")
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 

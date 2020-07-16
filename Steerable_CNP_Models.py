@@ -55,7 +55,7 @@ class Steerable_Encoder(nn.Module):
         #So far, we only allow for two-dimensional outputs:
         self.dim_Y=2
         self.kernel_type=kernel_dict['kernel_type']
-        self.l_scale=nn.Parameter(torch.tensor(l_scale,dtype=torch.get_default_dtype()),requires_grad=True)
+        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
         self.kernel_dict=kernel_dict
         
         if 'B' in kernel_dict or 'l_scale' in kernel_dict:
@@ -111,7 +111,7 @@ class Steerable_Encoder(nn.Module):
         #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data 
         #-->shape (n_x_axis*n_y_axis,n)
         self.grid=self.grid.to(X.device)
-        Gram=GP.Gram_matrix(self.grid,X,l_scale=self.l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
+        Gram=GP.Gram_matrix(self.grid,X,l_scale=torch.exp(self.log_l_scale),**self.kernel_dict,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion:
         Expand_Y=self.Psi(Y)
@@ -238,7 +238,7 @@ class Steerable_CNP(nn.Module):
         #Decoder: For now: A standard CNN whose parameters are arbitrary for now:
         self.decoder=decoder
         #Get the parameters for kernel smoother (after the decoder):
-        self.l_scale_out=nn.Parameter(torch.tensor(l_scale,dtype=torch.get_default_dtype()),requires_grad=True)
+        self.log_l_scale_out=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
         self.kernel_dict_out=kernel_dict_out
         #Control that there is no variable l_scale in the the kernel dictionary:
         if 'l_scale' in kernel_dict_out:
@@ -297,11 +297,11 @@ class Steerable_CNP(nn.Module):
         #3.Means on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,2):
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
-                                           l_scale=self.l_scale_out,**self.kernel_dict_out)
+                                           l_scale=torch.exp(self.log_l_scale_out),**self.kernel_dict_out)
         #3.Covariances on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,4):
         Covs_target_flat=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
                                           X_Target=X_target,normalize=self.normalize_output,
-                                          l_scale=self.l_scale_out,**self.kernel_dict_out)
+                                          l_scale=torch.exp(self.log_l_scale_out),**self.kernel_dict_out)
         #Reshape covariance matrices to proper matrices --> shape (n_target,2,2):
         Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
         return(Means_target, Covs_target)
@@ -413,7 +413,7 @@ class Steerable_CNP_Operator(nn.Module):
           of the predictions (mean of the distributions) over the training
         '''
         #Save the number of iterations the optimizer used per epoch:
-        n_iterat_per_epoch=self.n_train_points//self.minibatch_size+self.train_data_loader.drop_last
+        #n_iterat_per_epoch=self.n_train_points//self.minibatch_size+self.train_data_loader.drop_last
 
         #Define the optimizer and add a weight decay term:
         optimizer=torch.optim.Adam(self.Steerable_CNP.parameters(),lr=self.learning_rate,weight_decay=self.weight_decay)
@@ -443,6 +443,8 @@ class Steerable_CNP_Operator(nn.Module):
         
         for epoch in range(self.n_epochs):
             loss_epoch_mean=0.0
+            l_scale_tracker=torch.empty(self.n_iterat_per_epoch,device=self.device)
+            l_scale_grad_tracker=torch.empty(self.n_iterat_per_epoch,device=self.device)
             for i in range(self.n_iterat_per_epoch):
                 #Get the next minibatch:
                 features, labels=next(iter(self.train_data_loader))
@@ -467,14 +469,26 @@ class Steerable_CNP_Operator(nn.Module):
                 #Compute gradients:
                 loss.backward()
                 #Print l-scales:
+                l_scale_tracker[i]=self.Steerable_CNP.encoder.log_l_scale
+                l_scale_grad_tracker[i]=self.Steerable_CNP.encoder.log_l_scale.grad
                 #Perform optimization step:
                 optimizer.step()
-                loss_epoch_mean=loss_epoch_mean+loss.detach().item()/n_iterat_per_epoch
+                loss_epoch_mean=loss_epoch_mean+loss.detach().item()/self.n_iterat_per_epoch
+                if self.Steerable_CNP.encoder.log_l_scale.item()!=self.Steerable_CNP.encoder.log_l_scale.item():
+                    print("Tracker: ", l_scale_tracker[:(i+2)])
+                    print("Gradients :",l_scale_grad_tracker[:(i+2)])
+                    print("Features: ", features)
+                    print("Labels: ", labels)
+                    print("Norm of features: ", torch.norm(features))
+                    print("Norm of labels: ", torch.norm(labels))
+                    print("Current l scale: ", self.Steerable_CNP.encoder.log_l_scale.item())
+                    sys.exit("l scale is NAN")
+
             #Track the loss:
             if (epoch%track_every==0):
                 print("Epoch: ",epoch," | Loss: ", loss_epoch_mean)
-                print("Encoder l_scale: ", self.Steerable_CNP.encoder.l_scale)
-                print("Encoder l_scale grad: ", self.Steerable_CNP.encoder.l_scale.grad)
+                print("Encoder l_scale: ", torch.exp(self.Steerable_CNP.encoder.log_l_scale))
+                print("Encoder log l_scale grad: ", self.Steerable_CNP.encoder.log_l_scale.grad)
                 print("")
             
             if show_plots:
