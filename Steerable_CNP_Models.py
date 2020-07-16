@@ -285,7 +285,8 @@ class Steerable_CNP(nn.Module):
                                                         self.dim_cov_est)
         #Apply activation function on (co)variances -->shape (n_x_axis*n_y_axis,2,2):
         if self.dim_cov_est==1:
-            Covs_grid=F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
+            #Apply softplus (add noise such that variance does not become (close to) zero):
+            Covs_grid=1e-5+F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
             Covs_grid=Covs_grid.diag_embed()
         else:
             Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
@@ -460,18 +461,21 @@ class Steerable_CNP_Operator(nn.Module):
                                                                                          n_context_points)
                     #The target set includes the context set here:
                     Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[i]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
-                    loss+=self.Steerable_CNP.loss(labels[i],Means,Sigmas)            #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)
+                    loss+=self.Steerable_CNP.loss(labels[i],Means,Sigmas)/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
                 #Set gradients to zero:
                 optimizer.zero_grad()
                 #Compute gradients:
                 loss.backward()
-
+                #Print l-scales:
                 #Perform optimization step:
                 optimizer.step()
                 loss_epoch_mean=loss_epoch_mean+loss.detach().item()/n_iterat_per_epoch
             #Track the loss:
             if (epoch%track_every==0):
                 print("Epoch: ",epoch," | Loss: ", loss_epoch_mean)
+                print("Encoder l_scale: ", self.Steerable_CNP.encoder.l_scale)
+                print("Encoder l_scale grad: ", self.Steerable_CNP.encoder.l_scale.grad)
+                print("")
             
             if show_plots:
                 if (epoch%plot_every==0):

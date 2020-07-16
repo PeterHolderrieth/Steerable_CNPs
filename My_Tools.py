@@ -275,12 +275,14 @@ def my_2d_sym_eig(X):
     '''
     Input: X - torch.tensor - shape (n,3) - n batch size
     '''
+    #Epsilon to add such that square root differentation is numerically stable:
+    eps=1e-5
     #Trace and determinant of the matrix:
     T=X[:,0]+X[:,2]
     D=X[:,0]*X[:,2]-X[:,1]**2
     #Computer lower and upper eigenvalues and stack them:
-    L_1=T/2-torch.sqrt(T**2/4-D)
-    L_2=T/2+torch.sqrt(T**2/4-D)
+    L_1=T/2-torch.sqrt(T**2/4-D+eps)
+    L_2=T/2+torch.sqrt(T**2/4-D+eps)
     eigen_val=torch.cat([L_1.view(-1,1),L_2.view(-1,1)],dim=1)
     #Get one eigenvector, normalize it and get the second one by rotation of 90 degrees:
     eigen_vec_1=torch.cat([torch.ones((X.size(0),1)).to(X.device),((L_1-X[:,0])/X[:,1]).view(-1,1)],dim=1)
@@ -305,7 +307,7 @@ def plain_cov_activation_function(X,activ_type="softplus"):
     n=X.size(0)
     eigen_vals,eigen_vecs=my_2d_sym_eig(X)
     if activ_type=="softplus":
-        eigen_vals=F.softplus(eigen_vals)
+        eigen_vals=1e-5+F.softplus(eigen_vals)
     else: 
         sys.exit("Unknown activation type")
     return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
