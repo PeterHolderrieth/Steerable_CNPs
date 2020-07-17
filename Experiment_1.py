@@ -102,8 +102,8 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 
 n_epochs=30
 n_iterat=1000
-train=True
-evaluate=False
+train=False
+evaluate=True
 n_tests=400
 
 #------------------------------------
