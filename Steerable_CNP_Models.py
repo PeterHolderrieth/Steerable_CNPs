@@ -454,7 +454,9 @@ class Steerable_CNP_Operator(nn.Module):
                                                                                    n_context_points)
         
         for epoch in range(self.n_epochs):
-            loss_epoch_mean=0.0
+            #Track the loss over the epoch:
+            loss_epoch=My_Tools.AverageMeter()
+
             l_scale_tracker=torch.zeros([self.n_iterat_per_epoch],device=self.device)
             #l_scale_grad_tracker=torch.empty(self.n_iterat_per_epoch,device=self.device)
             for it in range(self.n_iterat_per_epoch):
@@ -475,7 +477,9 @@ class Steerable_CNP_Operator(nn.Module):
                                                                                          n_context_points)
                     #The target set includes the context set here:
                     Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[el]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
-                    loss+=self.Steerable_CNP.loss(labels[el],Means,Sigmas,shape_reg=self.shape_reg)/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
+                    loss+=self.Steerable_CNP.loss(labels[el],Means,Sigmas,shape_reg=self.shape_reg)#/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
+                
+                loss_epoch.update(val=loss.detach().item(),n=self.minibatch_size)
                 #Set gradients to zero:
                 optimizer.zero_grad()
                 #Compute gradients:
@@ -485,7 +489,7 @@ class Steerable_CNP_Operator(nn.Module):
                 #l_scale_grad_tracker[i]=self.Steerable_CNP.encoder.log_l_scale.grad
                 #Perform optimization step:
                 optimizer.step()
-                loss_epoch_mean=loss_epoch_mean+loss.detach().item()/self.n_iterat_per_epoch
+
                 if self.Steerable_CNP.encoder.log_l_scale.item()!=self.Steerable_CNP.encoder.log_l_scale.item():
                     print("Tracker: ", l_scale_tracker[:(it+2)])
                     #print("Gradients :",l_scale_grad_tracker[:(it+2)])
@@ -498,7 +502,7 @@ class Steerable_CNP_Operator(nn.Module):
 
             #Track the loss:
             if (epoch%track_every==0):
-                print("Epoch: ",epoch," | Loss: ", loss_epoch_mean)
+                print("Epoch: ",epoch," | Loss: ", loss_epoch.avg)
                 print("Encoder l_scale: ", torch.exp(self.Steerable_CNP.encoder.log_l_scale))
                 print("Encoder log l_scale grad: ", self.Steerable_CNP.encoder.log_l_scale.grad)
                 print("")
@@ -508,7 +512,7 @@ class Steerable_CNP_Operator(nn.Module):
                     self.Steerable_CNP.plot_Context_Target(Plot_x_context,Plot_y_context,Plot_x_target,Plot_y_target)
             
             #Save loss and compute gradients:
-            loss_vector[epoch]=loss_epoch_mean
+            loss_vector[epoch]=loss_epoch.avg
         
         self.log_ll_memory=nn.Parameter(-loss_vector.detach(),requires_grad=False)
         

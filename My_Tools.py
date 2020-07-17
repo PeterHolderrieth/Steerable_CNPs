@@ -402,3 +402,24 @@ def get_pre_psd_rep(G_act):
         sys.exit("Group not enabled for a pre psd representation yet.")
     feat_type_pre_rep=G_CNN.FieldType(G_act,[psd_rep])
     return(psd_rep,feat_type_pre_rep)
+
+
+'''
+-------------------------------------------Tools for training -------------------------------------------------
+'''
+#A class which tracks averages and values over time:
+class AverageMeter(object):
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count
