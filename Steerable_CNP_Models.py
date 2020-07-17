@@ -81,9 +81,9 @@ class Steerable_Encoder(nn.Module):
         #if we look at a (m,n)-matrix as a matrix with pixels, then the higher 
         #the row index, the lower its y-axis value, i.e. the y-axis is counted 
         #mirrored.
-        self.grid=My_Tools.Give_2d_Grid(min_x=self.x_range[0],max_x=self.x_range[1],
+        self.grid=nn.Parameter(My_Tools.Give_2d_Grid(min_x=self.x_range[0],max_x=self.x_range[1],
                                min_y=self.y_range[1],max_y=self.y_range[0],
-                               n_x_axis=self.n_x_axis,n_y_axis=self.n_y_axis,flatten=True)
+                               n_x_axis=self.n_x_axis,n_y_axis=self.n_y_axis,flatten=True),requires_grad=False)
         
         self.normalize=normalize
         
@@ -110,8 +110,10 @@ class Steerable_Encoder(nn.Module):
         '''
         #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data 
         #-->shape (n_x_axis*n_y_axis,n)
-        self.grid=self.grid.to(X.device)
-        l_scale=torch.exp(torch.clamp(self.log_l_scale,max=1.,min=-1.))
+        if self.grid.device!=X.device:
+            print("Grid and X are on different devices.")
+            self.grid=self.grid.to(X.device)
+        l_scale=torch.exp(torch.clamp(self.log_l_scale,max=5.,min=-5.))
         Gram=GP.Gram_matrix(self.grid,X,l_scale=l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion:
