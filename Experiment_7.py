@@ -101,8 +101,8 @@ def SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
-n_epochs=20
-n_iterat=700
+n_epochs=3
+n_iterat=1
 train=True
 evaluate=False
 n_tests=400
@@ -111,20 +111,20 @@ n_tests=400
 #-----Experiment 1.1:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
-            'learning_rate':1e-4,'shape_reg':1.}    
+            'learning_rate':1e-4,'shape_reg':0.01}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 if train:
     filename_71="Exp_7_1"
     starttime=datetime.datetime.today()
     print("Start training experiment 1.1: ", starttime)
-    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/Exp_7"+filename_71+"_Steerable_CNP_")
-    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/Exp_7"+filename_71+"_Conv_CNP_")
+    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/Exp_7/"+filename_71+"_Steerable_CNP_")
+    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/Exp_7/"+filename_71+"_Conv_CNP_")
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 
 if evaluate:
-    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_7/Exp_1_1_Conv_CNP__2020_07_16_22_40",map_location=torch.device('cpu')))
-    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_7/Exp_1_1_Steerable_CNP__2020_07_16_22_16",map_location=torch.device('cpu')))
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_7Exp_7_1_Conv_CNP__2020_07_17_14_47",map_location=torch.device('cpu')),strict=False)
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_7Exp_7_1_Steerable_CNP__2020_07_17_14_34",map_location=torch.device('cpu')),strict=False)
     X,Y=next(iter(Conv_CNP.test_data_loader))
     n_context_points=torch.randint(size=[],low=2,high=Conv_CNP.Max_n_context_points)
     x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
@@ -138,7 +138,7 @@ if evaluate:
 #-----Experiment 7.2:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
-            'learning_rate':1e-3,'shape_reg': 0.1}    
+            'learning_rate':1e-4,'shape_reg': 0.001}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
 if train:
     filename_72="Exp_1_2"
@@ -170,8 +170,8 @@ if train:
     filename_73="Exp_1_3"
     starttime=datetime.datetime.today()
     print("Start training experiment 1.3: ", starttime)
-    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_73+"_Steerable_CNP_")
-    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/"+filename_73+"_Conv_CNP_")
+    loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/Exp_7/"+filename_73+"_Steerable_CNP_")
+    loss_ConvCNP=Conv_CNP.train(filename="Initial_ziz_exp_1507/Exp_7/"+filename_73+"_Conv_CNP_")
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
