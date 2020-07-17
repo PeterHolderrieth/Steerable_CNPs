@@ -100,8 +100,8 @@ def SETUP_EXP_4_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
-n_epochs=30
-n_iterat=1000
+n_epochs=3
+n_iterat=1
 train=False
 evaluate=True
 n_tests=400
@@ -111,6 +111,8 @@ n_tests=400
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_4_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
+
+'''
 if train:
     filename_41="Exp_4_1"
     starttime=datetime.datetime.today()
@@ -187,4 +189,4 @@ if evaluate:
     Conv_CNP.test_equivariance_model(plot=True,title="ConvCNP")
     Geom_CNP.test_equivariance_model(plot=True,title="SteerCNP")
 
-# %%
+
