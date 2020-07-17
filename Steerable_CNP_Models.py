@@ -55,7 +55,7 @@ class Steerable_Encoder(nn.Module):
         #So far, we only allow for two-dimensional outputs:
         self.dim_Y=2
         self.kernel_type=kernel_dict['kernel_type']
-        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
+        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=False)
         self.kernel_dict=kernel_dict
         
         if 'B' in kernel_dict or 'l_scale' in kernel_dict:
