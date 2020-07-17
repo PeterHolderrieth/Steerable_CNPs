@@ -102,8 +102,9 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 
 n_epochs=30
 n_iterat=1000
-train=True
-evaluate=False
+train=False
+evaluate=True
+
 #------------------------------------
 #-----Experiment 1.1:
 #----------------------------------------  
@@ -120,12 +121,14 @@ if train:
     print("Duration of training on device: ",device,": ",endtime-starttime)
 
 if evaluate:
-    pass
-    #Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_1_Conv_CNP__2020_07_15_16_35",map_location=torch.device('cpu')))
-    #Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_1_Steerable_CNP__2020_07_16_19_17",map_location=torch.device('cpu')))
-    #Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
-    #Conv_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp1/Exp_1_1_Conv_CNP__2020_07_16_22_40",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp1/Exp_1_1_Steerable_CNP__2020_07_16_22_16",map_location=torch.device('cpu')))
+    Geom_CNP.plot_test_random(n_samples=1,GP_parameters=None)#GP_parameters)
+    Conv_CNP.plot_test_random(n_samples=1,GP_parameters=GP_parameters)
+    print("Log-LL Steer.: ",Geom_CNP.test())
+    print("Log-LL Conv.: ",Conv_CNP.test())
 
+'''
 #------------------------------------
 #-----Experiment 1.2:
 #----------------------------------------  
@@ -141,13 +144,14 @@ if train:
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
-    pass
-    #Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_2_Conv_CNP__2020_07_15_23_33",map_location=torch.device('cpu')))
-    #Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_2_Steerable_CNP__2020_07_15_22_58",map_location=torch.device('cpu')))
-    #print("Loading models was successful.")
-    #Geom_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
-    #Conv_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
-
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp1/Exp_1_2_Conv_CNP__2020_07_16_23_53",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp1/Exp_1_2_Steerable_CNP__2020_07_16_23_18",map_location=torch.device('cpu')))
+    Geom_CNP.plot_test_random(n_samples=1,GP_parameters=None)#GP_parameters)
+    Conv_CNP.plot_test_random(n_samples=1,GP_parameters=GP_parameters)
+    print("Log-LL Steer.: ",Geom_CNP.test())
+    print("Log-LL Conv.: ",Conv_CNP.test())
+'''
+'''
 #------------------------------------
 #-----Experiment 1.3:
 #----------------------------------------  
@@ -163,9 +167,8 @@ if train:
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
-    pass
-    #Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_3_Conv_CNP__2020_07_15_23_55",map_location=torch.device('cpu')))
-    #Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_3_Steerable_CNP__2020_07_15_23_45",map_location=torch.device('cpu')))
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_3_Conv_CNP__2020_07_17_00_14",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_3_Steerable_CNP__2020_07_17_00_04",map_location=torch.device('cpu')))
     #print("Loading models was successful.")
     #print("-------------Conv_CNP-----------")
     #for name,parameter in Conv_CNP.named_parameters():
@@ -175,4 +178,8 @@ if evaluate:
     #    print(name,parameter)
     #Geom_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
     #Conv_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
+    '''
 
+
+
+# %%
