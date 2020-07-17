@@ -144,7 +144,7 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
     else:
         return(K)
     
-#%%   
+ 
 #A function which performs kernel smoothing for 2d matrix-valued kernels:
 #The normalizer for the kernel smoother is a matrix in this case (assuming that it is invertible)
 def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False):
@@ -183,7 +183,7 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
     #Return the vector:
     return(Interpolate.view(n_target_points,D))  
 
-#%% Problem with the kernel smoother for div-free kernel if it is normalizing:
+# Problem with the kernel smoother for div-free kernel if it is normalizing:
 '''
 X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
 Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,1.],[-1.,1.]])
