@@ -111,7 +111,7 @@ n_tests=400
 #-----Experiment 1.1:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
-            'learning_rate':1e-4,'shape_reg':1}    
+            'learning_rate':1e-4,'shape_reg':1.}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 if train:
     filename_71="Exp_7_1"
