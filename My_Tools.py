@@ -64,9 +64,15 @@ def Rand_Target_Context_Splitter(X,Y,n_context_points):
     Y_Target=Y[ind_shuffle[n_context_points:,]]
     return(X_Context,Y_Context,X_Target,Y_Target)
 
+
+#This function returns the indices of an (n,n)-grid 
+#which are in the inner circle of that square grid.
+#In other words, those points in square which stay within the square
+#after a rotation.
 def get_outer_circle_indices(n):
     '''
-    n - int - size of square
+    Input: n - int - size of square
+    Ouput: Ind - torch.tensor
     '''
     x_axis=torch.linspace(start=0,end=n-1,steps=n)
     y_axis=torch.linspace(start=0,end=n-1,steps=n)
@@ -74,9 +80,21 @@ def get_outer_circle_indices(n):
     Ind=torch.stack((X1,X2),2)
     Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)>(n-1)/2].long()
     return(Ind)
-    
 
-#%%
+#This tool defines a regularization term for learning functions - it regularizes the loss 
+#such that prediction functions F with the similiar shape to the ground truth f are preferred against
+#functions with the same "distance" to f (same as F) but a different shape.
+#Mathematically: we take the difference F-f between the two functions, center it to mean zero
+#i.e. take D=F-f-mean(F-f) and then take the the norm of D.
+def shape_regularizer(Y_1,Y_2):
+    '''
+    Input: Y_1,Y_2 - torch.tensor - shape (T,*) - T...number of observations, *...shape of space
+    Output: float (torch.tensor of dim 0) - Centers Y_1-Y_2 to Cent_Diff and returns the Frobenius norm of Cent_Diff
+    '''
+    Diff=Y_1-Y_2
+    Means=Diff.mean(dim=0)
+    Cent_Diff=Diff-Means
+    return(torch.norm(Cent_Diff)**2)
           
 '''
 ____________________________________________________________________________________________________________________
@@ -182,7 +200,6 @@ def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=No
         ax[1].legend(handles=[blue_ellipse])
         leg = ax[1].legend(bbox_to_anchor=(1., 1.))
 
-#%%
 '''
 ____________________________________________________________________________________________________________________
 

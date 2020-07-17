@@ -331,7 +331,7 @@ class Steerable_CNP(nn.Module):
         #Smooth the output:
         return(self.target_smoother(X_target,Final_Feature_Map))
 
-    def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None):
+    def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None,title=""):
         '''
             Inputs: X_Context, Y_Context, X_Target: torch.tensor - see self.forward
                     Y_Target: torch.tensor - shape (n_context_points,2) - ground truth
@@ -341,9 +341,9 @@ class Steerable_CNP(nn.Module):
         #Get predictions:
         Means,Covs=self.forward(X_Context,Y_Context,X_Target)
         #Plot predictions against ground truth:
-        My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,Y_Target,Predict=Means.detach(),Cov_Mat=Covs.detach())
+        My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,Y_Target,Predict=Means.detach(),Cov_Mat=Covs.detach(),title=title)
     
-    def loss(self,Y_Target,Predict,Covs):
+    def loss(self,Y_Target,Predict,Covs,shape_reg=None):
         '''
             Inputs: X_Target,Y_Target: torch.tensor - shape (n,2) - Target set locations and vectors
                     Predict: torch.tensor - shape (n,2) - Predictions of Y_Target at X_Target
@@ -352,8 +352,10 @@ class Steerable_CNP(nn.Module):
         '''
         log_ll_vec=My_Tools.batch_multivar_log_ll(Means=Predict,Covs=Covs,Data=Y_Target)
         log_ll=log_ll_vec.mean()
-        return(-log_ll)
-
+        if shape_reg is not None:
+            return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
+        else:
+            return(-log_ll)
 
 
 
@@ -362,7 +364,7 @@ class Steerable_CNP(nn.Module):
 
 class Steerable_CNP_Operator(nn.Module):
     def __init__(self,Steerable_CNP,train_data_loader,test_data_loader,Max_n_context_points,n_epochs=10,
-                 learning_rate=1e-3,n_prints=None, n_plots=None,weight_decay=0.0,n_iterat_per_epoch=10):
+                 learning_rate=1e-3,n_prints=None, n_plots=None,weight_decay=0.0,n_iterat_per_epoch=10,shape_reg=None):
         super(Steerable_CNP_Operator, self).__init__()
         '''
         Input: 
@@ -402,6 +404,7 @@ class Steerable_CNP_Operator(nn.Module):
         self.saved_to=None
         #Get the device of the Steerable CNP (here, we assume that all parameters are on a single device):
         self.device=next(Steerable_CNP.parameters()).device
+        self.shape_reg=shape_reg
                 
     def train(self,filename=None,plot_loss=True):
         '''
@@ -470,7 +473,7 @@ class Steerable_CNP_Operator(nn.Module):
                                                                                          n_context_points)
                     #The target set includes the context set here:
                     Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[el]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
-                    loss+=self.Steerable_CNP.loss(labels[el],Means,Sigmas)/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
+                    loss+=self.Steerable_CNP.loss(labels[el],Means,Sigmas,shape_reg=self.shape_reg)/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
                 #Set gradients to zero:
                 optimizer.zero_grad()
                 #Compute gradients:
@@ -523,15 +526,15 @@ class Steerable_CNP_Operator(nn.Module):
         plt.ylabel("Log-likelihood")
     
     #A function which tests the ConvCNP by plotting the predictions:
-    def plot_test(self,x_context,y_context,x_target=None,y_target=None,GP_parameters=None):
+    def plot_test(self,x_context,y_context,x_target=None,y_target=None,GP_parameters=None,title=""):
             plt.figure(plt.gcf().number+1)
             #plt.title(filename + "Trained model")
-            self.Steerable_CNP.plot_Context_Target(x_context,y_context,x_target,y_target)
+            self.Steerable_CNP.plot_Context_Target(x_context,y_context,x_target,y_target,title=title)
             if GP_parameters is not None:
                 plt.figure(plt.gcf().number+1)
                 Means_GP,Cov_Mat_GP,Var_GP=GP.GP_inference(x_context,y_context,x_target, **GP_parameters)
                 Cov_Mat_GP=My_Tools.Get_Block_Diagonal(Cov_Mat_GP,size=2)
-                My_Tools.Plot_Inference_2d(x_context,y_context,x_target,y_target,Predict=Means_GP,Cov_Mat=Cov_Mat_GP)
+                My_Tools.Plot_Inference_2d(x_context,y_context,x_target,y_target,Predict=Means_GP,Cov_Mat=Cov_Mat_GP,title="GP inference")
     
     def plot_test_random(self,n_samples=4,GP_parameters=None):
         for i in range(n_samples):
@@ -541,7 +544,7 @@ class Steerable_CNP_Operator(nn.Module):
             self.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters)
     #A function which tests the model - i.e. it returns the average
     #log-likelihood on the test data:
-    def test(self,n_samples=100):
+    def test(self,n_samples=400):
         with torch.no_grad():
             n_iterat=n_samples//self.minibatch_size
             log_ll=torch.tensor(0.0,device=self.device)
@@ -738,7 +741,7 @@ class Steerable_CNP_Operator(nn.Module):
         #Get mean aggregrated loss:
         return(loss_Means/n_samples,loss_Sigmas/n_samples)
     
-    def test_equivariance_model(self,n_samples=1,plot=True):
+    def test_equivariance_model(self,n_samples=1,plot=True,title=""):
         '''
         Input: n_samples - int - number of context, target samples to consider
         Output: For every group element, it computes the "group equivariance error" of the model, i.e.
@@ -768,17 +771,18 @@ class Steerable_CNP_Operator(nn.Module):
                 trans_x_target=torch.matmul(x_target,M_out.t())
                 
                 #Get means and variances of transformed context and transformed target:
-                Means_trans,_=self.Steerable_CNP.forward(trans_x_context,trans_y_context,trans_x_target)
+                Means_trans,Sigmas_trans=self.Steerable_CNP.forward(trans_x_context,trans_y_context,trans_x_target)
                 #Get transformed  means and variances:
                 trans_Means=torch.matmul(Means,M_out.t())
+                #???TRANS_SIGMA???
                 #Compute the error and add to aggregrated loss:
                 it_loss=torch.norm(Means_trans-trans_Means)
                 loss=loss+it_loss
                 #If wanted plot the inference:
                 if plot:
-                    title="Group: "+self.Steerable_CNP.G_act.name+ "  |  Element: "+str(g)+"| Loss "+str(it_loss.detach().item())
+                    sup_title=title+"Group: "+self.Steerable_CNP.G_act.name+ "  |  Element: "+str(g)+"| Loss "+str(it_loss.detach().item())
                     My_Tools.Plot_Inference_2d(trans_x_context,trans_y_context,trans_x_target,
-                                           Y_Target=None,Predict=Means_trans.detach(),Cov_Mat=None,title=title)
+                                           Y_Target=None,Predict=Means_trans.detach(),Cov_Mat=Sigmas_trans.detach(),title=sup_title)
         #Get mean aggregrated loss:
         return(loss/n_samples)
 

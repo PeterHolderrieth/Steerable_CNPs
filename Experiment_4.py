@@ -102,10 +102,11 @@ def SETUP_EXP_4_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
 
 n_epochs=30
 n_iterat=1000
-train=True
-evaluate=False
+train=False
+evaluate=True
+n_tests=400
 #------------------------------------
-#-----Experiment 1.1:
+#-----Experiment 4.1:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
             'learning_rate':1e-4}    
@@ -120,14 +121,20 @@ if train:
     print("Duration of training on device: ",device,": ",endtime-starttime)
 
 if evaluate:
-    pass
-    #Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_1_Conv_CNP__2020_07_15_16_35",map_location=torch.device('cpu')))
-    #Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_1_Steerable_CNP__2020_07_16_19_17",map_location=torch.device('cpu')))
-    #Geom_CNP.plot_test_random(GP_parameters=GP_parameters)
-    #Conv_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_4/Exp_4_1_Conv_CNP__2020_07_16_22_58",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_4/Exp_4_1_Steerable_CNP__2020_07_16_22_29",map_location=torch.device('cpu')))
+    X,Y=next(iter(Conv_CNP.test_data_loader))
+    n_context_points=torch.randint(size=[],low=2,high=Conv_CNP.Max_n_context_points)
+    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
+    Conv_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=None,title="Exp 4.1: ConvCNP")
+    Geom_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters,title="Exp 4.1: SteerCNP")
+    print("Exp. 4.1: Log-LL Steer.: ",Geom_CNP.test(n_tests))
+    print("Exp. 4.1: Log-LL Conv.: ",Conv_CNP.test(n_tests))
+    Conv_CNP.test_equivariance_model(plot=True,title="ConvCNP")
+    Geom_CNP.test_equivariance_model(plot=True,title="SteerCNP")
 
 #------------------------------------
-#-----Experiment 1.2:
+#-----Experiment 4.2:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
             'learning_rate':1e-3}    
@@ -141,15 +148,20 @@ if train:
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
-    pass
-    #Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_2_Conv_CNP__2020_07_15_23_33",map_location=torch.device('cpu')))
-    #Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_2_Steerable_CNP__2020_07_15_22_58",map_location=torch.device('cpu')))
-    #print("Loading models was successful.")
-    #Geom_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
-    #Conv_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_4/Exp_4_2_Conv_CNP__2020_07_17_00_27",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_4/Exp_4_2_Steerable_CNP__2020_07_16_23_45",map_location=torch.device('cpu')))
+    X,Y=next(iter(Conv_CNP.test_data_loader))
+    n_context_points=torch.randint(size=[],low=2,high=Conv_CNP.Max_n_context_points)
+    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
+    Conv_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=None,title="Exp 4.2: ConvCNP")
+    Geom_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters,title="Exp 4.2: SteerCNP")
+    print("Exp. 4.2: Log-LL Steer.: ",Geom_CNP.test(n_tests))
+    print("Exp. 4.2: Log-LL Conv.: ",Conv_CNP.test(n_tests))
+    Conv_CNP.test_equivariance_model(plot=True,title="ConvCNP")
+    Geom_CNP.test_equivariance_model(plot=True,title="SteerCNP")
 
 #------------------------------------
-#-----Experiment 1.3:
+#-----Experiment 4.3:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
             'learning_rate':1e-4}    
@@ -163,16 +175,16 @@ if train:
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 if evaluate:
-    pass
-    #Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_3_Conv_CNP__2020_07_15_23_55",map_location=torch.device('cpu')))
-    #Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1_3_Steerable_CNP__2020_07_15_23_45",map_location=torch.device('cpu')))
-    #print("Loading models was successful.")
-    #print("-------------Conv_CNP-----------")
-    #for name,parameter in Conv_CNP.named_parameters():
-    #    print(name,parameter)
-    #print("-------------Steerabe_CNP-----------")
-    #for name,parameter in Geom_CNP.named_parameters():
-    #    print(name,parameter)
-    #Geom_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
-    #Conv_CNP.plot_test_random(GP_parameters=None)#GP_parameters)
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_4/Exp_4_3_Conv_CNP__2020_07_17_00_55",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_4/Exp_4_3_Steerable_CNP__2020_07_17_00_42",map_location=torch.device('cpu')))
+    X,Y=next(iter(Conv_CNP.test_data_loader))
+    n_context_points=torch.randint(size=[],low=2,high=Conv_CNP.Max_n_context_points)
+    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
+    Conv_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=None,title="Exp 4.3: ConvCNP")
+    Geom_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters,title="Exp 4.3: SteerCNP")
+    print("Exp. 4.3: Log-LL Steer.: ",Geom_CNP.test(n_tests))
+    print("Exp. 4.3: Log-LL Conv.: ",Conv_CNP.test(n_tests))
+    Conv_CNP.test_equivariance_model(plot=True,title="ConvCNP")
+    Geom_CNP.test_equivariance_model(plot=True,title="SteerCNP")
 
+# %%
