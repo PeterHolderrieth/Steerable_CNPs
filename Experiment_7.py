@@ -101,8 +101,8 @@ def SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
-n_epochs=3
-n_iterat=1
+n_epochs=30
+n_iterat=1000
 train=True
 evaluate=False
 n_tests=400
@@ -138,10 +138,10 @@ if evaluate:
 #-----Experiment 7.2:
 #----------------------------------------  
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
-            'learning_rate':1e-4,'shape_reg': 0.001}    
+            'learning_rate':1e-4,'shape_reg': 0.005}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=4,batch_size=4)
 if train:
-    filename_72="Exp_1_2"
+    filename_72="Exp_7_2"
     starttime=datetime.datetime.today()
     print("Start training experiment 1.2: ", starttime)
     loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/Exp_7/"+filename_72+"_Steerable_CNP_")
@@ -167,7 +167,7 @@ Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_it
             'learning_rate':1e-4,'shape_reg': None}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=4,batch_size=1)
 if train:
-    filename_73="Exp_1_3"
+    filename_73="Exp_7_3"
     starttime=datetime.datetime.today()
     print("Start training experiment 1.3: ", starttime)
     loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/Exp_7/"+filename_73+"_Steerable_CNP_")
