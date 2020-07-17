@@ -100,8 +100,8 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
-n_epochs=30
-n_iterat=1000
+n_epochs=5
+n_iterat=1
 train=False
 evaluate=True
 n_tests=400
@@ -112,8 +112,11 @@ n_tests=400
 Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_iterat_per_epoch':n_iterat,
             'learning_rate':1e-4}    
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
+print("l scale encoder device: ", Conv_CNP.Steerable_CNP.encoder.log_l_scale.device)
+print("l scale out device: ", Conv_CNP.Steerable_CNP.log_l_scale_out.device)
+
 if train:
-    filename_11="Exp_1_1"
+    filename_11="Tester"
     starttime=datetime.datetime.today()
     print("Start training experiment 1.1: ", starttime)
     loss_Geom_CNP=Geom_CNP.train(filename="Initial_ziz_exp_1507/"+filename_11+"_Steerable_CNP_")
@@ -121,18 +124,22 @@ if train:
     endtime=datetime.datetime.today()
     print("Duration of training on device: ",device,": ",endtime-starttime)
 
+
 if evaluate:
-    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1/Exp_1_1_Conv_CNP__2020_07_16_22_40",map_location=torch.device('cpu')))
-    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Exp_1/Exp_1_1_Steerable_CNP__2020_07_16_22_16",map_location=torch.device('cpu')))
-    X,Y=next(iter(Conv_CNP.test_data_loader))
-    n_context_points=torch.randint(size=[],low=2,high=Conv_CNP.Max_n_context_points)
-    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
-    Conv_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=None,title="Exp1: ConvCNP")
-    Geom_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters,title="Exp1: SteerCNP")
-    print("Exp. 1: Log-LL Steer.: ",Geom_CNP.test(n_tests))
-    print("Exp. 1: Log-LL Conv.: ",Conv_CNP.test(n_tests))
-
-
+    Conv_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Tester_Conv_CNP__2020_07_17_15_48",map_location=torch.device('cpu')))
+    Geom_CNP.load_state_dict(torch.load("Trained_Models/Initial_ziz_exp_1507/Tester_Steerable_CNP__2020_07_17_15_48",map_location=torch.device('cpu')))
+    print(Conv_CNP.log_ll_memory)
+    print(Geom_CNP.log_ll_memory)
+    #Conv_CNP.plot_log_ll_memory()
+    #X,Y=next(iter(Conv_CNP.test_data_loader))
+    #n_context_points=torch.randint(size=[],low=2,high=Conv_CNP.Max_n_context_points)
+    #x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
+    #Conv_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=None,title="Exp1: ConvCNP")
+    #Geom_CNP.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters,title="Exp1: SteerCNP")
+    #print("Exp. 1: Log-LL Steer.: ",Geom_CNP.test(n_tests))
+    #print("Exp. 1: Log-LL Conv.: ",Conv_CNP.test(n_tests))
+ 
+'''
 #------------------------------------
 #-----Experiment 1.2:
 #----------------------------------------  
@@ -184,7 +191,6 @@ if evaluate:
     print("Exp. 3: Log-LL Steer.: ",Geom_CNP.test(n_tests))
     print("Exp. 3: Log-LL Conv.: ",Conv_CNP.test(n_tests))
 
+'''
 
 
-
-# %%

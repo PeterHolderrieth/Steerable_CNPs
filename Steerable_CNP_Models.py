@@ -400,7 +400,7 @@ class Steerable_CNP_Operator(nn.Module):
         self.minibatch_size=train_data_loader.batch_size
         self.n_train_points=len(train_data_loader.dataset)
         self.n_grid_points=train_data_loader.dataset[0][0].size(0)
-        self.log_ll_memory=None
+        self.log_ll_memory=nn.Parameter(torch.zeros(n_epochs,dtype=torch.get_default_dtype()),requires_grad=False)
         self.trained=False
         self.n_iterat_per_epoch=n_iterat_per_epoch
         self.saved_to=None
@@ -510,7 +510,7 @@ class Steerable_CNP_Operator(nn.Module):
             #Save loss and compute gradients:
             loss_vector[epoch]=loss_epoch_mean
         
-        self.log_ll_memory=-loss_vector.detach().numpy()
+        self.log_ll_memory=nn.Parameter(-loss_vector.detach(),requires_grad=False)
         
         #Set trained to True:
         self.trained=True
