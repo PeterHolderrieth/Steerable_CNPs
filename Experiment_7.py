@@ -101,8 +101,8 @@ def SETUP_EXP_7_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
-n_epochs=3
-n_iterat=1
+n_epochs=20
+n_iterat=700
 train=True
 evaluate=False
 n_tests=400
