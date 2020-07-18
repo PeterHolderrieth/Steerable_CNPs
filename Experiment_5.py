@@ -24,6 +24,8 @@ import matplotlib.cm as cm
 #Tools:
 import datetime
 import sys
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 #Own files:
 import Kernel_and_GP_tools as GP

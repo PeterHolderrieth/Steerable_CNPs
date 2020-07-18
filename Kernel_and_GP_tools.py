@@ -31,6 +31,8 @@ import math
 from numpy import savetxt
 import csv
 import datetime
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 #Own files:
 import My_Tools

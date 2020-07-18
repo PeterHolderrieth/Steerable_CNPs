@@ -25,6 +25,8 @@ import math
 from numpy import savetxt
 import csv
 import datetime 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 #E(2)-steerable CNNs - librar"y:
 from e2cnn import gspaces    
