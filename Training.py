@@ -29,6 +29,7 @@ import sys
 #Own files:
 import Kernel_and_GP_tools as GP
 import My_Tools
+import Steerable_CNP_Models as My_Models
 
 
 
@@ -36,6 +37,12 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 quiver_scale=15
 
+
+'''
+This file should implement:
+- A flexible training function which is able to reload a state of a model and continue training after stopping training.
+- 
+'''
 
 def trainer(Steerable_CNP,train_data_loader,val_data_loader,Max_n_context_points,Min_n_context_points=2,n_epochs=10,
                  learning_rate=1e-3, n_plots=None,weight_decay=0.0,n_iterat_per_epoch=10,shape_reg=None):

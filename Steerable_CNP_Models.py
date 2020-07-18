@@ -32,6 +32,14 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 quiver_scale=15
 
+'''
+TO DO:
+- Create a function such that Steerable_CNP can be saved to a dictionary and can be reloaded 
+(maybe save inside the class and load outside)
+-
+
+'''
+
 
 '''
 -------------------------------------------------------------------------
