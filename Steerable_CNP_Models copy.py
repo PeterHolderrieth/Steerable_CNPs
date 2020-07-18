@@ -245,11 +245,13 @@ class Steerable_CNP(nn.Module):
         #Decoder: For now: A standard CNN whose parameters are arbitrary for now:
         self.decoder=decoder
         #Get the parameters for kernel smoother for the target set:
-        self.log_l_scale_out=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)\
+        self.log_l_scale_out=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
         #Get the other kernel parameters for the kernel smoother for the target set (others are fixed):
         self.kernel_dict_out=kernel_dict_out
-
-
+        #Save whether output is normalized (i.e. kernel smoothing is performed with normalizing):
+        self.normalize_output=normalize_output
+        #Save the dimension of the covariance estimator of the last layer:
+        self.dim_cov_est=dim_cov_est
 
 
 
@@ -257,14 +259,13 @@ class Steerable_CNP(nn.Module):
         #Control that there is no variable l_scale in the the kernel dictionary:
         if 'l_scale' in kernel_dict_out:
             sys.exit("l scale is variable and not fixed")
-        #Save whether output is normalized:
-        self.normalize_output=normalize_output
         
         #Save the group and the feature types for the input, the embedding (output type = input type for now):
         self.G_act=G_act
         self.feature_in=feature_in
         self.feature_emb=G_CNN.FieldType(G_act, [G_act.trivial_repr,feature_in.representation])
         
+        #--------------------CONTROL WHETHER ALL PARAMETERS ARE CORRECT--------------------------
         #Save the dimension of the covariance estimator of the last layer:
         self.dim_cov_est=dim_cov_est
         if (self.dim_cov_est!=1) and (self.dim_cov_est!=3):

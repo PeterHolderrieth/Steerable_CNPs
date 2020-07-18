@@ -100,6 +100,7 @@ def SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3):
     return(Conv_CNP_Operator,Geom_CNP_Operator,GP_parameters)    
  
 
+#%%
 n_epochs=5
 n_iterat=1
 train=True
@@ -114,7 +115,7 @@ Training_par={'Max_n_context_points':50,'n_epochs':n_epochs,'n_plots':None,'n_it
 Conv_CNP,Geom_CNP,GP_parameters=SETUP_EXP_1_Cyclic_GP_div_free(Training_par,N=8,batch_size=3)
 print("l scale encoder device: ", Conv_CNP.Steerable_CNP.encoder.log_l_scale.device)
 print("l scale out device: ", Conv_CNP.Steerable_CNP.log_l_scale_out.device)
-
+#%%
 if train:
     filename_11="Tester"
     starttime=datetime.datetime.today()

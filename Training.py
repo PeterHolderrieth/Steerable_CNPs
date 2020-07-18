@@ -170,18 +170,24 @@ def trainer(Steerable_CNP,train_data_loader,val_data_loader,Max_n_context_points
 
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
-            training_par={'n_epochs': n_epochs,'n_iterat_per_epoch': n_iterat_per_epoch,"Min n contest points":Min_n_context_points,
-                          'Max n context points': Max_n_context_points,'shape_reg': shape_reg}
-            Report=Write_Report(model=Steerable_CNP,optimizer=optimizer,loss_memory=loss_vector,train_data_loader=train_data_loader,
-                        training_par=training_par,val_data_loader=val_data_loader)
+            Report={'CNP': Steerable_CNP.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'train_data_loader': train_data_loader,
+                    'val_data_loader': val_data_loader,
+                    'n_epochs': n_epochs,
+                    'n_iterat_per_epoch': n_iterat_per_epoch,
+                    'loss history': loss_vector,
+                    'Min n contest points':Min_n_context_points,
+                    'Max n context points': Max_n_context_points,
+                    'shape_reg': shape_reg}         
             complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
-            torch.save(self.state_dict(),complete_filename)
+            torch.save(Report,complete_filename)
             self.saved_to=complete_filename
         #Return the mean log-likelihood:
         return(self.log_ll_memory)
 
 
-
+###USE torch.summary for summarizing structure of decoder.
 
 
 

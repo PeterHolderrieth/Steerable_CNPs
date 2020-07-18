@@ -1,5 +1,3 @@
-#%%
-
 #LIBRARIES:
 #Tensors:
 import torch
@@ -34,6 +32,12 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 quiver_scale=15
 
+
+'''
+-------------------------------------------------------------------------
+--------------------------ENCODER CLASS----------------------------------
+-------------------------------------------------------------------------
+'''
 class Steerable_Encoder(nn.Module):
     def __init__(self, x_range=[-2,2],y_range=None,n_x_axis=10,n_y_axis=None,kernel_dict={'kernel_type':"rbf"},
                  init_l_scale=1.,normalize=True):
@@ -151,34 +155,40 @@ class Steerable_Encoder(nn.Module):
         '''
         #Hyperparameter for function for plotting in notebook:
         size_scale=2
-
+        #----------CREATE FIGURE --------------
         #Create figures, set title and adjust space:
         fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(size_scale*10,size_scale*5))
         plt.gca().set_aspect('equal', adjustable='box')
         fig.suptitle(title)
         fig.subplots_adjust(wspace=0.2)
+        #----------END CREATE FIGURE-------
+
+        #---------SMOOTHING PLOT---------
         #Set titles for subplots:
         ax[0].set_title("Smoothing channel")
-        ax[1].set_title("Density channel")
         
         if X_context is not None and Y_context is not None:
             #Plot context set in black:
             ax[0].scatter(X_context[:,0],X_context[:,1],color='black')
             ax[0].quiver(X_context[:,0],X_context[:,1],Y_context[:,0],Y_context[:,1],
               color='black',pivot='mid',label='Context set',scale=quiver_scale)
-########GO ON HERE
+
         #Get embedding of the form (3,self.n_y_axis,self.n_x_axis)
         Embedding=Embedding.squeeze()
         #Get density channel --> shape (self.n_y_axis,self.n_x_axis)
         Density=Embedding[0]
-        #Get Smoothed channel -->shape (self.n_x_axis*self.n_y_axis,2)
-        Smoothed=Embedding[1:].permute(dims=(2,1,0)).reshape(-1,2)
+        #Get Smoothed channel -->shape (self.n_y_axis*self.n_x_axis,2)
+        Smoothed=Embedding[1:].permute(dims=(1,2,0)).reshape(-1,2)
         #Plot the kernel smoothing:
         ax[0].quiver(self.grid[:,0],self.grid[:,1],Smoothed[:,0],Smoothed[:,1],color='red',pivot='mid',label='Embedding',scale=quiver_scale)
-        #Get Y values of grid:
-        Y=self.grid[:self.n_y_axis,1]
+        #--------END SMOOTHING PLOT------
+
+        #--------DENSITY PLOT -----------
+        ax[1].set_title("Density channel")
         #Get X values of grid:
-        X=self.grid.view(self.n_x_axis,self.n_y_axis,2).permute(dims=(1,0,2))[0,:self.n_x_axis,0]  
+        X=self.grid[:self.n_x_axis,0]
+        #Get Y values of grid:
+        Y=self.grid.view(self.n_y_axis,self.n_x_axis,2).permute(dims=(1,0,2))[0,:self.n_y_axis,1]  
         #Set X and Y range to the same as for the first plot:
         ax[1].set_xlim(ax[0].get_xlim())
         ax[1].set_ylim(ax[0].get_ylim())
@@ -186,37 +196,72 @@ class Steerable_Encoder(nn.Module):
         ax[1].set_title("Density channel")
         ax[1].contour(X,Y, Density, levels=14, linewidths=0.5, colors='k')
         #Add legend to first plot:
-        leg = ax[0].legend()
+        leg = ax[0].legend(loc='upper right')
+        #---------END DENSITY PLOT--------
+
+'''
+-------------------------------------------------------------------------
+--------------------------DECODER CLASS----------------------------------
+-------------------------------------------------------------------------
+'''
 
 class Steerable_Decoder(nn.Module):
-    def __init__(self,feat_types,kernel_sizes,non_linearity="ReLU"):
+    def __init__(self,feat_types,kernel_sizes,non_linearity=["ReLU"]):
+        '''
+        Input: feat_types -list of e2cnn.nn.field_type.FieldType (G_CNN here)
+               kernel_sizes - list of ints - sizes of kernels for convolutional layers
+               non_linearity - list of strings - gives names of non-linearity to be used
+                                                 Either length 1 (then same non-linearity for all)
+                                                 or length is the number of layers (giving a custom non-linearity for every
+                                                 layer)                   
+        '''
         super(Steerable_Decoder, self).__init__()
-        #Save kernel sizes:
+        #Save parameters:
         self.kernel_sizes=kernel_sizes
         self.feature_in=feat_types[0]
-        
-        #Create a list of layers based on the kernel sizes. Compute the padding such
-        #that the height h and width w of a tensor with shape (batch_size,n_channels,h,w) does not change
-        #while being passed through the decoder:
         self.n_layers=len(feat_types)
+        
+        #-----CREATE LIST OF NON-LINEARITIES----
+        if len(non_linearity)==1:
+            self.non_linearity=(self.n_layers-2)*non_linearity
+        elif len(non_linearity)!=(self.n_layers-2):
+            sys.exit("List of non-linearities invalid: must have either length 1 or n_layers-1")
+        else:
+            self.non_linearity=non_linearity
+        print(self.non_linearity)
+        #-----ENDE LIST OF NON-LINEARITIES----
+
+        #-----------CREATE DECODER-----------------
+        '''
+        Create a list of layers based on the kernel sizes. Compute the padding such
+        that the height h and width w of a tensor with shape (batch_size,n_channels,h,w) does not change
+        while being passed through the decoder
+        '''
         layers_list=[G_CNN.R2Conv(feat_types[0],feat_types[1],kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
+
         for i in range(self.n_layers-2):
-            if non_linearity=="ReLU":
+            if non_linearity[i]=="ReLU":
                 layers_list.append(G_CNN.ReLU(feat_types[i+1]))
-            else:
+            elif non_linearity[i]=="NormReLU":
                 layers_list.append(G_CNN.NormNonLinearity(feat_types[i+1]))
+            else:
+                sys.exit("Unknown non-linearity.")
             layers_list.append(G_CNN.R2Conv(feat_types[i+1],feat_types[i+2],kernel_size=kernel_sizes[i],padding=(kernel_sizes[i]-1)//2))
-        
         #Create a steerable decoder out of the layers list:
-        
         self.decoder=G_CNN.SequentialModule(*layers_list)
+        #-----------END CREATE DECODER---------------
+
+        #-----------CONTROL INPUTS------------------
         #Control that all kernel sizes are odd (otherwise output shape is not correct):
-        if any([j%2-1 for j in kernel_sizes]):
-            sys.exit("All kernels need to have odd sizes")
-        
+        if any([j%2-1 for j in kernel_sizes]): sys.exit("All kernels need to have odd sizes")
+        if len(kernel_sizes)!=(self.n_layers-1): sys.exit("Number of layers and number kernels do not match.")
+        if len(self.non_linearity)!=(self.n_layers-2): sys.exit("Number of layers and number of non-linearities do not match.")
+        #------------END CONTROL INPUTS--------------
+
     def forward(self,X):
         '''
-        X - torch.tensor - shape (batch_size,n_channels,m,n)
+        Input: X - torch.tensor - shape (batch_size,n_in_channels,m,n)
+        Output: torch.tensor - shape (batch_size,n_out_channels,m,n)
         '''
         #Convert X into a geometric tensor:
         X=G_CNN.GeometricTensor(X, self.feature_in)
@@ -225,18 +270,20 @@ class Steerable_Decoder(nn.Module):
         #Return the resulting tensor:
         return(Out.tensor)
       
-#A class which defines a ConvCNP:
+ 
+'''
+-------------------------------------------------------------------------
+--------------------------STEERABLE CNP CLASS----------------------------
+-------------------------------------------------------------------------
+'''     
 class Steerable_CNP(nn.Module):
     def __init__(self, encoder, decoder, dim_cov_est=3,
                          kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
         '''
         Inputs:
-            G_act - gspaces.r2.general_r2.GeneralOnR2 - the underlying group under whose equivariance the models is built/tested
-            feature_in  - G_CNN.FieldType - feature type of input (on the data)
-            feature_out -G_CNN.FieldType - feature type of output of the decoder
-            encoder - instance of ConvCNP_Enoder 
-            decoder - nn.Module - takes input (batch_size,3,height,width) and gives (batch_size,5,height,width) or (batch_size,3,height,width) 
-                                  as output
+            encoder - instance of Steerable_Encoder class above
+            decoder - nn.Module - takes input (batch_size,3,height,width) and gives (batch_size,5,height,width) 
+                                  (dim_cov_est=3) or (batch_size,3,height,width) (if dim_cov_est=1) as output
             kernel_dict_out - gives parameters for kernel smoother of output
             l_scale - float - gives initialisation for learnable length parameter
             normalize_output  - Boolean - indicates whether kernel smoothing is performed with normalizing
@@ -259,37 +306,27 @@ class Steerable_CNP(nn.Module):
 
 
         #--------------------CONTROL OF PARAMETERS -------------------------
-        #So far, the dimension of the covariance estimator has to be either 1 or 3 (i.e. number of output channels either 3 or 5):
-        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3):
-            sys.exit("The number of output channels of the decoder must be either 3 or 5")
-        #Control that there is no variable l_scale in the the kernel dictionary (otherwise clash with self.log_l_scale_out when
-        # calling My_Tools.Gram_Matrix)
-        if 'l_scale' in kernel_dict_out:
-            sys.exit("l scale is variable and not fixed")
-        if not isinstance(encoder,Steerable_Encoder):
-            sys.exit("Enoder is not correct.")
+        #So far, the dimension of the covariance estimator has to be either 1 or 3 
+        #(i.e. number of output channels either 3 or 5):
+        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3): sys.exit("N Out channels must be either 3 or 5")
+        if 'l_scale' in kernel_dict_out: sys.exit("l scale is variable and not fixed")
+        if not isinstance(self.normalize_output,bool): sys.exit("Normalize output has to be boolean.")
+        if not isinstance(l_scale,float): sys.exit("l_scale initialization has to be a float.")
+        if not isinstance(encoder,Steerable_Encoder): sys.exit("Enoder is not correct.")
+        if not isinstance(decoder, nn.Module): sys.exit("Decoder has to be nn.Module")
+        #--------------------END CONTROL OF PARAMETERS----------------------
 
-        #CONTROL DECODER:
-        if not isinstance(decoder, nn.Module):
-            sys.exit("Decoder has to be nn.Module")
-        #Test whether the decoder accepts and returns the correct shape: 
+        #-------------------CONTROL WHETHER DECODER ACCEPTS AND RETURNS CORRECT SHAPES----
         test_input=torch.randn([5,3,encoder.n_y_axis,encoder.n_x_axis])  
         test_output=decoder(test_input)
-        
         if len(test_output.shape)!=4 or test_output.size(0)!=test_input.size(0) or test_output.size(2)!=encoder.n_y_axis or test_output.size(3)!=encoder.n_x_axis:
             sys.exit("Decoder error: shape of output is not correct.")
-        if (self.dim_cov_est+2)!=test_output.size(1):
-            sys.exit("Number of output channels does not match the dimension of covariance estimation.")
-        if not isinstance(self.normalize_output,bool):
-            print("Normalize output has to be boolean.")
-        if not isinstance(l_scale,float):
-            print("l_scale initialization has to be a float.")
+        if (self.dim_cov_est+2)!=test_output.size(1):sys.exit("Number of output channels!=2+dim of cov estimation.")
+        #-------------------END CONTROL WHETHER DECODER ACCEPTS AND RETURNS CORRECT SHAPES----
 
-        #-------------------CONTROL OF PARAMETERS FINISHED------------------------------------------------------         
-
-    #Define the function taking the output of the decoder and creating
-    #predictions on the target set based on kernel smoothing (so it takes predictions on the 
-    #grid an makes predictions on the target set out of it):
+    #Define the function which maps the output of the decoder to
+    #predictions on the target set based on kernel smoothing, i.e. the predictions on 
+    #the target set are obtained by kernel smoothing of these points on the grid of encoder
     def target_smoother(self,X_target,Final_Feature_Map):
         '''
         Input: X_target - torch.tensor- shape (n_target,2)
@@ -297,41 +334,41 @@ class Steerable_CNP(nn.Module):
         Output: Predictions on X_target - Means_target - torch.tensor - shape (n_target,2)
                 Covariances on X_target - Covs_target - torch.tensor - shape (n_target,2,2)
         '''
-        #Split into mean and parameters for covariance (pre-activation) and send it through the activation function:
-        Means_grid=Final_Feature_Map[:2]
-        Pre_Activ_Covs_grid=Final_Feature_Map[2:]
-        
-        #Reshape from (2,n_y_axis,n_x_axis) to (n_x_axis*n_y_axis,2) 
-        Means_grid=Means_grid.permute(dims=(2,1,0))
-        Means_grid=Means_grid.reshape(self.encoder.n_x_axis*self.encoder.n_y_axis,2)
-        #Reshape from (2,n_y_axis,n_x_axis) to (n_x_axis*n_y_axis,self.dim_cov_est): 
-        Pre_Activ_Covs_grid=Pre_Activ_Covs_grid.permute(dims=(2,1,0))
-        Pre_Activ_Covs_grid=Pre_Activ_Covs_grid.reshape(self.encoder.n_x_axis*self.encoder.n_y_axis,
-                                                        self.dim_cov_est)
-        #Apply activation function on (co)variances -->shape (n_x_axis*n_y_axis,2,2):
+        #-----------SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
+        #Reshape the Final Feature Map:
+        Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(1,2,0)).reshape(self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
+        #Split into mean and parameters for covariance:
+        Means_grid=Resh_Final_Feature_Map[:2]
+        Pre_Activ_Covs_grid=Resh_Final_Feature_Map[2:]
+        #----------END SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
+
+        #-----------APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
+        #Get shape (n_x_axis*n_y_axis,2,2):
         if self.dim_cov_est==1:
             #Apply softplus (add noise such that variance does not become (close to) zero):
             Covs_grid=1e-4+F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
             Covs_grid=Covs_grid.diag_embed()
         else:
             Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
-      
-        #Create flattened version for target smoother:
-        Covs_grid_flat=Covs_grid.view(self.encoder.n_x_axis*self.encoder.n_y_axis,-1)
-        
-        #Set the lenght scale:
-        l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
+        #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
 
-        #3.Means on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,2):
+        #-----------APPLY KERNEL SMOOTHING --------------------------------------
+        #Set the lenght scale (clamp for numerical stability):
+        l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
+        #Means on Target Set (via Kernel smoothing) --> shape (n_target,2):
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
                                            l_scale=l_scale,**self.kernel_dict_out)
-        #3.Covariances on Target Set (via Kernel smoothing) --> shape (n_x_axis*n_y_axis,4):
+        
+        #Create flattened version (needed for target smoother):
+        Covs_grid_flat=Covs_grid.view(self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
+        #3.Get covariances on target set--> shape (n_target,4):
         Covs_target_flat=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
                                           X_Target=X_target,normalize=self.normalize_output,
-                                          l_scale=l_scale,**self.kernel_dict_out)
+                                          l_scale=l_scale,**self.kernel_dict_out)                                 
         #Reshape covariance matrices to proper matrices --> shape (n_target,2,2):
         Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
+        #-----------END APPLY KERNEL SMOOTHING --------------------------------------
         return(Means_target, Covs_target)
  
     #Define the forward pass of ConvCNP: 
@@ -347,7 +384,7 @@ class Steerable_CNP(nn.Module):
         '''
         #1.Context Set -> Embedding (via Encoder) --> shape (3,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Embedding=self.encoder(X_context,Y_context)
-        #2.Embedding ->Feature Map (via CNN) --> shape (4,self.encoder.n_y_axis,self.encoder.n_x_axis):
+        #2.Embedding ->Feature Map (via CNN) --> shape (2+self.dim_cov_est,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Final_Feature_Map=self.decoder(Embedding).squeeze()
         #Smooth the output:
         return(self.target_smoother(X_target,Final_Feature_Map))
@@ -369,12 +406,14 @@ class Steerable_CNP(nn.Module):
             Inputs: X_Target,Y_Target: torch.tensor - shape (n,2) - Target set locations and vectors
                     Predict: torch.tensor - shape (n,2) - Predictions of Y_Target at X_Target
                     Covs: torch.tensor - shape (n,2,2) - covariance matrices of Y_Target at X_Target
-            Output: -log_ll: log_ll is the log-likelihood at Y_Target given the parameters Predict  and Covs
+                    shape_reg: float/None - if float gives the weight of the shape_regularizer term (see My_Tools.shape_regularizer)
+            Output: -log_ll+shape_reg*shape_diff: log_ll is the log-likelihood at Y_Target given the parameters Predict and Covs
+                                                  shape_diff is the "shape difference" (interpreted here as the variance
+                                                  of the difference Prdict-Y_Target computed by My_Tools.shape_regularizer)
         '''
         log_ll_vec=My_Tools.batch_multivar_log_ll(Means=Predict,Covs=Covs,Data=Y_Target)
         log_ll=log_ll_vec.mean()
-        if shape_reg is not None:
+        if shape_reg is not None: 
             return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
-        else:
+        else: 
             return(-log_ll)
-
