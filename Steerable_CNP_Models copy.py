@@ -1,4 +1,6 @@
-#%%
+#!/usr/bin/env python
+# coding: utf-8 
+
 
 #LIBRARIES:
 #Tensors:
@@ -34,97 +36,92 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 quiver_scale=15
 
+
+
 class Steerable_Encoder(nn.Module):
-    def __init__(self, x_range=[-2,2],y_range=None,n_x_axis=10,n_y_axis=None,kernel_dict={'kernel_type':"rbf"},
-                 init_l_scale=1.,normalize=True):
+    def __init__(self, x_range,y_range=None,n_x_axis=10,n_y_axis=None,kernel_dict={'kernel_type':"rbf"},
+                 l_scale=1.,normalize=True):
         super(Steerable_Encoder, self).__init__()
         '''
         Inputs:
+            dim_X: int - dimension of state space
             x_range,y_range: float lists of size 2 - give range of grid points at x-axis/y-axis
+            kernel_par: dictionary - parameters for function mat_kernel (kernel function)
+                        Required: The matrix B cannot be given in this case
             n_x_axis: int - number of grid points along the x-axis
             n_y_axis: int - number of grid points along the y-axis
-            kernel_dict: dictionary - parameters for function mat_kernel (see My_Tools.Gram_mat)
-            init_l_scale: float - initialisation of length scale
             normalize: boolean - indicates whether feature channels is divided by density channel
         '''
-        #-------------------------SET PARAMETERS-----------------
-        #Bool whether to normalize:
-        self.normalize=normalize
-        
-        #Kernel parameters:
+        #So far, we only allow for two-dimensional outputs:
+        self.dim_Y=2
         self.kernel_type=kernel_dict['kernel_type']
-        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(init_l_scale,dtype=torch.get_default_dtype())),requires_grad=False)
+        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=False)
         self.kernel_dict=kernel_dict
-
-        #Grid parameters:
-        #x-axis:
+        
+        if 'B' in kernel_dict or 'l_scale' in kernel_dict:
+            sys.exit("So far, we do not allow for a multi-dimensional kernel in the embedding and no l_scale is allowed")
         self.x_range=x_range
         self.n_x_axis=n_x_axis
-        #y-axis (same as for x-axis if not given):
-        self.y_range=y_range if y_range is not None else x_range
-        self.n_y_axis=n_y_axis if n_y_axis is not None else n_x_axis
 
-        #Grid:
-        '''
-        Create a flattened grid--> shape (n_y_axis*n_x_axis,2) 
-        #x-axis is counted periodically, y-axis stays the same per period of counting the x-axis.
-        i.e. self.grid[k*n_x_axis+j] corresponds to element k in the y-grid and j in the x-grid.
-        Important: The counter will go BACKWARDS IN THE Y-AXIS - this is because
-        if we look at a (m,n)-matrix as a matrix with pixels, then the higher 
-        the row index, the lower its y-axis value, i.e. the y-axis is counted 
-        mirrored.
-        '''
+        #If y_range is None set to the same as x_range:
+        if y_range is not None:
+            self.y_range=y_range
+        else:
+            self.y_range=x_range
+        #If n_y_axis is None set to the same as n_y_axis:
+           
+        if n_y_axis is not None:
+            self.n_y_axis=n_y_axis
+        else:
+            self.n_y_axis=n_x_axis
+            
+        #Create a flattened grid: Periodic grid is y-axis - repetitive grid is x-axis
+        #i.e. self.grid[k*n_y_axis+j] corresponds to unflattended Grid[k][j]
+        #NOTE: The counter will go BACKWARDS IN THE Y-AXIS - this is because
+        #if we look at a (m,n)-matrix as a matrix with pixels, then the higher 
+        #the row index, the lower its y-axis value, i.e. the y-axis is counted 
+        #mirrored.
         self.grid=nn.Parameter(My_Tools.Give_2d_Grid(min_x=self.x_range[0],max_x=self.x_range[1],
                                min_y=self.y_range[1],max_y=self.y_range[0],
                                n_x_axis=self.n_x_axis,n_y_axis=self.n_y_axis,flatten=True),requires_grad=False)
-            
-        #-------------------------SET PARAMETERS FINISHED-----------------
         
-        #-------------------------CONTROL PARAMETERS-----------------
-
-        #To prevent a clash, 'B' and 'l_scale' should not be in kernel_dict:        
-        if 'B' in kernel_dict or 'l_scale' in kernel_dict:
-            sys.exit("So far, we do not allow for a multi-dimensional kernel in the embedding and no l_scale is allowed")
-        if not isinstance(init_l_scale,float) or init_l_scale<=0:
-            sys.exit("Encoder error: l_scale not correct.")
-        if x_range[0]>=x_range[1] or y_range[0]>=y_range[1]:
-            sys.exit("x and y range are not valid.")
-        #-------------------------CONTROL PARAMETERS FINISHED-----------------
-
-    #Expansion of a label vector y in the embedding.
-    #This is the function y->(1,y,y^2,y^3,...,y^K) in the ConvCNP paper.
-    #For now it just adding a one, i.e. y->(1,y), since we assume multiplicity one:
+        self.normalize=normalize
+        
+    #This is the function y->(1,y,y^2,y^3,...,y^n) in the ConvCNP paper - for now it just adding a one to every y: y->(1,y):
+    #since we assume multiplicity one:
     def Psi(self,Y):
         '''
         Input: Y - torch.tensor - shape (n,2)
-        Output: torch.tensor -shape (n,3) - added a column of ones to Y (at the start) Y[i,j]<--[1,Y[i,j]]
+        Output: torch.tensor -shape (n,3) - added a column of ones to Y (at the start) Y[i,j<--[1,Y[i,j]]
         '''
         return(torch.cat((torch.ones((Y.size(0),1),device=Y.device),Y),dim=1))
-
+        
     def forward(self,X,Y):
         '''
         Inputs:
             X: torch.tensor - shape (n,2)
             Y: torch.tensor - shape (n,self.dim_Y)
+            x_range: List of floats - size 2 - x_range[0] gives minimum x-grid, x_range[1] - gives maximum x-grid
+            y_range: List of floats - size 2 - y_range[0] gives minimum y-grid, y_range[1] - gives maximum y-grid
+                     if None: x_range is taken
+            n_grid_points: int - number of grid points per dimension 
         Outputs:
-            torch.tensor - shape (1,self.dim_Y+1,self.n_y_axis,self.n_x_axis) (shape which can be processed by CNN)
+            torch.tensor - shape (self.dim_Y+1,n_y_axis,n_axis) 
         '''
-        #DEBUG: Control whether X and the grid are on the same device:
+        #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data 
+        #-->shape (n_x_axis*n_y_axis,n)
         if self.grid.device!=X.device:
             print("Grid and X are on different devices.")
             self.grid=self.grid.to(X.device)
         
-        #Compute the length scale out of the log-scale (clamp for numerical stability):
         l_scale=torch.exp(torch.clamp(self.log_l_scale,max=5.,min=-5.))
-        #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data-->shape (self.n_y_axis*self.n_x_axis,n)
         Gram=GP.Gram_matrix(self.grid,X,l_scale=l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion:
         Expand_Y=self.Psi(Y)
         
-        #Compute feature map -->shape (self.n_y_axis*self.n_x_axis,3)
+        #Compute feature map - get shape (n_x_axis*n_y_axis,3)
         Feature_Map=torch.mm(Gram,Expand_Y)
-
         #If wanted, normalize the weights for the channel which is not the density channel:
         if self.normalize:
             #Normalize the functional representation:
@@ -132,19 +129,19 @@ class Steerable_Encoder(nn.Module):
             Norm_Feature_Map[:,1:]=Feature_Map[:,1:]/Feature_Map[:,0].unsqueeze(1)
             Norm_Feature_Map[:,0]=Feature_Map[:,0]
             #Reshape the Feature Map to the form (1,n_channels=3,n_y_axis,n_x_axis) (because this is the form required for a CNN):
-            return(Norm_Feature_Map.reshape(self.n_y_axis,self.n_x_axis,Expand_Y.size(1)).permute(dims=(2,0,1)).unsqueeze(0))        
+            return(Norm_Feature_Map.reshape(self.n_x_axis,self.n_y_axis,Expand_Y.size(1)).permute(dims=(2,1,0)).unsqueeze(0))        
         #Reshape the Feature Map to the form (1,n_channels=3,n_y_axis,n_x_axis) (because this is the form required for a CNN):
         else:   
-            return(Feature_Map.reshape(self.n_y_axis,self.n_x_axis,Expand_Y.size(1)).permute(dims=(2,0,1)).unsqueeze(0))    
+            return(Feature_Map.reshape(self.n_x_axis,self.n_y_axis,Expand_Y.size(1)).permute(dims=(2,1,0)).unsqueeze(0))
     
     def plot_embedding(self,Embedding,X_context=None,Y_context=None,title=""):
         '''
         Input: 
                Embedding - torch.tensor - shape (1,n_grid_points,3) - Embedding obtained from self.forward (usually  from X_context,Y_context)
-                                                                      where Embedding[0,0] is the density channel
-                                                                      and Embedding[0,1:] is the smoothing channel
+                                                                      where (n_grid_poinst,0) is the density channel
+                                                                      and (n_grid_points,1:2) is the smoothing channel
                X_context,Y_context - torch.tensor - shape (n,2) - context locations and vectors
-               title - string - title of plots
+               title - string 
         Plots locations X_context with vectors Y_context attached to it
         and on top plots the kernel smoothed version (i.e. channel 2,3 of the embedding)
         Moreover, it plots a density plot (channel 1 of the embedding)
@@ -166,7 +163,7 @@ class Steerable_Encoder(nn.Module):
             ax[0].scatter(X_context[:,0],X_context[:,1],color='black')
             ax[0].quiver(X_context[:,0],X_context[:,1],Y_context[:,0],Y_context[:,1],
               color='black',pivot='mid',label='Context set',scale=quiver_scale)
-########GO ON HERE
+
         #Get embedding of the form (3,self.n_y_axis,self.n_x_axis)
         Embedding=Embedding.squeeze()
         #Get density channel --> shape (self.n_y_axis,self.n_x_axis)
@@ -227,7 +224,7 @@ class Steerable_Decoder(nn.Module):
       
 #A class which defines a ConvCNP:
 class Steerable_CNP(nn.Module):
-    def __init__(self, encoder, decoder, dim_cov_est=3,
+    def __init__(self,G_act,feature_in, encoder,decoder, dim_cov_est,
                          kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
         '''
         Inputs:
@@ -241,52 +238,44 @@ class Steerable_CNP(nn.Module):
             l_scale - float - gives initialisation for learnable length parameter
             normalize_output  - Boolean - indicates whether kernel smoothing is performed with normalizing
         '''
-        #-----------------------SAVING OF PARAMETERS ----------------------------------
+
         super(Steerable_CNP, self).__init__()
         #Initialse the encoder:
         self.encoder=encoder
         #Decoder: For now: A standard CNN whose parameters are arbitrary for now:
         self.decoder=decoder
         #Get the parameters for kernel smoother for the target set:
-        self.log_l_scale_out=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
+        self.log_l_scale_out=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)\
         #Get the other kernel parameters for the kernel smoother for the target set (others are fixed):
         self.kernel_dict_out=kernel_dict_out
-        #Save whether output is normalized (i.e. kernel smoothing is performed with normalizing):
-        self.normalize_output=normalize_output
-        #Save the dimension of the covariance estimator of the last layer:
-        self.dim_cov_est=dim_cov_est
-        #-----------------------SAVING of PARAMETERS FINISHED---------------------------------
 
 
-        #--------------------CONTROL OF PARAMETERS -------------------------
-        #So far, the dimension of the covariance estimator has to be either 1 or 3 (i.e. number of output channels either 3 or 5):
-        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3):
-            sys.exit("The number of output channels of the decoder must be either 3 or 5")
-        #Control that there is no variable l_scale in the the kernel dictionary (otherwise clash with self.log_l_scale_out when
-        # calling My_Tools.Gram_Matrix)
+
+
+
+        
+        #Control that there is no variable l_scale in the the kernel dictionary:
         if 'l_scale' in kernel_dict_out:
             sys.exit("l scale is variable and not fixed")
-        if not isinstance(encoder,Steerable_Encoder):
-            sys.exit("Enoder is not correct.")
-
-        #CONTROL DECODER:
-        if not isinstance(decoder, nn.Module):
-            sys.exit("Decoder has to be nn.Module")
-        #Test whether the decoder accepts and returns the correct shape: 
-        test_input=torch.randn([5,3,encoder.n_y_axis,encoder.n_x_axis])  
-        test_output=decoder(test_input)
+        #Save whether output is normalized:
+        self.normalize_output=normalize_output
         
-        if len(test_output.shape)!=4 or test_output.size(0)!=test_input.size(0) or test_output.size(2)!=encoder.n_y_axis or test_output.size(3)!=encoder.n_x_axis:
-            sys.exit("Decoder error: shape of output is not correct.")
-        if (self.dim_cov_est+2)!=test_output.size(1):
-            sys.exit("Number of output channels does not match the dimension of covariance estimation.")
-        if not isinstance(self.normalize_output,bool):
-            print("Normalize output has to be boolean.")
-        if not isinstance(l_scale,float):
-            print("l_scale initialization has to be a float.")
-
-        #-------------------CONTROL OF PARAMETERS FINISHED------------------------------------------------------         
-
+        #Save the group and the feature types for the input, the embedding (output type = input type for now):
+        self.G_act=G_act
+        self.feature_in=feature_in
+        self.feature_emb=G_CNN.FieldType(G_act, [G_act.trivial_repr,feature_in.representation])
+        
+        #Save the dimension of the covariance estimator of the last layer:
+        self.dim_cov_est=dim_cov_est
+        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3):
+            sys.exit("The number of output channels of the decoder must be either 3 or 5")
+        
+        #Define the feature type on output which depending dim_cov_est either 3 or 5-dimensional
+        if self.dim_cov_est==1:
+            self.feature_out=G_CNN.FieldType(G_act, [feature_in.representation,G_act.trivial_repr])
+        else:
+            self.feature_out=G_CNN.FieldType(G_act, [feature_in.representation,My_Tools.get_pre_psd_rep(G_act)[0]])
+            
     #Define the function taking the output of the decoder and creating
     #predictions on the target set based on kernel smoothing (so it takes predictions on the 
     #grid an makes predictions on the target set out of it):
@@ -377,4 +366,5 @@ class Steerable_CNP(nn.Module):
             return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
         else:
             return(-log_ll)
+
 

@@ -110,8 +110,11 @@ def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatte
         n_x_axis,n_y_axis: int - number of points per axis
         flatten: Boolean - determines shape of output
     Output:
-        torch.tensor - if flatten is True: shape (n_x_axis*n_y_axis,2)
-                       if flatten is not True: shape (n_x_axis,n_y_axis,2)
+        torch.tensor - if flatten is True: shape (n_y_axis*n_x_axis,2) 
+                                          (element i*n_x_axis+j gives i-th element in y-grid 
+                                           and j-th element in  x-grid.
+                                           In other words: x is periodic counter and y the stable counter)
+                       if flatten is not True: shape (n_y_axis,n_x_axis,2)
     '''
     if min_y is None:
         min_y=min_x
@@ -122,12 +125,14 @@ def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatte
         
     x_grid_vec=torch.linspace(min_x,max_x,n_x_axis)
     y_grid_vec=torch.linspace(min_y,max_y,n_y_axis)
-    X1,X2=torch.meshgrid(x_grid_vec,y_grid_vec)
-    X=torch.stack((X1,X2),2)
+    Y,X=torch.meshgrid(y_grid_vec,x_grid_vec)
+    Z=torch.stack((X,Y),2)
     if flatten:
-        X=X.view(n_x_axis*n_y_axis,2)
-    return(X)
-           
+        Z=Z.view(n_y_axis*n_x_axis,2)
+    return(Z)
+
+#%%
+#            
 #Tool to plot context set, ground truth for target and predictions for target in one plot:
 def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=None,Cov_Mat=None,title=""):
     '''
