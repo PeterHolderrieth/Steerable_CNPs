@@ -316,7 +316,7 @@ class Steerable_CNP(nn.Module):
         #--------------------CONTROL OF PARAMETERS -------------------------
         #So far, the dimension of the covariance estimator has to be either 1 or 3 
         #(i.e. number of output channels either 3 or 5):
-        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3): sys.exit("N Out channels must be either 3 or 5")
+        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3): sys.exit("N out channels must be either 3 or 5")
         if 'l_scale' in kernel_dict_out: sys.exit("l scale is variable and not fixed")
         if not isinstance(self.normalize_output,bool): sys.exit("Normalize output has to be boolean.")
         if not isinstance(l_scale,float): sys.exit("l_scale initialization has to be a float.")
@@ -425,3 +425,17 @@ class Steerable_CNP(nn.Module):
             return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
         else: 
             return(-log_ll)
+    def give_dict(self):
+        dictionary={
+            'decoder_str': None
+            'decoder_par': self.decoder.state_dict(),
+            'encoder_par': self.encoder.state_dict(),
+            'log_l_scale_out':self.log_l_scale_out,
+            'normalize_output': self.normalize_output,
+            'dim_cov_est': self.dim_cov_est,
+            'kernel_dict_out':, self.kernel_dict_out
+        }
+        return(dictionary)
+
+Encoder=Steerable_Encoder()
+print(Encoder.state_dict())
