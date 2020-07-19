@@ -1,7 +1,9 @@
 #LIBRARIES:
 #Tensors:
-import torch
+
 import numpy as np
+import math
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
@@ -471,17 +473,30 @@ class Steerable_CNP(nn.Module):
             return(-log_ll)
     def give_dict(self):
         dictionary={
-            'decoder_dict': self.decoder.give_dict(),
             'encoder_dict': self.encoder.give_dict(),
-            'log_l_scale_out': self.log_l_scale_out,
+            'decoder_dict': self.decoder.give_dict(),
+            'log_l_scale_out': self.log_l_scale_out.detach().item(),
             'normalize_output': self.normalize_output,
             'dim_cov_est': self.dim_cov_est,
             'kernel_dict_out': self.kernel_dict_out
         }
         return(dictionary)
+    def save_model_dict(self,filename):
+        torch.save(self.give_dict(),f=filename)
 
+def create_Steerable_CNP(dictionary=None):
+    Encoder=Steerable_Encoder(**dictionary['encoder_dict'])
+    Decoder=load_Steerable_Decoder(dictionary['decoder_dict'])
+    Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=dictionary['dim_cov_est'],
+                    kernel_dict_out=dictionary['kernel_dict_out'],l_scale=math.exp(dictionary['log_l_scale_out']),
+                    normalize_output=dictionary['normalize_output'])
+    return(Model)
 
-Encoder=Steerable_Encoder()
+def load_Steerable_CNP(filename):
+    dictionary=torch.load(f=filename)
+    return(create_Steerable_CNP(filename))
+
+Encoder=Steerable_Encoder(l_scale=0.4)
 G_act = gspaces.Rot2dOnR2(N=4)
 feat_type_in=G_CNN.FieldType(G_act, [G_act.irrep(1)])
 feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),G_act.trivial_repr])
@@ -491,6 +506,7 @@ feat_types=[G_CNN.FieldType(G_act, [G_act.trivial_repr,G_act.irrep(1)]),
 #Define the kernel sizes:
 kernel_sizes=[5]
 Decoder=Steerable_Decoder(feat_types,kernel_sizes)
-Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=1)
-#print(Model.give_dict().keys())
-
+Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=1,l_scale=1.45)
+file="Test_CNP"
+Model.save_model_dict(filename=file)
+Rel_Model=load_Steerable_CNP(filename=file)
