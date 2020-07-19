@@ -660,14 +660,15 @@ class Steerable_CNP(nn.Module):
 
 
 #CONTROL CODE:
-'''
+
 #1. Saving and loading encoder - control whether it is equal:
 Encoder=Steerable_Encoder(x_range=[-1,2],y_range=[3,4],n_x_axis=11,n_y_axis=7,kernel_dict={'kernel_type': 'rbf','sigma_var': 2},
                           l_scale=0.6,normalize=False)
 X_Test=torch.randn((100,2))
 Y_Test=torch.randn((100,2))
 #PROBLEM WITH PLOT EMBEDDING:
-#Test_embedding=Encoder.plot_embedding(X_Test,Y_Test)
+Test_embedding=Encoder.plot_embedding(X_Test,Y_Test)
+'''
 Encoder_dict=Encoder.give_dict()
 Encoder_rel=Steerable_Encoder(**Encoder_dict)
 print(Encoder_rel.give_dict()==Encoder_dict)
@@ -708,7 +709,7 @@ for parameter in Rel_Geom_Decoder.decoder.parameters():
 for parameter in Geom_Decoder.decoder.parameters():
     print(parameter.flatten()[0])
 '''
-
+'''
 #4. Saving and loading Steerable_CNP - control whether is equal:
 Encoder=Steerable_Encoder(x_range=[-1,2],y_range=[3,4],n_x_axis=11,n_y_axis=7,kernel_dict={'kernel_type': 'rbf','sigma_var': 2},
                           l_scale=0.6,normalize=False)
@@ -719,12 +720,13 @@ Conv_Decoder=CNN_Decoder(list_n_channels,kernel_sizes,non_linearity)
 CNP_Model=Steerable_CNP(encoder=Encoder,decoder=Conv_Decoder,dim_cov_est=1,l_scale=0.33,normalize_output=False)
 CNP_Model.save_model_dict(filename="Test_CNP_1")
 Rel_CNP_Model=Steerable_CNP.load_model_from_dict("Test_CNP_1")
-for key in CNP_Model.give_dict().keys():
-    print(key)
-    print(CNP_Model.give_dict()[key])
-    print(Rel_CNP_Model.give_dict()[key])
+#for key in CNP_Model.give_dict().keys():
+#    print(key)
+#    print(CNP_Model.give_dict()[key])
+#    print(Rel_CNP_Model.give_dict()[key])
 #Compare parameters:
 #for parameter in Rel_CNP_Model.parameters():
 #    print(parameter.flatten()[0])
 #for parameter in CNP_Model.parameters():
 #    print(parameter.flatten()[0])
+'''
