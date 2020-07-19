@@ -38,17 +38,6 @@ torch.set_default_dtype(torch.float)
 quiver_scale=15
 
 '''
-TO DO:
--Create give_dict and load from dict function for Steerable CNP
-- Create a function such that Steerable_CNP can be saved to a dictionary and can be reloaded 
-(maybe save inside the class and load outside)
-- A convolutional decoder class - defining the decoder for the ConvCNP case
-- Control correctness of feature types list for encoder (whether from correct instance)
-
-'''
-
-
-'''
 -------------------------------------------------------------------------
 --------------------------ENCODER CLASS----------------------------------
 -------------------------------------------------------------------------
@@ -228,32 +217,126 @@ class Steerable_Encoder(nn.Module):
 
 '''
 -------------------------------------------------------------------------
---------------------------DECODER CLASS----------------------------------
+--------------------------DECODER CLASSES----------------------------------
 -------------------------------------------------------------------------
 '''
-
-class Steerable_Decoder(nn.Module):
-    def __init__(self,feat_types,kernel_sizes,non_linearity=["ReLU"]):
+#A STACK OF CNN LAYERS:
+class CNN_Decoder(nn.Module):
+    def __init__(self,list_n_channels,kernel_sizes,non_linearity=["ReLU"]):
         '''
-        Input: feat_types -list of e2cnn.nn.field_type.FieldType (G_CNN here)
+        Input: list_n_channels - list of ints -  element i gives the number of channels of layer i with layer 0 is the input layer
+               kernel_sizes - list of odd ints - sizes of kernels for convolutional layers 
+                                                (need to be odd because height and width of input and output tensors have to be the same)
+               non_linearity - list of strings - gives names of non-linearity to be used
+                                                 Either length 1 (then same non-linearity for all)
+                                                 or length is the number of layers (giving a custom non-linearity for every
+                                                 layer)                   
+        -->Creates a stack of CNN layers with number of channels given by "list_n_channels" and 
+        kernel sizes given by self.kernel_sizes - we perform padding such that the height and width do not change
+        '''    
+        #Initialize:
+        super(CNN_Decoder, self).__init__()
+        self.list_n_channels=list_n_channels        
+        self.kernel_sizes=kernel_sizes
+        self.n_layers=len(list_n_channels)
+
+        #-----CREATE LIST OF NON-LINEARITIES----
+        if len(non_linearity)==1:
+            self.non_linearity=(self.n_layers-2)*non_linearity
+        elif len(non_linearity)!=(self.n_layers-2):
+            sys.exit("List of non-linearities invalid: must have either length 1 or n_layers-2")
+        else:
+            self.non_linearity=non_linearity
+        #-----END CREATE LIST OF NON-LINEARITIES----
+
+        #----------CREATE DECODER----------------
+        '''
+        We create a stack of CNN layers with number of channels given by "list_n_channels" and 
+        kernel sizes given by self.kernel_sizes - we perform padding such that the height and width do not change
+        '''
+        #Create layers list and append it:
+        layers_list=[nn.Conv2d(list_n_channels[0],list_n_channels[1],
+                            kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
+
+        for it in range(self.n_layers-2):
+            if self.non_linearity[it]=="ReLU":
+                layers_list.append(nn.ReLU())
+            else:
+                sys.exit("Unknown non-linearity.")
+            layers_list.append(nn.Conv2d(list_n_channels[it+1],list_n_channels[it+2],
+                                            kernel_size=kernel_sizes[it],padding=(kernel_sizes[it]-1)//2))
+        #Create a steerable decoder out of the layers list:
+        self.decoder=nn.Sequential(*layers_list)
+        #----------END CREATE DECODER--------------
+
+        #-----------CONTROL INPUTS------------------
+        if any([j%2-1 for j in kernel_sizes]): sys.exit("All kernels need to have odd sizes")
+        if len(kernel_sizes)!=(self.n_layers-1): sys.exit("Number of layers and number kernels do not match.")
+        if len(self.non_linearity)!=(self.n_layers-2): sys.exit("Number of layers and number of non-linearities do not match.")
+        #------------END CONTROL INPUTS--------------
+
+    def forward(self,X):
+        return(self.decoder(X))
+    
+    def give_dict(self):
+        dictionary={
+            'list_n_channels': self.list_n_channels,
+            'kernel_sizes': self.kernel_sizes,
+            'non_linearity': self.non_linearity,
+            'decoder_class': self.__class__.__name__,
+            'decoder_info': self.decoder.__str__(),
+            'decoder_par': self.decoder.state_dict()
+        }
+        return(dictionary)
+
+    def save_model_dict(self,filename):
+        torch.save(self.give_dict(),f=filename)
+
+    def create_model_from_dict(dictionary):
+        '''
+        Input: dictionary - dictionary - gives parameters for decoder (weights and biases are randomly initialised
+                                        if decoder parameters are not given)
+        Output: Decoder - instance of CNN_Decoder (see above) 
+        '''
+        Decoder=CNN_Decoder(list_n_channels=dictionary['list_n_channels'],
+                                    kernel_sizes=dictionary['kernel_sizes'],
+                                    non_linearity=dictionary['non_linearity']
+                                )
+        if 'decoder_par' in dictionary:
+            Decoder.decoder.load_state_dict(dictionary['decoder_par'])
+        return(Decoder)
+
+    def load_model_from_dict(filename):
+        dictionary=torch.load(f=filename)
+        return(CNN_Decoder.create_model_from_dict(dictionary))
+
+
+#A decoder class which is equivariant with respect the cyclic group C_N (i.e. rotations of 360/N degrees):
+class Cyclic_Decoder(nn.Module):
+    def __init__(self,fib_reps,kernel_sizes,non_linearity=["ReLU"],N=4):
+        '''
+        Input: fib_reps - list of lists of ints - "-1"...encodes regular repr
+                                                  k=0,1,2,..,flatten(N/2)...encodes irrep(k)
+                                                  In particular: "0"...encodes trivial repr
                kernel_sizes - list of ints - sizes of kernels for convolutional layers
                non_linearity - list of strings - gives names of non-linearity to be used
                                                  Either length 1 (then same non-linearity for all)
                                                  or length is the number of layers (giving a custom non-linearity for every
                                                  layer)                   
         '''
-        super(Steerable_Decoder, self).__init__()
-        #Save parameters:
+        super(Cyclic_Decoder, self).__init__()
+        #Save the group and the parameters:
+        self.Group_order=N
+        self.G_act=gspaces.Rot2dOnR2(N=N)
         self.kernel_sizes=kernel_sizes
-        self.feature_in=feat_types[0]
-        self.n_layers=len(feat_types)
-        self.feat_types=feat_types
+        self.n_layers=len(fib_reps)
+        self.fib_reps=fib_reps
         
         #-----CREATE LIST OF NON-LINEARITIES----
         if len(non_linearity)==1:
             self.non_linearity=(self.n_layers-2)*non_linearity
         elif len(non_linearity)!=(self.n_layers-2):
-            sys.exit("List of non-linearities invalid: must have either length 1 or n_layers-1")
+            sys.exit("List of non-linearities invalid: must have either length 1 or n_layers-2")
         else:
             self.non_linearity=non_linearity
         #-----ENDE LIST OF NON-LINEARITIES----
@@ -264,6 +347,10 @@ class Steerable_Decoder(nn.Module):
         that the height h and width w of a tensor with shape (batch_size,n_channels,h,w) does not change
         while being passed through the decoder
         '''
+        #Create list of feature types:
+        feat_types=self.give_feat_types()
+        self.feature_in=feat_types[0]
+        #Create layers list and append it:
         layers_list=[G_CNN.R2Conv(feat_types[0],feat_types[1],kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
 
         for it in range(self.n_layers-2):
@@ -284,7 +371,33 @@ class Steerable_Decoder(nn.Module):
         if len(kernel_sizes)!=(self.n_layers-1): sys.exit("Number of layers and number kernels do not match.")
         if len(self.non_linearity)!=(self.n_layers-2): sys.exit("Number of layers and number of non-linearities do not match.")
         #------------END CONTROL INPUTS--------------
-
+    
+    #A tool for initialising the class:
+    def give_feat_types(self):
+        '''
+        Output: feat_types - list of features types (see class ) 
+                           - self.fib_reps[i]=[k_1,...,k_l] gives a list of integers where
+                             k_i stands for irrep(k_i) of the rotation group or if k_i=-1 for the regular representation
+                             the sume of rep(k_1),...,rep(k_l) determines the ith element of "feat_types"
+        '''
+        feat_types=[]
+        for reps in self.fib_reps:
+            #New layer collects the sum of individual representations to one list:
+            new_layer=[]
+            for rep in reps:
+                #The representation can be trivial (irrep(0)), regular or a non-trivial irreducible:
+                if rep==0:
+                    new_layer.append(self.G_act.trivial_repr)
+                elif rep==-1:
+                    new_layer.append(self.G_act.regular_repr)
+                elif rep%1==0 and 1<=rep and rep<=math.floor(self.Group_order/2):
+                    new_layer.append(self.G_act.irrep(rep))
+                else:
+                    sys.exit("Unknown fiber representation.")
+            #Append a new feature type given by the new layer:
+            feat_types.append(G_CNN.FieldType(self.G_act, new_layer))
+        return(feat_types)
+    
     def forward(self,X):
         '''
         Input: X - torch.tensor - shape (batch_size,n_in_channels,m,n)
@@ -297,34 +410,53 @@ class Steerable_Decoder(nn.Module):
         #Return the resulting tensor:
         return(Out.tensor)
 
+    #Two functions to save the model in a dictionary:
+    #1.Create dictionary with parameters:
     def give_dict(self):
         dictionary={
-            'feat_types':self.feat_types,
+            'N': self.Group_order,
+            'fib_reps': self.fib_reps,
             'kernel_sizes': self.kernel_sizes,
             'non_linearity': self.non_linearity,
+            'decoder_class': self.__class__.__name__,
             'decoder_info': self.decoder.__str__(),
             'decoder_par': self.decoder.state_dict()
         }
         return(dictionary)
+    #2.Save dictionary:
+    def save_model_dict(self,filename):
+        torch.save(self.give_dict(),f=filename)
 
-#----------------------A function to load a decoder from a dictionary -------
-def load_Steerable_Decoder(dictionary):
-    '''
-    Input: dictionary - dictionary - gives parameters for decoder which is randomly initialised
-                                     if decoder parameters (weights and biases) are given 
-                                     the weights are loaded into the decoder
-    Output: Decoder - instance of Steerable_Decoder (see above) 
-    '''
-    Decoder=Steerable_Decoder(feat_types=dictionary['feat_types'],
-                                kernel_sizes=dictionary['kernel_sizes'],
-                                non_linearity=dictionary['non_linearity']
-                              )
-    if 'decoder_par' in dictionary:
-        if dictionary['decoder_par'] is not None:
-            Decoder.decoder.load_state_dict(dictionary['decoder_par'])
-    return(Decoder)
+    #Two functions to load the model from file:
+    #1.Create Model from dictionary:
+    def create_model_from_dict(dictionary):
+        '''
+        Input: dictionary - dictionary - gives parameters for decoder which is randomly initialised
+                                        if decoder parameters (weights and biases) are given 
+                                        the weights are loaded into the decoder
+        Output: Decoder - instance of Cyclic_Decoder (see above) 
+        '''
+        Decoder=Cyclic_Decoder(N=dictionary['N'],
+                                    fib_reps=dictionary['fib_reps'],
+                                    kernel_sizes=dictionary['kernel_sizes'],
+                                    non_linearity=dictionary['non_linearity']
+                                )
+        if 'decoder_par' in dictionary:
+            if dictionary['decoder_par'] is not None:
+                Decoder.decoder.load_state_dict(dictionary['decoder_par'])
+        return(Decoder)
 
- 
+    #2. Load dictionary from file and create it:
+    def load_model_from_dict(filename):
+        '''
+        Input: filename - string - name of file where dictionary is saved
+        Output: instance of Cyclic_Decoder with parameters as specified at "filename"
+        '''
+        dictionary=torch.load(f=filename)
+        return(Cyclic_Decoder.create_model_from_dict(dictionary))
+
+
+
 '''
 -------------------------------------------------------------------------
 --------------------------STEERABLE CNP CLASS----------------------------
@@ -338,6 +470,8 @@ class Steerable_CNP(nn.Module):
             encoder - instance of Steerable_Encoder class above
             decoder - nn.Module - takes input (batch_size,3,height,width) and gives (batch_size,5,height,width) 
                                   (dim_cov_est=3) or (batch_size,3,height,width) (if dim_cov_est=1) as output
+            decoder_type - string - type of decoder: possible - "Conv" (standard CNN)
+                                                              - "Cyclic" (Group-Equivariant network w.r.t. cyclic group)
             kernel_dict_out - gives parameters for kernel smoother of output
             l_scale - float - gives initialisation for learnable length parameter
             normalize_output  - Boolean - indicates whether kernel smoothing is performed with normalizing
@@ -346,8 +480,9 @@ class Steerable_CNP(nn.Module):
         super(Steerable_CNP, self).__init__()
         #Initialse the encoder:
         self.encoder=encoder
-        #Decoder: For now: A standard CNN whose parameters are arbitrary for now:
+        #Decoder and save the type (Convolutional, Steerable and if Steerable which group)
         self.decoder=decoder
+        self.decoder_type=decoder.__class__.__name__
         #Get the parameters for kernel smoother for the target set:
         self.log_l_scale_out=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
         #Get the other kernel parameters for the kernel smoother for the target set (others are fixed):
@@ -368,6 +503,7 @@ class Steerable_CNP(nn.Module):
         if not isinstance(l_scale,float): sys.exit("l_scale initialization has to be a float.")
         if not isinstance(encoder,Steerable_Encoder): sys.exit("Enoder is not correct.")
         if not isinstance(decoder, nn.Module): sys.exit("Decoder has to be nn.Module")
+        if self.decoder_type!="CNN_Decoder" and self.decoder_type!="Cyclic_Decoder": sys.exit("Unknown decoder type.")
         #--------------------END CONTROL OF PARAMETERS----------------------
 
         #-------------------CONTROL WHETHER DECODER ACCEPTS AND RETURNS CORRECT SHAPES----
@@ -471,42 +607,124 @@ class Steerable_CNP(nn.Module):
             return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
         else: 
             return(-log_ll)
+    #Two functions to save the model in a dictionary:
+    #1.Create a dictionary:
     def give_dict(self):
         dictionary={
             'encoder_dict': self.encoder.give_dict(),
             'decoder_dict': self.decoder.give_dict(),
+            'decoder_class': self.decoder_type,
             'log_l_scale_out': self.log_l_scale_out.detach().item(),
             'normalize_output': self.normalize_output,
             'dim_cov_est': self.dim_cov_est,
             'kernel_dict_out': self.kernel_dict_out
         }
         return(dictionary)
+    #2.Save the dictionary in a file:
     def save_model_dict(self,filename):
         torch.save(self.give_dict(),f=filename)
 
-def create_Steerable_CNP(dictionary=None):
-    Encoder=Steerable_Encoder(**dictionary['encoder_dict'])
-    Decoder=load_Steerable_Decoder(dictionary['decoder_dict'])
-    Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=dictionary['dim_cov_est'],
-                    kernel_dict_out=dictionary['kernel_dict_out'],l_scale=math.exp(dictionary['log_l_scale_out']),
-                    normalize_output=dictionary['normalize_output'])
-    return(Model)
+    #Two functions to load the model from a dictionary:
+    #1.Create model from dictionary:
+    def create_model_from_dict(dictionary):
+        '''
+        Input: dictionary - dict - parameters to load into Steerable_CNP class (including weights and biases for decoder and encoder)
+        Output: instance of Steerable_CNP with parameters as specified in dictionary
+        '''
+        #Load Encoder:
+        Encoder=Steerable_Encoder(**dictionary['encoder_dict'])
+        #Load Decoder (depending on type of decoder use different functions):
+        if dictionary['decoder_class']=="Cyclic_Decoder":
+            Decoder=Cyclic_Decoder.create_model_from_dict(dictionary['decoder_dict'])
+        elif dictionary['decoder_class']=="CNN_Decoder":
+            Decoder=CNN_Decoder.create_model_from_dict(dictionary['decoder_dict'])
+        else:
+            sys.exit("Unknown decoder type.")
+    
+        #Create model:
+        Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,
+                        dim_cov_est=dictionary['dim_cov_est'], kernel_dict_out=dictionary['kernel_dict_out'],
+                        l_scale=math.exp(dictionary['log_l_scale_out']), normalize_output=dictionary['normalize_output'])
+        return(Model)
 
-def load_Steerable_CNP(filename):
-    dictionary=torch.load(f=filename)
-    return(create_Steerable_CNP(filename))
+    #2. Load dictionary and from dictionary load model:
+    def load_model_from_dict(filename):
+        '''
+        Input: filename - string -location of dictionary
+        Output: instance of Steerable_CNP with parameters as specified in dictionary at path "filename"
+        '''
+        dictionary=torch.load(f=filename)
+        return(Steerable_CNP.create_model_from_dict(dictionary))
 
-Encoder=Steerable_Encoder(l_scale=0.4)
-G_act = gspaces.Rot2dOnR2(N=4)
-feat_type_in=G_CNN.FieldType(G_act, [G_act.irrep(1)])
-feat_type_out=G_CNN.FieldType(G_act,[G_act.irrep(1),G_act.trivial_repr])
-feat_types=[G_CNN.FieldType(G_act, [G_act.trivial_repr,G_act.irrep(1)]),
-            feat_type_out]
 
-#Define the kernel sizes:
-kernel_sizes=[5]
-Decoder=Steerable_Decoder(feat_types,kernel_sizes)
-Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=1,l_scale=1.45)
-file="Test_CNP"
-Model.save_model_dict(filename=file)
-Rel_Model=load_Steerable_CNP(filename=file)
+
+
+#CONTROL CODE:
+'''
+#1. Saving and loading encoder - control whether it is equal:
+Encoder=Steerable_Encoder(x_range=[-1,2],y_range=[3,4],n_x_axis=11,n_y_axis=7,kernel_dict={'kernel_type': 'rbf','sigma_var': 2},
+                          l_scale=0.6,normalize=False)
+X_Test=torch.randn((100,2))
+Y_Test=torch.randn((100,2))
+#PROBLEM WITH PLOT EMBEDDING:
+#Test_embedding=Encoder.plot_embedding(X_Test,Y_Test)
+Encoder_dict=Encoder.give_dict()
+Encoder_rel=Steerable_Encoder(**Encoder_dict)
+print(Encoder_rel.give_dict()==Encoder_dict)
+'''
+'''
+#2. Saving and loading CNN_Decoder - control whether it is equal:
+kernel_sizes=[5,7,9,3]
+list_n_channels=[3,5,7,8,3]
+non_linearity=["ReLU","ReLU","ReLU"]
+Conv_Decoder=CNN_Decoder(list_n_channels,kernel_sizes,non_linearity)
+Conv_Decoder.save_model_dict(filename="Test_CNN_Decoder")
+Rel_Conv_Decoder=CNN_Decoder.load_model_from_dict(filename="Test_CNN_Decoder")
+#for key in Rel_Conv_Decoder.give_dict().keys():
+#    print(key)
+#    print(Rel_Conv_Decoder.give_dict()[key]==Conv_Decoder.give_dict()[key])
+#
+#Compare parameters:
+for parameter in Rel_Conv_Decoder.decoder.parameters():
+    print(parameter.flatten()[0])
+for parameter in Conv_Decoder.decoder.parameters():
+    print(parameter.flatten()[0])
+'''
+'''
+#3. Saving and loading Cyclic_Decoder - control whether it is equal:
+kernel_sizes=[5,7,9,3]
+fib_reps=[[1,0],[1,-1,-1],[1,-1,0],[-1,-1,-1,-1],[1,0]]
+non_linearity=["NormReLU","NormReLU","NormReLU"]
+Geom_Decoder=Cyclic_Decoder(fib_reps,kernel_sizes,non_linearity,N=8)
+Geom_Decoder.save_model_dict(filename="Test_Cyclic_Decoder")
+Rel_Geom_Decoder=Cyclic_Decoder.load_model_from_dict(filename="Test_Cyclic_Decoder")
+#for key in Rel_Geom_Decoder.give_dict().keys():
+#    print(key)
+#    print(Rel_Geom_Decoder.give_dict()[key]==Geom_Decoder.give_dict()[key])
+
+#Compare parameters:
+for parameter in Rel_Geom_Decoder.decoder.parameters():
+    print(parameter.flatten()[0])
+for parameter in Geom_Decoder.decoder.parameters():
+    print(parameter.flatten()[0])
+'''
+
+#4. Saving and loading Steerable_CNP - control whether is equal:
+Encoder=Steerable_Encoder(x_range=[-1,2],y_range=[3,4],n_x_axis=11,n_y_axis=7,kernel_dict={'kernel_type': 'rbf','sigma_var': 2},
+                          l_scale=0.6,normalize=False)
+kernel_sizes=[5,7,9,3]
+list_n_channels=[3,5,7,8,3]
+non_linearity=["ReLU","ReLU","ReLU"]
+Conv_Decoder=CNN_Decoder(list_n_channels,kernel_sizes,non_linearity)
+CNP_Model=Steerable_CNP(encoder=Encoder,decoder=Conv_Decoder,dim_cov_est=1,l_scale=0.33,normalize_output=False)
+CNP_Model.save_model_dict(filename="Test_CNP_1")
+Rel_CNP_Model=Steerable_CNP.load_model_from_dict("Test_CNP_1")
+for key in CNP_Model.give_dict().keys():
+    print(key)
+    print(CNP_Model.give_dict()[key])
+    print(Rel_CNP_Model.give_dict()[key])
+#Compare parameters:
+#for parameter in Rel_CNP_Model.parameters():
+#    print(parameter.flatten()[0])
+#for parameter in CNP_Model.parameters():
+#    print(parameter.flatten()[0])
