@@ -260,11 +260,13 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
     D=Y_Context.size(1)
     if B is None:
         B=torch.eye(D,device=X_Target.device)
+    
+    point=datetime.datetime.today()
     #Get the Gram-matrix between the target and the context set --> shape (n_target_points,n_context_points,2,2):
     Gram_Blocks=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
+    #print("After Gram matrix: ",datetime.datetime.today()-point)
+    point=datetime.datetime.today()
     Gram_Mat=My_Tools.Create_matrix_from_Blocks(Gram_Blocks)
-    print("Gram_Mat shape: ", Gram_Mat.size())
-    print("Y_Context shape: ", Y_Context.size())
     #Get a kernel interpolation for the Target set and reshape it --> shape (2*n_target_points):
     Interpolate=torch.mv(Gram_Mat,Y_Context.flatten())
     #If wanted, normalize the output:
@@ -278,7 +280,8 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
         #Perform batch-wise multiplication with inverses 
         #(need to reshape vectors to a one-column matrix first and after the multiplication back):
         Interpolate=torch.matmul(Inverses,Interpolate.view(n_target_points,D,1))
-
+    #print("After normalization: ",datetime.datetime.today()-point)
+    point=datetime.datetime.today()
     #Return the vector:
     return(Interpolate.view(n_target_points,D))  
 
