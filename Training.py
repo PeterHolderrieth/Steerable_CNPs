@@ -45,7 +45,8 @@ quiver_scale=15
 '''
 This file should implement:
 - A flexible training function which is able to reload a state of a model and continue training after stopping training.
-- 
+- A fast way of using big minibatches but still allowing for different number of context points within one minibatch
+- A consistent way of defining losses (such that same of number of n_epochs*n_iterat_per epoch should give roughly the same results)
 '''
 
 def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
@@ -83,7 +84,8 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
           We choose a random function and random context before training and plot the development
           of the predictions (mean of the distributions) over the training
         '''
-        
+        minibatch_size=train_data_loader.batch_size
+
         #------------------Tracking training progress ----------------------
         #1.Track training loss:
         train_loss_tracker=torch.zeros(n_epochs)
@@ -92,32 +94,31 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
         #------------------------------------------------------------------------
 
         #Define the optimizer and add a weight decay term:
-        optimizer=torch.optim.Adam(self.Steerable_CNP.parameters(),lr=learning_rate,weight_decay=weight_decay)        
-        
+        optimizer=torch.optim.Adam(Steerable_CNP.parameters(),lr=learning_rate,weight_decay=weight_decay)        
+
         #-------------------EPOCH LOOP ------------------------------------------
-        for epoch in range(self.n_epochs):
+        for epoch in range(n_epochs):
             #Track the loss over the epoch:
             loss_epoch=My_Tools.AverageMeter()
             #-------------------------ITERATION IN ONE EPOCH ---------------------
-            for it in range(self.n_iterat_per_epoch):
-                #Get the next minibatch:
-                features, labels=next(iter(self.train_data_loader))
-                #Send it to the correct device:
-                features=features.to(self.device)
-                labels=labels.to(self.device)
+            for it in range(n_iterat_per_epoch):
+                #Get the next minibatch and send it to device:
+                features, labels=next(iter(train_data_loader))
+                features=features.to(device)
+                labels=labels.to(device)
+                
                 #Set the loss to zero:
-                loss=torch.tensor(0.0,device=self.device)
-                #loss_vec=torch.empty(self.minibatch_size) 
-                for el in range(self.minibatch_size):
-                    #Sample the number of context points uniformly: 
+                loss=torch.tensor(0.0,device=device)
+                
+                for el in range(minibatch_size):
+                    #Sample new training example:
                     n_context_points=torch.randint(size=[],low=Min_n_context_points,high=Max_n_context_points)
-                    
-                    x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(features[el],
+                    x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(features[el],
                                                                                        labels[el],
                                                                                          n_context_points)
                     #The target set includes the context set here:
-                    Means,Sigmas=self.Steerable_CNP(x_context,y_context,features[el]) #Otherwise:Means,Sigmas=self.Steerable_CNP(x_context,y_context,x_target)
-                    loss+=self.Steerable_CNP.loss(labels[el],Means,Sigmas,shape_reg=self.shape_reg)#/self.minibatch_size #Otherwise:loss+=self.Steerable_CNP.loss(y_target,Means,Sigmas)/self.minibatch_size
+                    Means,Sigmas=Steerable_CNP(x_context,y_context,features[el]) 
+                    loss+=Steerable_CNP.loss(labels[el],Means,Sigmas,shape_reg=self.shape_reg)
                 
                 loss_epoch.update(val=loss.detach().item(),n=self.minibatch_size)
                 #Set gradients to zero:

@@ -145,8 +145,103 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
         return(My_Tools.Create_matrix_from_Blocks(K))
     else:
         return(K)
-    
- 
+
+
+#%% This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
+def Batch_Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,flatten=True):
+    '''
+    Input:
+    X: torch.tensor
+          Shape: (batch_size,n,d)...n number of obs, d...dimension of state space
+    Y: torch.tensor or None
+          Shape: (batch_size,m,d)...m number of obs, d...dimension of state space 
+    l_scale,sigma_var,kernel_type,B,Ker_project: see function "mat_kernel"
+
+    Output:
+    Gram_matrix: torch.tensor
+                 Shape (batch_size,n,m,D) (if Y is not given (batch_size,n,n,D))
+                 Block i,j of size DxD gives Kernel value of i-th X-data point and
+                 j-th Y data point
+    '''
+    #Get dimension of data space and number of observations from X:
+    d=X.size(2)
+    n=X.size(1)
+    batch_size=X.size(0)
+    #If B is not given, set to identity:
+    if B is None:
+        B=torch.eye(d).to(X.device)
+    #If Y is not given, set to X:
+    if Y is None:
+        Y=X
+    #Get number of observations from Y and dimension of B:
+    m=Y.size(1)
+    D=B.size(0)
+    #RBF kernel:
+    if kernel_type=="rbf":
+        #Expand X,Y along different dimension to get a grid shape:
+        X=X.unsqueeze(2).expand(batch_size,n,m,d)
+        Y=Y.unsqueeze(1).expand(batch_size,n,m,d)
+        #Compute the squared distance matrix:
+        Dist_mat=torch.sum((X-Y)**2,dim=3)
+        #Compute the RBF kernel from that:
+        Gram_RBF=sigma_var*torch.exp(-0.5*Dist_mat/l_scale)
+        #Expand B such that it has the right shape:
+        B=B.view(1,1,1,D,D)
+        B=B.expand(batch_size,n,m,D,D)
+        #Reshape RBF Gram matrix:
+        Gram_RBF=Gram_RBF.view(batch_size,n,m,1,1)
+        #Multiply scalar Gram matrix with the matrix B:
+        K=Gram_RBF*B
+
+    elif kernel_type=="dot_product":
+        #Get dot product Gram matrix --> shape (batch_size,n,m)
+        Gram_one_d=torch.matmul(X,Y.transpose(-1,1))
+        #Expand B:
+        B=B.view(1,1,1,D,D)
+        B=B.expand(batch_size,n,m,D,D)
+        #Expand one-dimensional Gram:
+        Gram_one_d=Gram_one_d.view(batch_size,n,m,1,1)
+        #Multiply with B:
+        K=Gram_one_d*B
+
+    elif kernel_type=="div_free":
+        '''
+        The following computations are based on equation (24) in
+        "Kernels for Vector-Valued Functions: a Review" by Alvarez et al
+        '''
+        #Create a distance matrix:
+        X=X.unsqueeze(2).expand(batch_size,n,m,d)
+        Y=Y.unsqueeze(1).expand(batch_size,n,m,d)
+        #Create distance matrix from that --> shape (batch_size,n,m)
+        Dist_mat=torch.sum((X-Y)**2,dim=3)
+        #Create the RBF matrix from that --> shape (batch_size,n,m)
+        Gram_RBF=torch.exp(-0.5*Dist_mat/l_scale)/l_scale
+        #Reshape for later use:
+        Gram_RBF=Gram_RBF.view(batch_size,n,m,1,1)
+        #Get the differences -->shape (batch_size,n,m,d):
+        Diff=X-Y
+        #Get matrix of outer product --> shape (batch_size,n,m,d,d)
+        Outer_Prod_Mat=torch.matmul(Diff.unsqueeze(4),Diff.unsqueeze(3))
+        #Get n*m copies of identity matrices in Rd--> shape (batch_size,n,m,d,d)
+        Ids=torch.eye(d)
+        Ids=Ids.view(1,1,1,d,d)
+        Ids=Ids.expand(batch_size,n,m,d,d)
+        #First matrix component for divergence-free kernel-->shape (batch_size,n,m,d,d)
+        Mat_1=Outer_Prod_Mat/l_scale
+        #Second matrix component for divergence-free kernel --> shape (batch_size,n,m,d,d)
+        Mat_2=(d-1-Dist_mat.view(batch_size,n,m,1,1)/l_scale)*Ids
+        #Matrix sum of the two matrices:
+        A=Mat_1+Mat_2
+        #Multiply scalar and matrix part:
+        K=Gram_RBF*A
+       
+    else:
+        sys.exit("Unknown kernel type")
+    if flatten:
+        return(My_Tools.Batch_Create_matrix_from_Blocks(K))
+    else:
+        return(K)
+
 #A function which performs kernel smoothing for 2d matrix-valued kernels:
 #The normalizer for the kernel smoother is a matrix in this case (assuming that it is invertible)
 def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False):
@@ -184,6 +279,48 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
 
     #Return the vector:
     return(Interpolate.view(n_target_points,D))  
+
+#A batch version of the above function:
+def Batch_Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False):
+    '''
+    Inputs: X_Context - torch.tensor -shape (batch_size,n_context_points,2)
+            Y_Context - torch.tensor - shape (batch_size,n_context_points,D)
+            X_Target - torch.tensor - shape (batch_size,n_target_points,2)
+            l_scale,sigma_var,kernel_type,B,Ker_project: Kernel parameters - see Gram_matrix
+    Output:
+            Kernel smooth estimates at X_Target 
+            torch.tensor - shape - (batch_size,n_target_points,D)
+    '''
+    #Get the number of context and target points and the dimension of the output space:
+    n_context_points=X_Context.size(1)
+    n_target_points=X_Target.size(1)
+    batch_size=X_Context.size(0)
+    D=Y_Context.size(2)
+    if B is None:
+        B=torch.eye(D,device=X_Target.device)
+
+    #Get the Gram-matrix between the target and the context set --> shape (batch_size,n_target_points,n_context_points,D,D):
+    Gram_Blocks=Batch_Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
+    #Reshape --> (batch_size,n_target_points*D,n_context_points*D):
+    Gram_Mat=My_Tools.Batch_Create_matrix_from_Blocks(Gram_Blocks)
+    print(Gram_Mat)
+    #Get a kernel interpolation for the Target set and reshape it --> shape (batch_size,n_target_points*D):
+    Interpolate=torch.matmul(Gram_Mat,Y_Context.view(batch_size,-1,1)).squeeze()
+    #If wanted, normalize the output:
+    if normalize: 
+        #Get the column sum of the matrices
+        Col_Sum_Mats=Gram_Blocks.sum(dim=2)
+        
+        #Get the inverses:
+        Inverses=Col_Sum_Mats.inverse()
+        
+        #Perform batch-wise multiplication with inverses 
+        #(need to reshape vectors to a one-column matrix first and after the multiplication back):
+        Interpolate=torch.matmul(Inverses,Interpolate.view(batch_size,n_target_points,D,1))
+
+    #Return the vector:
+    return(Interpolate.view(batch_size,n_target_points,D))
+
 
 # Problem with the kernel smoother for div-free kernel if it is normalizing:
 '''

@@ -292,6 +292,23 @@ def Create_matrix_from_Blocks(X):
     ind=torch.cat([torch.arange(i,D_1*n,n,dtype=torch.long) for i in range(n)])
     return(M[ind])
 
+#A function to create a matrix from block matrices (merges the block matrices) (batchwise version of the above function):
+def Batch_Create_matrix_from_Blocks(X):
+    '''
+    Input:
+        X - torch.tensor - shape (batch_size,n,m,D_1,D_2)
+    Output:
+        torch-tensor - shape (batch_size,n*D_1,m*D_2) - block (i,j) of size D_1*D_2 is matrix X[i,j] for i=1,...,n,j=1,...,m
+    '''
+    batch_size=X.size(0)
+    n=X.size(1)
+    m=X.size(2)
+    D_1=X.size(3)
+    D_2=X.size(4)
+    M=torch.cat([X[:,:,:,i,:].reshape(batch_size,n,m*D_2) for i in range(D_1)],dim=1)
+    ind=torch.cat([torch.arange(i,D_1*n,n,dtype=torch.long) for i in range(n)])
+    return(M[:,ind])
+
 #The following function compute the eigenvalue decomposition of a batch 
 # of symmetric 2d matrices - represented as vector in R3:
 # (torch.symeig is extremely slow on a GPU.)    

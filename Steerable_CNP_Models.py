@@ -37,6 +37,14 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 quiver_scale=15
 
+''''
+TO DO:
+1. Original ConvCNP makes grid variable (i.e. originally forward pass creates grid around context points while we fix it throughout.)
+(so the height and width can vary of the input tensors)
+(to me, this would not be smart to do for Steerable Encoder since height and width should be fixed and the same, otherwise we have too many
+points out of the square)
+''''
+
 '''
 -------------------------------------------------------------------------
 --------------------------ENCODER CLASS----------------------------------
@@ -276,6 +284,9 @@ class CNN_Decoder(nn.Module):
         #------------END CONTROL INPUTS--------------
 
     def forward(self,X):
+        '''
+        X - torch.tensor - shape (batch_size,self.list_n_channels[0],height,width)
+        '''
         return(self.decoder(X))
     
     def give_dict(self):
