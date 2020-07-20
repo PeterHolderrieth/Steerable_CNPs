@@ -333,7 +333,7 @@ def sym_eig_2d(X):
     eigen_vec=torch.cat([eigen_vec_1.unsqueeze(2),eigen_vec_2.unsqueeze(2)],dim=2)
     return(eigen_val,eigen_vec)
 
-def Batch_sym_eig_2d(X):
+def batch_sym_eig_2d(X):
     '''
     Input: X - torch.tensor - shape (batch_size,n,3) - n batch size
     '''
@@ -377,7 +377,7 @@ def plain_cov_activation_function(X,activ_type="softplus"):
     return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
 
 #Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
-def Batch_plain_cov_activation_function(X,activ_type="softplus"):
+def batch_plain_cov_activation_function(X,activ_type="softplus"):
     '''
     Input:
     X- torch.tensor - shape (batch_size,n,3)
@@ -388,17 +388,13 @@ def Batch_plain_cov_activation_function(X,activ_type="softplus"):
             and return Us(D)U^T (in one batch)
     '''
     n=X.size(1)
-    eigen_vals,eigen_vecs=Batch_sym_eig_2d(X)
+    eigen_vals,eigen_vecs=batch_sym_eig_2d(X)
     if activ_type=="softplus":
-        eigen_vals=eigen_vals#1e-5+F.softplus(eigen_vals)
+        eigen_vals=1e-5+F.softplus(eigen_vals)
     else: 
         sys.exit("Unknown activation type")
     return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
-batch_size=3
-X=torch.randn((batch_size,7,3))
-Out=Batch_plain_cov_activation_function(X)
-print(X)
-print(Out)
+
 
 def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
     '''
@@ -428,6 +424,39 @@ def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
     if activ_type=="softplus":
         Out[below_tol,0,0]=F.softplus(X[below_tol][:,0])
         Out[below_tol,1,1]=F.softplus(X[below_tol][:,2])
+    else: 
+        sys.exit("Unknown activation type")
+    return(Out)
+
+def batch_stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
+    '''
+    Input:
+            X- torch.tensor - shape (batch_size,n,3)
+            activ_type - string -type of activation applied on the diagonal matrix
+            tol - float - giving tolerance level, i.e. the distance to a pure scalar matrix s*Id,
+                          if the distance is below that, no eigendecomposition is computed but instead
+                          the covariance matrix is computed directly.
+    Output: 
+            torch.tensor - shape (n,2,2) - consider X[i] as a symmetric 2x2 matrix
+            we compute the eigendecomposition X[i]=UDU^T of that matrix and 
+            if s is a an function, we apply it componentwise on the diagonal s(D)
+            and return Us(D)U^T (in one batch)
+            The difference to "plain_cov_activation_function" is that we only compute the eigendecomposition
+            for matrices which are not of the form s*Id for s in R but immediately use that (up to some error)
+            This makes the function fully differentiable (however, the gradient is slightly changed for 
+            inputs which are close to a diagonal, namely the gradient w.r.t. to x2 cut to zero.)
+    '''
+    n=X.size(1)
+    batch_size=X.size(0)
+    Out=torch.zeros([batch_size,n,2,2],device=X.device) 
+    below_tol=(torch.abs(X[:,:,1])<tol)#&(torch.abs(X[:,0]-X[:,2])<tol)
+    above_tol=~below_tol
+    if torch.sum(above_tol)>0:
+        Out[above_tol]=plain_cov_activation_function(X[above_tol],activ_type=activ_type)
+    if activ_type=="softplus":
+
+        Out[below_tol]=F.softplus(torch.stack([X[below_tol][:,0],X[below_tol][:,2]],dim=1)).diag_embed()
+        #Out[below_tol,1,1]=F.softplus(X[below_tol][:,2])
     else: 
         sys.exit("Unknown activation type")
     return(Out)

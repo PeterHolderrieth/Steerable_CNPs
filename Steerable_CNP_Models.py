@@ -137,7 +137,7 @@ class Steerable_Encoder(nn.Module):
                                   X,l_scale=l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion --> shape (batch_size,n,self.dim_Y+1)
-        Expand_Y=self.Batch_Psi(Y)
+        Expand_Y=self.Psi(Y)
         
         #Compute feature map -->shape (self.n_y_axis*self.n_x_axis,self.dim_Y+1)
         Feature_Map=torch.matmul(Gram,Expand_Y)
@@ -532,7 +532,7 @@ class Steerable_CNP(nn.Module):
     def target_smoother(self,X_target,Final_Feature_Map):
         '''
         Input: X_target - torch.tensor- shape (n_target,2)
-               Final_Feature_Map- torch.tensor - shape (4,self.encoder.n_y_axis,self.encoder.n_x_axis)
+               Final_Feature_Map- torch.tensor - shape (self.dim_cov_est+2,self.encoder.n_y_axis,self.encoder.n_x_axis)
         Output: Predictions on X_target - Means_target - torch.tensor - shape (n_target,2)
                 Covariances on X_target - Covs_target - torch.tensor - shape (n_target,2,2)
         '''
@@ -540,8 +540,8 @@ class Steerable_CNP(nn.Module):
         #Reshape the Final Feature Map:
         Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(1,2,0)).reshape(self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
         #Split into mean and parameters for covariance:
-        Means_grid=Resh_Final_Feature_Map[:2]
-        Pre_Activ_Covs_grid=Resh_Final_Feature_Map[2:]
+        Means_grid=Resh_Final_Feature_Map[:,:2]
+        Pre_Activ_Covs_grid=Resh_Final_Feature_Map[:,2:]
         #----------END SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
 
         #-----------APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
@@ -558,6 +558,9 @@ class Steerable_CNP(nn.Module):
         #Set the lenght scale (clamp for numerical stability):
         l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
         #Means on Target Set (via Kernel smoothing) --> shape (n_target,2):
+        print("Means_grid shape:", Means_grid.size())
+        print("grid shape: ", self.encoder.grid.size())
+        print("Target set shape: ", X_target.size())
         Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
                                            l_scale=l_scale,**self.kernel_dict_out)
@@ -573,7 +576,7 @@ class Steerable_CNP(nn.Module):
         #-----------END APPLY KERNEL SMOOTHING --------------------------------------
         return(Means_target, Covs_target)
 
-     def batch_target_smoother(self,X_target,Final_Feature_Map):
+    def batch_target_smoother(self,X_target,Final_Feature_Map):
         '''
         Input: X_target - torch.tensor- shape (batch_size,n_target,2)
                Final_Feature_Map- torch.tensor - shape (batch_size,self.dim_cov_est+2,self.encoder.n_y_axis,self.encoder.n_x_axis)
@@ -583,7 +586,8 @@ class Steerable_CNP(nn.Module):
         batch_size=X_target.size(0)
         #-----------SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
         #Reshape the Final Feature Map:
-        Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(0,2,3,1)).reshape(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,self.dim_cov_est+2)
+        Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(0,2,3,1)).reshape(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,
+                                                            self.dim_cov_est+2)
         #Split into mean and parameters for covariance:
         Means_grid=Resh_Final_Feature_Map[:,:,:2]
         Pre_Activ_Covs_grid=Resh_Final_Feature_Map[:,:,2:]
@@ -596,21 +600,25 @@ class Steerable_CNP(nn.Module):
             Covs_grid=1e-4+F.softplus(Pre_Activ_Covs_grid).repeat(1,1,2)
             Covs_grid=Covs_grid.diag_embed()
         else:
-            Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
+            Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
         #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
 
         #-----------APPLY KERNEL SMOOTHING --------------------------------------
         #Set the lenght scale (clamp for numerical stability):
         l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
-        #Means on Target Set (via Kernel smoothing) --> shape (n_target,2):
-        Means_target=GP.Batch_Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
+        #Create a batch-version of the grid (need shape (batch_size,n,2)):
+        expand_grid=self.encoder.grid.unsqueeze(0).expand(batch_size,self.encoder.grid.size(0),2)
+        #Means on Target Set (via Kernel smoothing) --> shape (batch_size,n_target,2):
+        Means_target=GP.Batch_Kernel_Smoother_2d(X_Context=expand_grid,
+                                          Y_Context=Means_grid,
                                            X_Target=X_target,normalize=self.normalize_output,
                                            l_scale=l_scale,**self.kernel_dict_out)
         
         #Create flattened version (needed for target smoother):
         Covs_grid_flat=Covs_grid.view(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
-        #3.Get covariances on target set--> shape (n_target,4):
-        Covs_target_flat=GP.Batch_Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
+        #3.Get covariances on target set--> shape (batch_size,n_target,4):
+        Covs_target_flat=GP.Batch_Kernel_Smoother_2d(X_Context=expand_grid,
+                                            Y_Context=Covs_grid_flat,
                                           X_Target=X_target,normalize=self.normalize_output,
                                           l_scale=l_scale,**self.kernel_dict_out)                                 
         #Reshape covariance matrices to proper matrices --> shape (batch_size,n_target,2,2):
@@ -712,3 +720,19 @@ class Steerable_CNP(nn.Module):
         '''
         dictionary=torch.load(f=filename)
         return(Steerable_CNP.create_model_from_dict(dictionary))
+
+
+batch_size=10
+Encoder=Steerable_Encoder(x_range=[-2,2],y_range=[2,3],n_x_axis=13)
+Decoder=CNN_Decoder(list_n_channels=[3,5,3],kernel_sizes=[5,7])
+Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=1)
+X_Context=torch.randn((batch_size,100,2))
+Y_Context=torch.randn((batch_size,100,2))
+Embedding=Model.encoder(X_Context,Y_Context)
+Final_Feature_Map=Model.decoder(Embedding)
+X_Target=torch.randn((batch_size,60,2))
+Batch_Smoothed=Model.batch_target_smoother(X_Target,Final_Feature_Map)
+print(X_Target[0].size())
+print(Final_Feature_Map[0].size())
+Smoothed_Batch=torch.cat([Model.target_smoother(X_Target[i],Final_Feature_Map[i]) for i in range(batch_size)],dim=1)
+#print(torch.allclose(Batch_Smoothed,Smoothed_Batch))

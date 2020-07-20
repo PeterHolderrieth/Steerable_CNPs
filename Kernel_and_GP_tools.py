@@ -263,6 +263,8 @@ def Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sig
     #Get the Gram-matrix between the target and the context set --> shape (n_target_points,n_context_points,2,2):
     Gram_Blocks=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
     Gram_Mat=My_Tools.Create_matrix_from_Blocks(Gram_Blocks)
+    print("Gram_Mat shape: ", Gram_Mat.size())
+    print("Y_Context shape: ", Y_Context.size())
     #Get a kernel interpolation for the Target set and reshape it --> shape (2*n_target_points):
     Interpolate=torch.mv(Gram_Mat,Y_Context.flatten())
     #If wanted, normalize the output:
@@ -303,9 +305,8 @@ def Batch_Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale
     Gram_Blocks=Batch_Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var,kernel_type=kernel_type,B=B,Ker_project=Ker_project,flatten=False)
     #Reshape --> (batch_size,n_target_points*D,n_context_points*D):
     Gram_Mat=My_Tools.Batch_Create_matrix_from_Blocks(Gram_Blocks)
-    print(Gram_Mat)
     #Get a kernel interpolation for the Target set and reshape it --> shape (batch_size,n_target_points*D):
-    Interpolate=torch.matmul(Gram_Mat,Y_Context.view(batch_size,-1,1)).squeeze()
+    Interpolate=torch.matmul(Gram_Mat,Y_Context.reshape(batch_size,-1,1)).squeeze()
     #If wanted, normalize the output:
     if normalize: 
         #Get the column sum of the matrices
