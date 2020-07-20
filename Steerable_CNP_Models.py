@@ -38,11 +38,12 @@ quiver_scale=15
 
 ''''
 TO DO:
-0. Find out why batched code is slower than non-batched code.
+0. What is the correct way of normalizing the batch: normalize by number of target points, size of minibatch?
 1. Original ConvCNP makes grid variable (i.e. originally forward pass creates grid around context points while we fix it throughout.)
 (so the height and width can vary of the input tensors)
 (to me, this would not be smart to do for Steerable Encoder since height and width should be fixed and the same, otherwise we have too many
 points out of the square)
+
 '''
 '''
 -------------------------------------------------------------------------
@@ -531,53 +532,6 @@ class Steerable_CNP(nn.Module):
     #the target set are obtained by kernel smoothing of these points on the grid of encoder
     def target_smoother(self,X_target,Final_Feature_Map):
         '''
-        Input: X_target - torch.tensor- shape (n_target,2)
-               Final_Feature_Map- torch.tensor - shape (self.dim_cov_est+2,self.encoder.n_y_axis,self.encoder.n_x_axis)
-        Output: Predictions on X_target - Means_target - torch.tensor - shape (n_target,2)
-                Covariances on X_target - Covs_target - torch.tensor - shape (n_target,2,2)
-        '''
-        #-----------SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
-        point=datetime.datetime.today()
-        #Reshape the Final Feature Map:
-        Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(1,2,0)).reshape(self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
-        point=datetime.datetime.today()
-        #Split into mean and parameters for covariance:
-        Means_grid=Resh_Final_Feature_Map[:,:2]
-        Pre_Activ_Covs_grid=Resh_Final_Feature_Map[:,2:]
-        #----------END SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
-
-        #-----------APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
-        #Get shape (n_x_axis*n_y_axis,2,2):
-        if self.dim_cov_est==1:
-            #Apply softplus (add noise such that variance does not become (close to) zero):
-            Covs_grid=1e-4+F.softplus(Pre_Activ_Covs_grid).repeat(1,2)
-            Covs_grid=Covs_grid.diag_embed()
-        else:
-            Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
-        #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
-        point=datetime.datetime.today()
-        #-----------APPLY KERNEL SMOOTHING --------------------------------------
-        #Set the lenght scale (clamp for numerical stability):
-        l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
-        #Means on Target Set (via Kernel smoothing) --> shape (n_target,2):
-        Means_target=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
-                                           X_Target=X_target,normalize=self.normalize_output,
-                                           l_scale=l_scale,**self.kernel_dict_out)
-        
-        #Create flattened version (needed for target smoother):
-        Covs_grid_flat=Covs_grid.view(self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
-        #3.Get covariances on target set--> shape (n_target,4):
-        Covs_target_flat=GP.Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
-                                          X_Target=X_target,normalize=self.normalize_output,
-                                          l_scale=l_scale,**self.kernel_dict_out)                                 
-        #Reshape covariance matrices to proper matrices --> shape (n_target,2,2):
-        Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
-        #-----------END APPLY KERNEL SMOOTHING --------------------------------------
-        point=datetime.datetime.today()
-        return(Means_target, Covs_target)
-
-    def batch_target_smoother(self,X_target,Final_Feature_Map):
-        '''
         Input: X_target - torch.tensor- shape (batch_size,n_target,2)
                Final_Feature_Map- torch.tensor - shape (batch_size,self.dim_cov_est+2,self.encoder.n_y_axis,self.encoder.n_x_axis)
         Output: Predictions on X_target - Means_target - torch.tensor - shape (batch_size,n_target,2)
@@ -646,25 +600,26 @@ class Steerable_CNP(nn.Module):
         #2.Embedding ->Feature Map (via CNN) --> shape (batch_size,2+self.dim_cov_est,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Final_Feature_Map=self.decoder(Embedding)
         #Smooth the output:
-        return(self.batch_target_smoother(X_target,Final_Feature_Map))
+        return(self.target_smoother(X_target,Final_Feature_Map))
 
     def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None,title=""):
         '''
-            Inputs: X_Context, Y_Context, X_Target: torch.tensor - see self.forward
+            Inputs: X_Context, Y_Context, X_Target: torch.tensor - shape (batch_size,n_context/n_target,2) 
                     Y_Target: torch.tensor - shape (n_context_points,2) - ground truth
-            Output: None - plots predictions
+            Output: None - plots predictions 
         
         '''
         #Get predictions:
         Means,Covs=self.forward(X_Context,Y_Context,X_Target)
         #Plot predictions against ground truth:
-        My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,Y_Target,Predict=Means.detach(),Cov_Mat=Covs.detach(),title=title)
+        for i in range(X_Context.size(0)):
+            My_Tools.Plot_Inference_2d(X_Context[i],Y_Context[i],X_Target[i],Y_Target[i],Predict=Means[i].detach(),Cov_Mat=Covs[i].detach(),title=title)
     
     def loss(self,Y_Target,Predict,Covs,shape_reg=None):
         '''
-            Inputs: X_Target,Y_Target: torch.tensor - shape (n,2) - Target set locations and vectors
-                    Predict: torch.tensor - shape (n,2) - Predictions of Y_Target at X_Target
-                    Covs: torch.tensor - shape (n,2,2) - covariance matrices of Y_Target at X_Target
+            Inputs: Y_Target: torch.tensor - shape (batch_size,n,2) - Target set locations and vectors
+                    Predict: torch.tensor - shape (batch_size,n,2) - Predictions of Y_Target at X_Target
+                    Covs: torch.tensor - shape (batch_size,n,2,2) - covariance matrices of Y_Target at X_Target
                     shape_reg: float/None - if float gives the weight of the shape_regularizer term (see My_Tools.shape_regularizer)
             Output: -log_ll+shape_reg*shape_diff: log_ll is the log-likelihood at Y_Target given the parameters Predict and Covs
                                                   shape_diff is the "shape difference" (interpreted here as the variance
@@ -676,6 +631,7 @@ class Steerable_CNP(nn.Module):
             return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
         else: 
             return(-log_ll)
+            
     #Two functions to save the model in a dictionary:
     #1.Create a dictionary:
     def give_dict(self):

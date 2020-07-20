@@ -90,14 +90,18 @@ def get_outer_circle_indices(n):
 #i.e. take D=F-f-mean(F-f) and then take the the norm of D.
 def shape_regularizer(Y_1,Y_2):
     '''
-    Input: Y_1,Y_2 - torch.tensor - shape (T,*) - T...number of observations, *...shape of space
+    Input: Y_1,Y_2 - torch.tensor - shape (batch_size,T,*) - T...number of observations, *...shape of space
     Output: float (torch.tensor of dim 0) - Centers Y_1-Y_2 to Cent_Diff and returns the Frobenius norm of Cent_Diff
     '''
+    #Compute the difference--> shape (batch_size,T,*)
     Diff=Y_1-Y_2
-    Means=Diff.mean(dim=0)
-    Cent_Diff=Diff-Means
-    return(torch.norm(Cent_Diff)**2)
-          
+    #Get means of difference--> shape (batch_size,*)
+    Means=Diff.mean(dim=1)
+    #Substract it from Diff:
+    Cent_Diff=Diff-Means.unsqueeze(1)
+    return(torch.sum(Cent_Diff**2,dim=(1,2)))
+
+
 '''
 ____________________________________________________________________________________________________________________
 
@@ -461,22 +465,22 @@ def batch_stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
         sys.exit("Unknown activation type")
     return(Out)
 
-def batch_multivar_log_ll(Means,Covs,Data,stupid=True):
+def batch_multivar_log_ll(Means,Covs,Data):
     '''
     Input:
-        Means - torch.tensor - shape (n,D) - Means 
-        Covs - torch.tensor - shape (n,D,D) - Covariances
-        Data - torch.tensor - shape (n,D) - observed data 
+        Means - torch.tensor - shape (batch_size,n,D) - Means 
+        Covs - torch.tensor - shape (batch_size,n,D,D) - Covariances
+        Data - torch.tensor - shape (batch_size,n,D) - observed data 
     Output:
-        torch.tensor - shape (n) - log-likelihoods of observations
+        torch.tensor - shape (batch_size,n) - log-likelihoods of observations
     '''
-    n,D=Means.size()
+    batch_size,n,D=Means.size()
     Diff=Data-Means
-    Quad_Term=torch.matmul(Diff.unsqueeze(1),torch.matmul(Covs.inverse(),Diff.unsqueeze(2))).squeeze()
+    Quad_Term=torch.matmul(Diff.unsqueeze(2),torch.matmul(Covs.inverse(),Diff.unsqueeze(3))).squeeze()
     log_normalizer=-0.5*torch.log(((2*math.pi)**D)*Covs.det())
     log_ll=log_normalizer-0.5*Quad_Term
     return(log_ll)
-    
+
 def get_pre_psd_rep(G_act):
     '''
         Input:
