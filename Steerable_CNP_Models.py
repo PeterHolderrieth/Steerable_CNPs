@@ -655,4 +655,3 @@ class Steerable_CNP(nn.Module):
         '''
         dictionary=torch.load(f=filename)
         return(Steerable_CNP.create_model_from_dict(dictionary))
-
