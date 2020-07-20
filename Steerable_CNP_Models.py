@@ -7,7 +7,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
-from torchsummary import summary
 
 #E(2)-steerable CNNs - librar"y:
 from e2cnn import gspaces    
@@ -541,7 +540,6 @@ class Steerable_CNP(nn.Module):
         point=datetime.datetime.today()
         #Reshape the Final Feature Map:
         Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(1,2,0)).reshape(self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
-        print("After reshape: ",datetime.datetime.today()-point)
         point=datetime.datetime.today()
         #Split into mean and parameters for covariance:
         Means_grid=Resh_Final_Feature_Map[:,:2]
@@ -557,7 +555,6 @@ class Steerable_CNP(nn.Module):
         else:
             Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
         #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
-        print("After activation: ",datetime.datetime.today()-point)
         point=datetime.datetime.today()
         #-----------APPLY KERNEL SMOOTHING --------------------------------------
         #Set the lenght scale (clamp for numerical stability):
@@ -576,7 +573,6 @@ class Steerable_CNP(nn.Module):
         #Reshape covariance matrices to proper matrices --> shape (n_target,2,2):
         Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
         #-----------END APPLY KERNEL SMOOTHING --------------------------------------
-        print("After kernel smoothing: ",datetime.datetime.today()-point)
         point=datetime.datetime.today()
         return(Means_target, Covs_target)
 
@@ -593,7 +589,6 @@ class Steerable_CNP(nn.Module):
         #Reshape the Final Feature Map:
         Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(0,2,3,1)).reshape(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,
                                                             self.dim_cov_est+2)
-        print("After reshaping: ",datetime.datetime.today()-point)
         point=datetime.datetime.today()
 
         #Split into mean and parameters for covariance:
@@ -610,7 +605,6 @@ class Steerable_CNP(nn.Module):
         else:
             Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
         #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
-        print("After activation: ",datetime.datetime.today()-point)
         point=datetime.datetime.today()
         #-----------APPLY KERNEL SMOOTHING --------------------------------------
         #Set the lenght scale (clamp for numerical stability):
@@ -633,7 +627,6 @@ class Steerable_CNP(nn.Module):
         #Reshape covariance matrices to proper matrices --> shape (batch_size,n_target,2,2):
         Covs_target=Covs_target_flat.view(batch_size,X_target.size(1),2,2)
         #-----------END APPLY KERNEL SMOOTHING --------------------------------------
-        print("After Kernel smoothing: ",datetime.datetime.today()-point)
         point=datetime.datetime.today()
         return(Means_target, Covs_target)
 
@@ -731,24 +724,3 @@ class Steerable_CNP(nn.Module):
         '''
         dictionary=torch.load(f=filename)
         return(Steerable_CNP.create_model_from_dict(dictionary))
-
-
-
-batch_size=100
-Encoder=Steerable_Encoder(x_range=[-2,2],y_range=[2,3],n_x_axis=13)
-Decoder=CNN_Decoder(list_n_channels=[3,5,3],kernel_sizes=[5,7])
-Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=1)
-X_Context=torch.randn((batch_size,100,2))
-Y_Context=torch.randn((batch_size,100,2))
-Embedding=Model.encoder(X_Context,Y_Context)
-Final_Feature_Map=Model.decoder(Embedding)
-X_Target=torch.randn((batch_size,60,2))
-
-point_1=datetime.datetime.today()
-#Means_Smoothed_Batch=torch.stack([Model.target_smoother(X_Target[i],Final_Feature_Map[i])[0] for i in range(batch_size)])
-Batch_Smoothed=Model.batch_target_smoother(X_Target,Final_Feature_Map)
-point_2=datetime.datetime.today()
-Covs_Smoothed_Batch=torch.stack([Model.target_smoother(X_Target[i],Final_Feature_Map[i])[1] for i in range(batch_size)])
-point_3=datetime.datetime.today()
-print(point_2-point_1)
-print(point_3-point_2)
