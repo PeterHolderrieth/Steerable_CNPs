@@ -312,7 +312,7 @@ def Batch_Create_matrix_from_Blocks(X):
 #The following function compute the eigenvalue decomposition of a batch 
 # of symmetric 2d matrices - represented as vector in R3:
 # (torch.symeig is extremely slow on a GPU.)    
-def my_2d_sym_eig(X):
+def sym_eig_2d(X):
     '''
     Input: X - torch.tensor - shape (n,3) - n batch size
     '''
@@ -333,6 +333,29 @@ def my_2d_sym_eig(X):
     eigen_vec=torch.cat([eigen_vec_1.unsqueeze(2),eigen_vec_2.unsqueeze(2)],dim=2)
     return(eigen_val,eigen_vec)
 
+def Batch_sym_eig_2d(X):
+    '''
+    Input: X - torch.tensor - shape (batch_size,n,3) - n batch size
+    '''
+    #Epsilon to add such that square root differentation is numerically stable:
+    eps=1e-5
+    batch_size=X.size(0)
+    n=X.size(1)
+
+    #Trace and determinant of the matrix --> shape (batch_size,n)
+    T=X[:,:,0]+X[:,:,2]
+    D=X[:,:,0]*X[:,:,2]-X[:,:,1]**2
+    #Computer lower and upper eigenvalues and stack --> shape (batch_size,n,2)
+    L_1=T/2-torch.sqrt(T**2/4-D+eps)
+    L_2=T/2+torch.sqrt(T**2/4-D+eps)
+    eigen_val=torch.cat([L_1.view(batch_size,n,1),L_2.view(batch_size,n,1)],dim=2)
+    #Get one eigenvector, normalize it and get the second one by rotation of 90 degrees:
+    eigen_vec_1=torch.cat([torch.ones((batch_size,n,1)).to(X.device),((L_1-X[:,:,0])/X[:,:,1]).view(batch_size,-1,1)],dim=2)
+    eigen_vec_1=eigen_vec_1/torch.norm(eigen_vec_1,dim=2).unsqueeze(2)
+    eigen_vec_2=torch.cat([-eigen_vec_1[:,:,1].unsqueeze(2),eigen_vec_1[:,:,0].unsqueeze(2)],dim=2)
+    #Stack the eigenvectors:
+    eigen_vec=torch.cat([eigen_vec_1.unsqueeze(3),eigen_vec_2.unsqueeze(3)],dim=3)
+    return(eigen_val,eigen_vec)
 
 #Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
 def plain_cov_activation_function(X,activ_type="softplus"):
@@ -346,13 +369,37 @@ def plain_cov_activation_function(X,activ_type="softplus"):
             and return Us(D)U^T (in one batch)
     '''
     n=X.size(0)
-    eigen_vals,eigen_vecs=my_2d_sym_eig(X)
+    eigen_vals,eigen_vecs=sym_eig_2d(X)
     if activ_type=="softplus":
         eigen_vals=1e-5+F.softplus(eigen_vals)
     else: 
         sys.exit("Unknown activation type")
     return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
-        
+
+#Activation function to get a covariance matrix - apply softplus or other activation functions on eigenvalues:    
+def Batch_plain_cov_activation_function(X,activ_type="softplus"):
+    '''
+    Input:
+    X- torch.tensor - shape (batch_size,n,3)
+    activ_type - string -type of activation applied on the diagonal matrix
+    Output: torch.tensor - shape (batch_size,n,2,2) - consider X[j,i] as a symmetric 2x2 matrix
+            we compute the eigendecomposition X[j,i]=UDU^T of that matrix and 
+            if s is a an activation function of type activ_type, we apply it componentwise on the diagonal s(D)
+            and return Us(D)U^T (in one batch)
+    '''
+    n=X.size(1)
+    eigen_vals,eigen_vecs=Batch_sym_eig_2d(X)
+    if activ_type=="softplus":
+        eigen_vals=eigen_vals#1e-5+F.softplus(eigen_vals)
+    else: 
+        sys.exit("Unknown activation type")
+    return(torch.matmul(eigen_vecs, torch.matmul(eigen_vals.diag_embed(), eigen_vecs.transpose(-2, -1))))
+batch_size=3
+X=torch.randn((batch_size,7,3))
+Out=Batch_plain_cov_activation_function(X)
+print(X)
+print(Out)
+
 def stable_cov_activation_function(X,activ_type="softplus",tol=1e-7):
     '''
     Input:

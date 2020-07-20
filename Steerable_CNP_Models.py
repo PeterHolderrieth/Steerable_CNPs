@@ -43,8 +43,7 @@ TO DO:
 (so the height and width can vary of the input tensors)
 (to me, this would not be smart to do for Steerable Encoder since height and width should be fixed and the same, otherwise we have too many
 points out of the square)
-''''
-
+'''
 '''
 -------------------------------------------------------------------------
 --------------------------ENCODER CLASS----------------------------------
@@ -112,46 +111,48 @@ class Steerable_Encoder(nn.Module):
     #For now it just adding a one, i.e. y->(1,y), since we assume multiplicity one:
     def Psi(self,Y):
         '''
-        Input: Y - torch.tensor - shape (n,2)
-        Output: torch.tensor -shape (n,3) - added a column of ones to Y (at the start) Y[i,j]<--[1,Y[i,j]]
+        Input: Y - torch.tensor - shape (batch_size,n,2)
+        Output: torch.tensor -shape (batch_size,n,3) - added a column of ones to Y (at the start) Y[i,j]<--[1,Y[i,j]]
         '''
-        return(torch.cat((torch.ones((Y.size(0),1),device=Y.device),Y),dim=1))
+        return(torch.cat([torch.ones([Y.size(0),Y.size(1),1],device=Y.device),Y],dim=2))
 
     def forward(self,X,Y):
         '''
         Inputs:
-            X: torch.tensor - shape (n,2)
-            Y: torch.tensor - shape (n,self.dim_Y)
+            X: torch.tensor - shape (batch_size,n,2)
+            Y: torch.tensor - shape (batch_size,n,self.dim_Y)
         Outputs:
-            torch.tensor - shape (1,self.dim_Y+1,self.n_y_axis,self.n_x_axis) (shape which can be processed by CNN)
+            torch.tensor - shape (batch_size,,self.dim_Y+1,self.n_y_axis,self.n_x_axis)
         '''
         #DEBUG: Control whether X and the grid are on the same device:
         if self.grid.device!=X.device:
             print("Grid and X are on different devices.")
             self.grid=self.grid.to(X.device)
         
+        batch_size=X.size(0)
         #Compute the length scale out of the log-scale (clamp for numerical stability):
         l_scale=torch.exp(torch.clamp(self.log_l_scale,max=5.,min=-5.))
-        #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data-->shape (self.n_y_axis*self.n_x_axis,n)
-        Gram=GP.Gram_matrix(self.grid,X,l_scale=l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
+        #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data-->shape (batch_size,self.n_y_axis*self.n_x_axis,n)
+        Gram=GP.Batch_Gram_matrix(self.grid.unsqueeze(0).expand(batch_size,self.n_y_axis*self.n_x_axis,2),
+                                  X,l_scale=l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
-        #Compute feature expansion:
-        Expand_Y=self.Psi(Y)
+        #Compute feature expansion --> shape (batch_size,n,self.dim_Y+1)
+        Expand_Y=self.Batch_Psi(Y)
         
-        #Compute feature map -->shape (self.n_y_axis*self.n_x_axis,3)
-        Feature_Map=torch.mm(Gram,Expand_Y)
+        #Compute feature map -->shape (self.n_y_axis*self.n_x_axis,self.dim_Y+1)
+        Feature_Map=torch.matmul(Gram,Expand_Y)
 
         #If wanted, normalize the weights for the channel which is not the density channel:
         if self.normalize:
             #Normalize the functional representation:
             Norm_Feature_Map=torch.empty(Feature_Map.size(),device=Feature_Map.device)
-            Norm_Feature_Map[:,1:]=Feature_Map[:,1:]/Feature_Map[:,0].unsqueeze(1)
-            Norm_Feature_Map[:,0]=Feature_Map[:,0]
+            Norm_Feature_Map[:,:,1:]=Feature_Map[:,:,1:]/Feature_Map[:,:,0].unsqueeze(2)
+            Norm_Feature_Map[:,:,0]=Feature_Map[:,:,0]
             #Reshape the Feature Map to the form (1,n_channels=3,n_y_axis,n_x_axis) (because this is the form required for a CNN):
-            return(Norm_Feature_Map.reshape(self.n_y_axis,self.n_x_axis,Expand_Y.size(1)).permute(dims=(2,0,1)).unsqueeze(0))        
+            return(Norm_Feature_Map.reshape(batch_size,self.n_y_axis,self.n_x_axis,Expand_Y.size(2)).permute(dims=(0,3,1,2)))        
         #Reshape the Feature Map to the form (1,n_channels=3,n_y_axis,n_x_axis) (because this is the form required for a CNN):
         else:   
-            return(Feature_Map.reshape(self.n_y_axis,self.n_x_axis,Expand_Y.size(1)).permute(dims=(2,0,1)).unsqueeze(0))    
+            return(Feature_Map.reshape(batch_size,self.n_y_axis,self.n_x_axis,Expand_Y.size(2)).permute(dims=(0,3,1,2)))     
     
     def plot_embedding(self,Embedding,X_context=None,Y_context=None,title=""):
         '''
@@ -186,7 +187,7 @@ class Steerable_Encoder(nn.Module):
               color='black',pivot='mid',label='Context set',scale=quiver_scale)
 
         #Get embedding of the form (3,self.n_y_axis,self.n_x_axis)
-        Embedding=Embedding.squeeze()
+        Embedding=Embedding[0]
         #Get density channel --> shape (self.n_y_axis,self.n_x_axis)
         Density=Embedding[0]
         #Get Smoothed channel -->shape (self.n_y_axis*self.n_x_axis,2)
@@ -571,24 +572,69 @@ class Steerable_CNP(nn.Module):
         Covs_target=Covs_target_flat.view(X_target.size(0),2,2)
         #-----------END APPLY KERNEL SMOOTHING --------------------------------------
         return(Means_target, Covs_target)
- 
+
+     def batch_target_smoother(self,X_target,Final_Feature_Map):
+        '''
+        Input: X_target - torch.tensor- shape (batch_size,n_target,2)
+               Final_Feature_Map- torch.tensor - shape (batch_size,self.dim_cov_est+2,self.encoder.n_y_axis,self.encoder.n_x_axis)
+        Output: Predictions on X_target - Means_target - torch.tensor - shape (batch_size,n_target,2)
+                Covariances on X_target - Covs_target - torch.tensor - shape (batch_size,n_target,2,2)
+        '''
+        batch_size=X_target.size(0)
+        #-----------SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
+        #Reshape the Final Feature Map:
+        Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(0,2,3,1)).reshape(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,self.dim_cov_est+2)
+        #Split into mean and parameters for covariance:
+        Means_grid=Resh_Final_Feature_Map[:,:,:2]
+        Pre_Activ_Covs_grid=Resh_Final_Feature_Map[:,:,2:]
+        #----------END SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
+
+        #-----------APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
+        #Get shape (batch_size,n_x_axis*n_y_axis,2,2):
+        if self.dim_cov_est==1:
+            #Apply softplus (add noise such that variance does not become (close to) zero):
+            Covs_grid=1e-4+F.softplus(Pre_Activ_Covs_grid).repeat(1,1,2)
+            Covs_grid=Covs_grid.diag_embed()
+        else:
+            Covs_grid=My_Tools.stable_cov_activation_function(Pre_Activ_Covs_grid)
+        #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
+
+        #-----------APPLY KERNEL SMOOTHING --------------------------------------
+        #Set the lenght scale (clamp for numerical stability):
+        l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
+        #Means on Target Set (via Kernel smoothing) --> shape (n_target,2):
+        Means_target=GP.Batch_Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Means_grid,
+                                           X_Target=X_target,normalize=self.normalize_output,
+                                           l_scale=l_scale,**self.kernel_dict_out)
+        
+        #Create flattened version (needed for target smoother):
+        Covs_grid_flat=Covs_grid.view(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,-1)
+        #3.Get covariances on target set--> shape (n_target,4):
+        Covs_target_flat=GP.Batch_Kernel_Smoother_2d(X_Context=self.encoder.grid,Y_Context=Covs_grid_flat,
+                                          X_Target=X_target,normalize=self.normalize_output,
+                                          l_scale=l_scale,**self.kernel_dict_out)                                 
+        #Reshape covariance matrices to proper matrices --> shape (batch_size,n_target,2,2):
+        Covs_target=Covs_target_flat.view(batch_size,X_target.size(1),2,2)
+        #-----------END APPLY KERNEL SMOOTHING --------------------------------------
+        return(Means_target, Covs_target)
+
     #Define the forward pass of ConvCNP: 
     def forward(self,X_context,Y_context,X_target):
         '''
         Inputs:
-            X_context: torch.tensor - shape (n_context,2)
-            Y_context: torch.tensor - shape (n_context,2)
-            X_target: torch.tensor - shape (n_target,2)
+            X_context: torch.tensor - shape (batch_size,n_context,2)
+            Y_context: torch.tensor - shape (batch_size,n_context,2)
+            X_target: torch.tensor - shape (batch_size,n_target,2)
         Outputs:
-            Means_target: torch.tensor - shape (n_target,2) - mean of predictions
-            Sigmas_target: torch.tensor -shape (n_target,2) - scale of predictions
+            Means_target: torch.tensor - shape (batch_size,n_target,2) - mean of predictions
+            Sigmas_target: torch.tensor -shape (batch_size,n_target,2) - scale of predictions
         '''
-        #1.Context Set -> Embedding (via Encoder) --> shape (3,self.encoder.n_y_axis,self.encoder.n_x_axis):
+        #1.Context Set -> Embedding (via Encoder) --> shape (batch_size,3,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Embedding=self.encoder(X_context,Y_context)
-        #2.Embedding ->Feature Map (via CNN) --> shape (2+self.dim_cov_est,self.encoder.n_y_axis,self.encoder.n_x_axis):
-        Final_Feature_Map=self.decoder(Embedding).squeeze()
+        #2.Embedding ->Feature Map (via CNN) --> shape (batch_size,2+self.dim_cov_est,self.encoder.n_y_axis,self.encoder.n_x_axis):
+        Final_Feature_Map=self.decoder(Embedding)
         #Smooth the output:
-        return(self.target_smoother(X_target,Final_Feature_Map))
+        return(self.batch_target_smoother(X_target,Final_Feature_Map))
 
     def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None,title=""):
         '''
