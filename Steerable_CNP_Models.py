@@ -363,6 +363,7 @@ class Cyclic_Decoder(nn.Module):
         #Create list of feature types:
         feat_types=self.give_feat_types()
         self.feature_in=feat_types[0]
+        self.feature_out=feat_types[-1]
         #Create layers list and append it:
         layers_list=[G_CNN.R2Conv(feat_types[0],feat_types[1],kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
 

@@ -88,14 +88,14 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
           of the predictions (mean of the distributions) over the training
         '''
         minibatch_size=train_data_loader.batch_size
+        Steerable_CNP=Steerable_CNP.to(device)
 
         #------------------Tracking training progress ----------------------
         #1.Track training loss and log-ll (if shape_reg=0, this is the same):
         train_loss_tracker=[]
         train_log_ll_tracker=[]
         #2.Track validation loss:
-        if n_val_samples is not None:
-          val_log_ll_tracker=[]
+        val_log_ll_tracker=[]
         #------------------------------------------------------------------------
 
         #Define the optimizer and add a weight decay term:
@@ -149,7 +149,7 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
             complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
-            Report={'CNP': Steerable_CNP.give_dict(),
+            Report={'CNP_dict': Steerable_CNP.give_dict(),
                     'optimizer': optimizer.state_dict(),
                     'train_data_loader': train_data_loader,
                     'val_data_loader': val_data_loader,
@@ -157,13 +157,14 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
                     'train_loss_history':   train_loss_tracker,
                     'train_log_ll_history': train_log_ll_tracker,
                     'val_log ll_history': val_log_ll_tracker,
-                    'Min n contest points':Min_n_context_points,
-                    'Max n context points': Max_n_context_points,
+                    'Min_n_context_points':Min_n_context_points,
+                    'Max_n_context_points': Max_n_context_points,
                     'shape_reg': shape_reg}   
             torch.save(Report,complete_filename)
-
+        else:
+          complete_filename=None
         #Return the model and the loss memory:
-        return(Steerable_CNP,train_loss_tracker)
+        return(Steerable_CNP,train_loss_tracker,complete_filename)
 
 def test_CNP(CNP,val_data_loader,device,Min_n_context,Max_n_context,n_samples=400):
         with torch.no_grad():
