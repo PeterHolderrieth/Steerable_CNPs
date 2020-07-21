@@ -476,7 +476,11 @@ def load_2d_GP_data(Id,folder='Test_data/2d_GPs/',batch_size=1,share_test_set=0.
     Y=np.load(folder+"GP_data_Y"+Id+".npy")
     X=torch.tensor(X,dtype=torch.get_default_dtype())
     Y=torch.tensor(Y,dtype=torch.get_default_dtype())
-    n=X.size(0)
+    n,m,_=X.size()
+    for it in range(X.size(0)):
+        vec_shuffle=torch.randperm(m)
+        X[it]=X[it][vec_shuffle]
+        Y[it]=Y[it][vec_shuffle]
     ind_shuffle=torch.randperm(n)
     n_test_points=int(n*share_test_set//1)
     test_ind=ind_shuffle[:n_test_points]

@@ -628,9 +628,10 @@ class Steerable_CNP(nn.Module):
         log_ll_vec=My_Tools.batch_multivar_log_ll(Means=Predict,Covs=Covs,Data=Y_Target)
         log_ll=log_ll_vec.mean()
         if shape_reg is not None: 
-            return(-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict))
+            loss=-log_ll+shape_reg*My_Tools.shape_regularizer(Y_1=Y_Target,Y_2=Predict)
         else: 
-            return(-log_ll)
+            loss=-log_ll
+        return(loss,log_ll)
             
     #Two functions to save the model in a dictionary:
     #1.Create a dictionary:

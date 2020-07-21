@@ -49,21 +49,21 @@ ________________________________________________________________________________
 #Tool to split a function in a context and target set (choice is random but size of context set is given):
 def Rand_Target_Context_Splitter(X,Y,n_context_points):
     '''
-    Inputs: X: torch.tensor - shape (n,d) - n...number of observations, d...dimension of state space
-            Y: torch.tensor - shape (n,D) - N...number of observations, D...dimension of label space
+    Inputs: X: torch.tensor - shape (batch_size,n,d) - n...number of observations, d...dimension of state space
+            Y: torch.tensor - shape (batch_size,n,D) - N...number of observations, D...dimension of label space
             n_context_points: int - size of context set
     Outputs:
-        X_Context: torch.tensor - shape (n_context_points,d)
-        Y_Context: torch.tensor - shape (n_context_points,D)
-        X_Target:  torch.tensor - shape (n-n_context_points,d)
-        Y_Target:  torch.tensor - shape (n-n_context_points,D)
+        X_Context: torch.tensor - shape (batch_size,n_context_points,d)
+        Y_Context: torch.tensor - shape (batch_size,n_context_points,D)
+        X_Target:  torch.tensor - shape (batch_size,n-n_context_points,d)
+        Y_Target:  torch.tensor - shape (batch_size,n-n_context_points,D)
     '''
-    n=X.size(0)
+    n=X.size(1)
     ind_shuffle=torch.randperm(n)
-    X_Context=X[ind_shuffle[:n_context_points],]
-    Y_Context=Y[ind_shuffle[:n_context_points],]
-    X_Target=X[ind_shuffle[n_context_points:,]]
-    Y_Target=Y[ind_shuffle[n_context_points:,]]
+    X_Context=X[:,ind_shuffle[:n_context_points]]
+    Y_Context=Y[:,ind_shuffle[:n_context_points]]
+    X_Target=X[:,ind_shuffle[n_context_points:,]]
+    Y_Target=Y[:,ind_shuffle[n_context_points:,]]
     return(X_Context,Y_Context,X_Target,Y_Target)
 
 

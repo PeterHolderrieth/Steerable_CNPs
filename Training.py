@@ -45,13 +45,12 @@ quiver_scale=15
 '''
 This file should implement:
 - A flexible training function which is able to reload a state of a model and continue training after stopping training.
-- A fast way of using big minibatches but still allowing for different number of context points within one minibatch
 - A consistent way of defining losses (such that same of number of n_epochs*n_iterat_per epoch should give roughly the same results)
 '''
 
 def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
-              Max_n_context_points,Min_n_context_points=2,n_epochs=10, n_iterat_per_epoch=10,
-                 learning_rate=1e-3, weight_decay=None,shape_reg=None,n_plots=None):
+              Max_n_context_points,Min_n_context_points=2,n_epochs=3, n_iterat_per_epoch=1,
+                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,filename=None,n_val_samples=None):
         '''
         Input: 
           Steerable_CNP: Steerable_CNP Module (see above)
@@ -60,6 +59,8 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
                        every minibatch is a list of length 2 with 
                        1st element: data features - torch.tensor - shape (minibatch_size,n,2)
                        2nd element: data labels   - torch.tensor - shape (minibatch_size,n,2)
+                       !!!We assume that the training set is shuffled along the observations in total
+                       but also that the indices of the features and labels are shuffled.
           device: instance of torch.device 
           n_epochs: int -number of epochs for training
           n_iterat_per_epoch: int number of training iterations per epoch
@@ -68,6 +69,8 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
           shape_reg: float/None - control shape regularizer (see My_Tools.shape_regularizer)
           n_plots:  if int: total number of plots during training
                     if None: no plots during training
+          filename: string/None - if not None, the training state is saved to a dictionary
+          n_val_samples: None/int - if int, every epoch we compute the validation log likelihood
         '''
         '''
         Input: filename - string - name of file - if given, there the model is saved
@@ -87,10 +90,12 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
         minibatch_size=train_data_loader.batch_size
 
         #------------------Tracking training progress ----------------------
-        #1.Track training loss:
-        train_loss_tracker=torch.zeros(n_epochs)
+        #1.Track training loss and log-ll (if shape_reg=0, this is the same):
+        train_loss_tracker=[]
+        train_log_ll_tracker=[]
         #2.Track validation loss:
-        valid_loss_tracker=torch.zeros(n_epochs)
+        if n_val_samples is not None:
+          val_log_ll_tracker=[]
         #------------------------------------------------------------------------
 
         #Define the optimizer and add a weight decay term:
@@ -100,6 +105,7 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
         for epoch in range(n_epochs):
             #Track the loss over the epoch:
             loss_epoch=My_Tools.AverageMeter()
+            log_ll_epoch=My_Tools.AverageMeter()
             #-------------------------ITERATION IN ONE EPOCH ---------------------
             for it in range(n_iterat_per_epoch):
                 #Get the next minibatch and send it to device:
@@ -110,69 +116,71 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
                 #Set the loss to zero:
                 loss=torch.tensor(0.0,device=device)
                 
-                for el in range(minibatch_size):
-                    #Sample new training example:
-                    n_context_points=torch.randint(size=[],low=Min_n_context_points,high=Max_n_context_points)
-                    x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(features[el],
-                                                                                       labels[el],
-                                                                                         n_context_points)
-                    #The target set includes the context set here:
-                    Means,Sigmas=Steerable_CNP(x_context,y_context,features[el]) 
-                    loss+=Steerable_CNP.loss(labels[el],Means,Sigmas,shape_reg=self.shape_reg)
-                
-                loss_epoch.update(val=loss.detach().item(),n=self.minibatch_size)
+                #Sample new training example:
+                n_context_points=torch.randint(size=[],low=Min_n_context_points,high=Max_n_context_points)
+                x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(features, labels, n_context_points)
+                #The target set includes the context set here:
+                Means,Sigmas=Steerable_CNP(x_context,y_context,features) 
+                loss,log_ll=Steerable_CNP.loss(labels,Means,Sigmas,shape_reg=shape_reg)
+
                 #Set gradients to zero:
                 optimizer.zero_grad()
                 #Compute gradients:
                 loss.backward()
-                
-                #DEBUG:
-                #Print l-scales:
-                #l_scale_tracker[it]=self.Steerable_CNP.encoder.log_l_scale
-                #l_scale_grad_tracker[i]=self.Steerable_CNP.encoder.log_l_scale.grad
-                
                 #Perform optimization step:
                 optimizer.step()
 
-                #DEBUG EXPLOSION OF L_SCALE:
-                if self.Steerable_CNP.encoder.log_l_scale.item()!=self.Steerable_CNP.encoder.log_l_scale.item():
-                    print("Tracker: ", l_scale_tracker[:(it+2)])
-                    #print("Gradients :",l_scale_grad_tracker[:(it+2)])
-                    print("Features: ", features)
-                    print("Labels: ", labels)
-                    print("Norm of features: ", torch.norm(features))
-                    print("Norm of labels: ", torch.norm(labels))
-                    print("Current l scale: ", self.Steerable_CNP.encoder.log_l_scale.item())
-                    sys.exit("l scale is NAN")
+                #Update trackers (n=1 since we have already averaged over the minibatch in the loss):
+                loss_epoch.update(val=loss.detach().item(),n=1)
+                log_ll_epoch.update(val=log_ll.detach().item(),n=1)
 
-            #Save the loss:
-            loss_vector[epoch]=loss_epoch.avg
-            #=----------------PRINT TRAINING EVOLUTION-------------------
-            print("Epoch: ",epoch," | training loss: ", loss_epoch.avg," | val accuracy: ")
-            if show_plots:
-                if (epoch%plot_every==0):
-                    self.Steerable_CNP.plot_Context_Target(Plot_x_context,Plot_y_context,Plot_x_target,Plot_y_target)
-            #!!!DEBUG:
-            #print("Encoder l_scale: ", torch.exp(self.Steerable_CNP.encoder.log_l_scale))
-            #print("Encoder log l_scale grad: ", self.Steerable_CNP.encoder.log_l_scale.grad)
-            #print("")
+            #Save the loss and log ll on the training set:
+            train_loss_tracker.append(loss_epoch.avg)
+            train_log_ll_tracker.append(log_ll_epoch.avg)
 
+            if n_val_samples is not None:
+              val_log_ll=test_CNP(Steerable_CNP,val_data_loader,device,Min_n_context_points,Max_n_context_points,n_val_samples)
+              val_log_ll_tracker.append(val_log_ll)
+              print("Epoch: %d | train loss: %.5f | train log ll:  %.5f | val log ll: %.5f"%(epoch,loss_epoch.avg,log_ll_epoch.avg,val_log_ll))
 
+            else:
+              print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
 
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
-            Report={'CNP': Steerable_CNP.state_dict(),
+            complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
+            Report={'CNP': Steerable_CNP.give_dict(),
                     'optimizer': optimizer.state_dict(),
                     'train_data_loader': train_data_loader,
                     'val_data_loader': val_data_loader,
-                    'n_epochs': n_epochs,
                     'n_iterat_per_epoch': n_iterat_per_epoch,
-                    'loss history': loss_vector,
+                    'train_loss_history':   train_loss_tracker,
+                    'train_log_ll_history': train_log_ll_tracker,
+                    'val_log ll_history': val_log_ll_tracker,
                     'Min n contest points':Min_n_context_points,
                     'Max n context points': Max_n_context_points,
-                    'shape_reg': shape_reg}         
-            complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
+                    'shape_reg': shape_reg}   
             torch.save(Report,complete_filename)
-            self.saved_to=complete_filename
-        #Return the mean log-likelihood:
-        return(self.log_ll_memory)
+
+        #Return the model and the loss memory:
+        return(Steerable_CNP,train_loss_tracker)
+
+def test_CNP(CNP,val_data_loader,device,Min_n_context,Max_n_context,n_samples=400):
+        with torch.no_grad():
+            n_iterat=n_samples//val_data_loader.batch_size
+            log_ll=torch.tensor(0.0, device=device)
+            for i in range(n_iterat):
+                    #Get the next minibatch:
+                    features, labels=next(iter(val_data_loader))
+                    #Send it to the correct device:
+                    features=features.to(device)
+                    labels=labels.to(device)
+                    #Set the loss to zero:
+                    n_context_points=torch.randint(size=[],low=Min_n_context,high=Max_n_context)
+                    x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(features, labels, n_context_points)
+                    #The target set includes the context set here:
+                    Means,Sigmas=CNP(x_context,y_context,features) 
+                    _, log_ll_it=CNP.loss(labels,Means,Sigmas,shape_reg=None)
+                    log_ll+=log_ll_it/n_iterat
+        return(log_ll.item())
+
