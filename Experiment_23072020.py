@@ -91,8 +91,8 @@ conv_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=conv_decoder,dim_cov_es
 TRAINING PARAMETERS
 '''
 
-N_EPOCHS=3
-N_ITERAT_PER_EPOCH=3
+N_EPOCHS=30
+N_ITERAT_PER_EPOCH=1000
 MIN_N_CONTEXT_POINTS=2
 MAX_N_CONTEXT_POINTS=40
 LEARNING_RATE=1e-3
@@ -102,7 +102,7 @@ N_PLOTS=None
 N_VAL_SAMPLES=200
 
 #File path to save models:
-FOLDER="Experiments/Comp_experiments/"
+FOLDER="Trained_Models/Comp_experiments/"
 
 '''
 Train Steerable CNP
