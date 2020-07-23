@@ -45,24 +45,26 @@ IMPLEMENT SUMMARY PRINT OF MODEL
 '''
 
 class Steerable_CNP_Evaluater(nn.Module):
-    def __init__(self,dictionary,G_act,in_repr):
+    def __init__(self,dictionary,G_act,in_repr,test_data_loader):
         super(Steerable_CNP_Evaluater, self).__init__()
         '''
         Input: dictionary - obtained from train_CNP    
                G_act      - instance of e2cnn.gspaces - underlying G-space 
                in_repr    - in_repr - instance of e2cnn.group.irrep - input representation
+               test_data_loader - torch.data.utils.DataLoader - providing test data 
 
         '''
         self.dictionary=dictionary
         self.Steerable_CNP=My_Models.Steerable_CNP.create_model_from_dict(dictionary['CNP_dict'])
         self.Max_n_context_points=dictionary['Max_n_context_points']
         self.Min_n_context_points=dictionary['Min_n_context_points']
-        self.train_data_loader=dictionary['train_data_loader']
-        self.val_data_loader=dictionary['val_data_loader']
         self.train_loss=dictionary['train_loss_history']   
         self.train_log_ll=dictionary['train_log_ll_history']
         self.val_log_ll=dictionary['val_log ll_history']
         self.shape_reg=dictionary['shape_reg']
+
+        self.test_data_loader=test_data_loader
+
 
         #Save the G-space:
         self.G_act=G_act
@@ -107,7 +109,7 @@ class Steerable_CNP_Evaluater(nn.Module):
     def plot_test_random(self,n_samples=4,GP_parameters=None):
         for i in range(n_samples):
             #Get one single example:
-            X,Y=next(iter(self.val_data_loader))
+            X,Y=next(iter(self.test_data_loader))
             X=X[0].unsqueeze(0)
             Y=Y[0].unsqueeze(0)
             #Split in context target:
@@ -132,12 +134,12 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss=torch.tensor(0.0)
         loss_normalized=torch.tensor(0.0)
-        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.val_data_loader))
+            X,Y=next(iter(self.test_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:
@@ -205,12 +207,12 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss=torch.tensor(0.0)
         loss_normalized=torch.tensor(0.0)
-        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.val_data_loader))
+            X,Y=next(iter(self.test_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:
@@ -271,12 +273,12 @@ class Steerable_CNP_Evaluater(nn.Module):
         loss_sigma=torch.tensor(0.0)
         loss_sigma_normalized=torch.tensor(0.0)
 
-        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.val_data_loader))
+            X,Y=next(iter(self.test_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:
@@ -348,12 +350,12 @@ class Steerable_CNP_Evaluater(nn.Module):
         loss_sigma=torch.tensor(0.0)
         loss_sigma_normalized=torch.tensor(0.0)
 
-        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.val_data_loader))
+            X,Y=next(iter(self.test_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:

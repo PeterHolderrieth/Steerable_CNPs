@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import torch.utils.data as utils
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
-import torchsummary as summary
+
 #E(2)-steerable CNNs - librar"y:
 from e2cnn import gspaces    
 from e2cnn import nn as G_CNN   
@@ -48,7 +48,9 @@ else:
 DATA
 '''
 #Loading Data to data loaders:
-GP_TRAIN_DATA_LOADER,GP_TEST_DATA_LOADER=GP.load_2d_GP_data(Id="37845",batch_size=3)
+BATCH_SIZE=16
+GP_TRAIN_DATA_LOADER,GP_TEST_DATA_LOADER=GP.load_2d_GP_data(Id="37845",batch_size=BATCH_SIZE)
+DATA_IDENTIFIER="GP_data_Id_37845"
 
 '''
 ENCODER
@@ -99,6 +101,8 @@ SHAPE_REG=None
 N_PLOTS=None
 N_VAL_SAMPLES=200
 
+#File path to save models:
+FOLDER="Experiments/Comp_experiments/"
 
 '''
 Train Steerable CNP
@@ -106,12 +110,13 @@ Train Steerable CNP
 print("---------Train Steerable CNP--------")
 geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
-GEOM_FILENAME="Equal_par_exp_Steerable_CNP"
+GEOM_FILENAME=FOLDER+"Equal_par_exp_Steerable_CNP"
 
 _,_,geom_file_loc=Training.train_CNP(
 Steerable_CNP=geom_cnp, 
 train_data_loader=GP_TRAIN_DATA_LOADER,
 val_data_loader=GP_TEST_DATA_LOADER, 
+data_identifier=DATA_IDENTIFIER,
 device=DEVICE,
 Max_n_context_points=MAX_N_CONTEXT_POINTS,
 Min_n_context_points=MIN_N_CONTEXT_POINTS,
@@ -132,12 +137,13 @@ print("---------Train CONV CNP--------")
 
 conv_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
 
-CONV_FILENAME="Equal_par_exp_Conv_CNP"
+CONV_FILENAME=FOLDER+"Equal_par_exp_Conv_CNP"
 
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=conv_cnp, 
 train_data_loader=GP_TRAIN_DATA_LOADER,
 val_data_loader=GP_TEST_DATA_LOADER, 
+data_identifier=DATA_IDENTIFIER,
 device=DEVICE,
 Max_n_context_points=MAX_N_CONTEXT_POINTS,
 Min_n_context_points=MIN_N_CONTEXT_POINTS,
@@ -151,18 +157,23 @@ n_val_samples=N_VAL_SAMPLES,
 filename=CONV_FILENAME)
 
 
+
+
+
+
 '''
-EVALUATE STEERABLE CNP:
+'''
+#EVALUATE STEERABLE CNP:
 '''
 G_act=geom_decoder.G_act
 in_repr=G_act.irrep(1)
 
 geom_dict=torch.load(geom_file_loc)
-geom_evaluater=Evaluation.Steerable_CNP_Evaluater(geom_dict,G_act,in_repr)
-print(geom_evaluater.equiv_error_model(n_samples=100))
+geom_evaluater=Evaluation.Steerable_CNP_Evaluater(geom_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
+
 '''
-EVALUATE CONV CNP:
+#EVALUATE CONV CNP:
 '''
 conv_dict=torch.load(conv_file_loc)
-conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr)
-print(conv_evaluater.equiv_error_model(n_samples=100))
+conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
+'''

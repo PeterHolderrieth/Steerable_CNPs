@@ -43,12 +43,11 @@ quiver_scale=15
 
 
 '''
-This file should implement:
-- A flexible training function which is able to reload a state of a model and continue training after stopping training.
-- A consistent way of defining losses (such that same of number of n_epochs*n_iterat_per epoch should give roughly the same results)
+TO DO:
+How to save identity of data loader without actually having to save it for every model
 '''
 
-def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
+def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,device,
               Max_n_context_points,Min_n_context_points=2,n_epochs=3, n_iterat_per_epoch=1,
                  learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None):
         '''
@@ -61,6 +60,7 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
                        2nd element: data labels   - torch.tensor - shape (minibatch_size,n,2)
                        !!!We assume that the training set is shuffled along the observations in total
                        but also that the indices of the features and labels are shuffled.
+          data_identifier - string - identifier for what data set was used
           device: instance of torch.device 
           n_epochs: int -number of epochs for training
           n_iterat_per_epoch: int number of training iterations per epoch
@@ -151,8 +151,7 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
             complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
             Report={'CNP_dict': Steerable_CNP.give_dict(),
                     'optimizer': optimizer.state_dict(),
-                    'train_data_loader': train_data_loader,
-                    'val_data_loader': val_data_loader,
+                    'data_identifier': data_identifier,
                     'n_iterat_per_epoch': n_iterat_per_epoch,
                     'train_loss_history':   train_loss_tracker,
                     'train_log_ll_history': train_log_ll_tracker,
