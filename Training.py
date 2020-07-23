@@ -50,7 +50,7 @@ This file should implement:
 
 def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
               Max_n_context_points,Min_n_context_points=2,n_epochs=3, n_iterat_per_epoch=1,
-                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,filename=None,n_val_samples=None):
+                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None):
         '''
         Input: 
           Steerable_CNP: Steerable_CNP Module (see above)
@@ -159,7 +159,9 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, device,
                     'val_log ll_history': val_log_ll_tracker,
                     'Min_n_context_points':Min_n_context_points,
                     'Max_n_context_points': Max_n_context_points,
-                    'shape_reg': shape_reg}   
+                    'shape_reg': shape_reg,
+                    'n_parameters:': My_Tools.count_parameters(Steerable_CNP),
+                    'final_log_ll:': val_log_ll_tracker[-1]}
             torch.save(Report,complete_filename)
         else:
           complete_filename=None

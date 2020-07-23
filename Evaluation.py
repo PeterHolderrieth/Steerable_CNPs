@@ -41,9 +41,7 @@ quiver_scale=15
 
 '''
 TO DO:
-HOW TO COMPARE EQUIVARIANCE BETWEEN TWO COVARIANCE MATRICES???
-Implement Equivariance tests numerically (see Spherical/Steerable CNP paper), validation loss tests,
-Implement Equivariance plots (stabilized)
+IMPLEMENT SUMMARY PRINT OF MODEL 
 '''
 
 class Steerable_CNP_Evaluater(nn.Module):

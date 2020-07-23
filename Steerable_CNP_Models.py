@@ -229,11 +229,12 @@ class Steerable_Encoder(nn.Module):
 '''
 #A STACK OF CNN LAYERS:
 class CNN_Decoder(nn.Module):
-    def __init__(self,list_n_channels,kernel_sizes,non_linearity=["ReLU"]):
+    def __init__(self,list_hid_channels,kernel_sizes,dim_cov_est,non_linearity=["ReLU"]):
         '''
-        Input: list_n_channels - list of ints -  element i gives the number of channels of layer i with layer 0 is the input layer
+        Input: list_hid_channels - list of ints -  element i gives the number of channels of hidden layer i 
                kernel_sizes - list of odd ints - sizes of kernels for convolutional layers 
                                                 (need to be odd because height and width of input and output tensors have to be the same)
+                dim_cov_est - int - dimension of covariance estimation
                non_linearity - list of strings - gives names of non-linearity to be used
                                                  Either length 1 (then same non-linearity for all)
                                                  or length is the number of layers (giving a custom non-linearity for every
@@ -243,9 +244,11 @@ class CNN_Decoder(nn.Module):
         '''    
         #Initialize:
         super(CNN_Decoder, self).__init__()
-        self.list_n_channels=list_n_channels        
+        self.list_n_channels=[3,*list_hid_channels,dim_cov_est+2]       
         self.kernel_sizes=kernel_sizes
-        self.n_layers=len(list_n_channels)
+        self.n_layers=len(self.list_n_channels)
+        self.dim_cov_est=dim_cov_est
+        self.list_hid_channels=list_hid_channels
 
         #-----CREATE LIST OF NON-LINEARITIES----
         if len(non_linearity)==1:
@@ -262,7 +265,7 @@ class CNN_Decoder(nn.Module):
         kernel sizes given by self.kernel_sizes - we perform padding such that the height and width do not change
         '''
         #Create layers list and append it:
-        layers_list=[nn.Conv2d(list_n_channels[0],list_n_channels[1],
+        layers_list=[nn.Conv2d(self.list_n_channels[0],self.list_n_channels[1],
                             kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
 
         for it in range(self.n_layers-2):
@@ -270,7 +273,7 @@ class CNN_Decoder(nn.Module):
                 layers_list.append(nn.ReLU())
             else:
                 sys.exit("Unknown non-linearity.")
-            layers_list.append(nn.Conv2d(list_n_channels[it+1],list_n_channels[it+2],
+            layers_list.append(nn.Conv2d(self.list_n_channels[it+1],self.list_n_channels[it+2],
                                             kernel_size=kernel_sizes[it],padding=(kernel_sizes[it]-1)//2))
         #Create a steerable decoder out of the layers list:
         self.decoder=nn.Sequential(*layers_list)
@@ -290,8 +293,9 @@ class CNN_Decoder(nn.Module):
     
     def give_dict(self):
         dictionary={
-            'list_n_channels': self.list_n_channels,
+            'list_hid_channels': self.list_hid_channels,
             'kernel_sizes': self.kernel_sizes,
+            'dim_cov_est': self.dim_cov_est,
             'non_linearity': self.non_linearity,
             'decoder_class': self.__class__.__name__,
             'decoder_info': self.decoder.__str__(),
@@ -308,8 +312,9 @@ class CNN_Decoder(nn.Module):
                                         if decoder parameters are not given)
         Output: Decoder - instance of CNN_Decoder (see above) 
         '''
-        Decoder=CNN_Decoder(list_n_channels=dictionary['list_n_channels'],
+        Decoder=CNN_Decoder(list_hid_channels=dictionary['list_hid_channels'],
                                     kernel_sizes=dictionary['kernel_sizes'],
+                                    dim_cov_est=dictionary['dim_cov_est'],
                                     non_linearity=dictionary['non_linearity']
                                 )
         if 'decoder_par' in dictionary:
