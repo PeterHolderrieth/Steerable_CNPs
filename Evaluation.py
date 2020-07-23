@@ -444,3 +444,6 @@ GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1
 #Evaluater.plot_test_random(GP_parameters=GP_parameters)
 print("Equiv. error:", Evaluater.equiv_error_model(n_samples=1,plot_stable=True))
 '''
+
+
+# %%
