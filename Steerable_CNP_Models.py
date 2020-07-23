@@ -123,7 +123,7 @@ class Steerable_Encoder(nn.Module):
             X: torch.tensor - shape (batch_size,n,2)
             Y: torch.tensor - shape (batch_size,n,self.dim_Y)
         Outputs:
-            torch.tensor - shape (batch_size,,self.dim_Y+1,self.n_y_axis,self.n_x_axis)
+            torch.tensor - shape (batch_size,self.dim_Y+1,self.n_y_axis,self.n_x_axis)
         '''
         #DEBUG: Control whether X and the grid are on the same device:
         if self.grid.device!=X.device:
@@ -158,9 +158,9 @@ class Steerable_Encoder(nn.Module):
     def plot_embedding(self,Embedding,X_context=None,Y_context=None,title=""):
         '''
         Input: 
-               Embedding - torch.tensor - shape (1,n_grid_points,3) - Embedding obtained from self.forward (usually  from X_context,Y_context)
-                                                                      where Embedding[0,0] is the density channel
-                                                                      and Embedding[0,1:] is the smoothing channel
+               Embedding - torch.tensor - shape (3,self.n_y_axis,self.n_x_axis) - Embedding obtained from self.forward (usually  from X_context,Y_context)
+                                                                      where Embedding[:,0] is the density channel
+                                                                      and Embedding[:,1:] is the smoothing channel
                X_context,Y_context - torch.tensor - shape (n,2) - context locations and vectors
                title - string - title of plots
         Plots locations X_context with vectors Y_context attached to it
@@ -186,9 +186,6 @@ class Steerable_Encoder(nn.Module):
             ax[0].scatter(X_context[:,0],X_context[:,1],color='black')
             ax[0].quiver(X_context[:,0],X_context[:,1],Y_context[:,0],Y_context[:,1],
               color='black',pivot='mid',label='Context set',scale=quiver_scale)
-
-        #Get embedding of the form (3,self.n_y_axis,self.n_x_axis)
-        Embedding=Embedding[0]
         #Get density channel --> shape (self.n_y_axis,self.n_x_axis)
         Density=Embedding[0]
         #Get Smoothed channel -->shape (self.n_y_axis*self.n_x_axis,2)
@@ -326,12 +323,13 @@ class CNN_Decoder(nn.Module):
 
 #A decoder class which is equivariant with respect the cyclic group C_N (i.e. rotations of 360/N degrees):
 class Cyclic_Decoder(nn.Module):
-    def __init__(self,fib_reps,kernel_sizes,non_linearity=["ReLU"],N=4):
+    def __init__(self,hidden_fib_reps,kernel_sizes,dim_cov_est,non_linearity=["ReLU"],N=4):
         '''
-        Input: fib_reps - list of lists of ints - "-1"...encodes regular repr
+        Input: hidden_fib_reps - list of lists of ints - "-1"...encodes regular repr
                                                   k=0,1,2,..,flatten(N/2)...encodes irrep(k)
                                                   In particular: "0"...encodes trivial repr
                kernel_sizes - list of ints - sizes of kernels for convolutional layers
+               dim_cov_est - dimension of covariance estimation
                non_linearity - list of strings - gives names of non-linearity to be used
                                                  Either length 1 (then same non-linearity for all)
                                                  or length is the number of layers (giving a custom non-linearity for every
@@ -342,8 +340,9 @@ class Cyclic_Decoder(nn.Module):
         self.Group_order=N
         self.G_act=gspaces.Rot2dOnR2(N=N)
         self.kernel_sizes=kernel_sizes
-        self.n_layers=len(fib_reps)
-        self.fib_reps=fib_reps
+        self.n_layers=len(hidden_fib_reps)+2
+        self.hidden_fib_reps=hidden_fib_reps
+        self.dim_cov_est=dim_cov_est
         
         #-----CREATE LIST OF NON-LINEARITIES----
         if len(non_linearity)==1:
@@ -394,8 +393,8 @@ class Cyclic_Decoder(nn.Module):
                              k_i stands for irrep(k_i) of the rotation group or if k_i=-1 for the regular representation
                              the sume of rep(k_1),...,rep(k_l) determines the ith element of "feat_types"
         '''
-        feat_types=[]
-        for reps in self.fib_reps:
+        feat_types=[G_CNN.FieldType(self.G_act,[self.G_act.trivial_repr,self.G_act.irrep(1)])]
+        for reps in self.hidden_fib_reps:
             #New layer collects the sum of individual representations to one list:
             new_layer=[]
             for rep in reps:
@@ -410,6 +409,12 @@ class Cyclic_Decoder(nn.Module):
                     sys.exit("Unknown fiber representation.")
             #Append a new feature type given by the new layer:
             feat_types.append(G_CNN.FieldType(self.G_act, new_layer))
+
+        if self.dim_cov_est==1:
+            pre_cov_rep=self.G_act.trivial_repr
+        else:
+            pre_cov_rep,_=My_Tools.get_pre_psd_rep(self.G_act)
+        feat_types.append(G_CNN.FieldType(self.G_act,[self.G_act.irrep(1),pre_cov_rep]))
         return(feat_types)
     
     def forward(self,X):
@@ -429,7 +434,8 @@ class Cyclic_Decoder(nn.Module):
     def give_dict(self):
         dictionary={
             'N': self.Group_order,
-            'fib_reps': self.fib_reps,
+            'hidden_fib_reps': self.hidden_fib_reps,
+            'dim_cov_est': self.dim_cov_est,
             'kernel_sizes': self.kernel_sizes,
             'non_linearity': self.non_linearity,
             'decoder_class': self.__class__.__name__,
@@ -451,9 +457,10 @@ class Cyclic_Decoder(nn.Module):
         Output: Decoder - instance of Cyclic_Decoder (see above) 
         '''
         Decoder=Cyclic_Decoder(N=dictionary['N'],
-                                    fib_reps=dictionary['fib_reps'],
+                                    hidden_fib_reps=dictionary['hidden_fib_reps'],
+                                    dim_cov_est=dictionary['dim_cov_est'],
                                     kernel_sizes=dictionary['kernel_sizes'],
-                                    non_linearity=dictionary['non_linearity']
+                                    non_linearity=dictionary['non_linearity'],
                                 )
         if 'decoder_par' in dictionary:
             if dictionary['decoder_par'] is not None:

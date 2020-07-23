@@ -83,6 +83,26 @@ def get_outer_circle_indices(n):
     Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)>(n-1)/2].long()
     return(Ind)
 
+def bool_inner_circle_indices(n):
+    '''
+    Input: n - int - size of square
+    Ouput: Ind - torch.tensor
+    '''
+    
+    x_axis=torch.linspace(start=0,end=n-1,steps=n)
+    y_axis=torch.linspace(start=0,end=n-1,steps=n)
+    X1,X2=torch.meshgrid(x_axis,y_axis)
+    Ind=torch.stack((X1,X2),2)
+    return(torch.norm(Ind-(n-1)/2,dim=2)<=(n-1)/2)
+    
+def set_outer_circle_zero(X):
+    '''
+    Input: X - torch.tensor - shape (*,n,n)
+    Output: torch.tensor - shape (*,*,n,n) - elements outside of the inner circle in an (n,n)-square set to zero
+    '''
+    n=X.size(-1)
+    dim_batch=len(X.shape)-2
+    return(X*bool_inner_circle_indices(n)[(None,)*dim_batch])
 #This tool defines a regularization term for learning functions - it regularizes the loss 
 #such that prediction functions F with the similiar shape to the ground truth f are preferred against
 #functions with the same "distance" to f (same as F) but a different shape.

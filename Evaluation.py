@@ -12,9 +12,9 @@ import torch.nn.functional as F
 import torch.utils.data as utils
 
 #E(2)-steerable CNNs - librar"y:
-from e2cnn import gspaces    
+from e2cnn import gspaces                                          
 from e2cnn import nn as G_CNN   
-import e2cnn
+#import e2cnn
 
 #Plotting in 2d/3d:
 import matplotlib.pyplot as plt
@@ -41,15 +41,18 @@ quiver_scale=15
 
 '''
 TO DO:
+HOW TO COMPARE EQUIVARIANCE BETWEEN TWO COVARIANCE MATRICES???
 Implement Equivariance tests numerically (see Spherical/Steerable CNP paper), validation loss tests,
 Implement Equivariance plots (stabilized)
 '''
 
 class Steerable_CNP_Evaluater(nn.Module):
-    def __init__(self,dictionary,G_act,feature_in,feature_out):
+    def __init__(self,dictionary,G_act,in_repr):
         super(Steerable_CNP_Evaluater, self).__init__()
         '''
-        Input: dictionary - obtained from train_CNP
+        Input: dictionary - obtained from train_CNP    
+               G_act      - instance of e2cnn.gspaces - underlying G-space 
+               in_repr    - in_repr - instance of e2cnn.group.irrep - input representation
 
         '''
         self.dictionary=dictionary
@@ -62,9 +65,21 @@ class Steerable_CNP_Evaluater(nn.Module):
         self.train_log_ll=dictionary['train_log_ll_history']
         self.val_log_ll=dictionary['val_log ll_history']
         self.shape_reg=dictionary['shape_reg']
+
+        #Save the G-space:
         self.G_act=G_act
-        self.feature_in=feature_in
-        self.feature_sigma=feature_sigma        
+        #Save the feature type of the input, the embedding and the output of the decoder:
+        self.feature_in=G_CNN.FieldType(G_act,[in_repr])
+        self.feature_emb=G_CNN.FieldType(G_act,[G_act.trivial_repr,in_repr])
+
+        self.feature_mean_grid=self.feature_in #Feature type on out of decoder/grid
+        if self.Steerable_CNP.dim_cov_est==1:
+            sigma_grid_rep=G_act.trivial_repr
+        else:
+            sigma_grid_rep,_=My_Tools.get_pre_psd_rep(G_act)
+        self.feature_sigma_grid=G_CNN.FieldType(G_act,[sigma_grid_rep])
+        self.feature_out_grid=G_CNN.FieldType(G_act,[in_repr,sigma_grid_rep])
+
     
     def plot_loss_memory(self):
         fig,ax=plt.subplots(ncols=2,nrows=1)
@@ -102,20 +117,29 @@ class Steerable_CNP_Evaluater(nn.Module):
             x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
             self.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters)
 
-    def test_equivariance_encoder(self,n_samples=1,plot=True,inner_circle=True):
+    def equiv_error_encoder(self,n_samples=1,inner_circle=False,plot_trans=False,trans_plot=False,plot_stable=False):
         '''
         Input: n_samples - int - number of context, target samples to consider
-               plot - Boolean - indicates whether plots are generated for every group transformation
         Output: For every group element, it computes the "group equivariance error" of the encoder, i.e.
                 the difference between the embedding of the transformed context set and the transformed 
-                embedding of the non-transformed context set.
+                embedding of the non-transformed context set divided by the norm of the vector.
                 returns: loss - float - mean aggregrated loss per sample
         '''
-        #Loss summation:
+        #If n_samples is too large, do not plot:
+        if n_samples>4:
+            plot_trans=False
+            plot_stable=False
+            trans_plot=False
+
+        #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss=torch.tensor(0.0)
-        for i in range(n_samples):
+        loss_normalized=torch.tensor(0.0)
+        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_testing_elements=len(list(self.G_act.testing_elements))
+
+        for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
+            X,Y=next(iter(self.val_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:
@@ -123,42 +147,56 @@ class Steerable_CNP_Evaluater(nn.Module):
             #Get embedding:
             Embedding=self.Steerable_CNP.encoder(x_context,y_context)
             #Get geometric version of embedding:
-            geom_Embedding=G_CNN.GeometricTensor(Embedding,self.Steerable_CNP.feature_emb)
-            #Go over all (test) group elements:
-            for g in self.Steerable_CNP.G_act.testing_elements:
-                #Get matrix representation of g:
-                M=torch.tensor(self.Steerable_CNP.feature_in.representation(g),dtype=torch.get_default_dtype())
-                #Transform the context set:
+            geom_Embedding=G_CNN.GeometricTensor(Embedding,self.feature_emb)
+
+            #Get the mean l1 norm per batch:
+            normalizer=torch.abs(Embedding).sum(1).mean([1,2])
+
+            #Go over all (testing) group elements:
+            for g in self.G_act.testing_elements:
+                #Get matrix representation of g and transform context:
+                M=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())                #Transform the context set:
                 trans_x_context=torch.matmul(x_context,M.t())
                 trans_y_context=torch.matmul(y_context,M.t())
+
                 #Get embedding of transformed context:
                 Embedding_trans=self.Steerable_CNP.encoder(trans_x_context,trans_y_context)
                 #Get transformed embedding (of non-transformed context set)
                 trans_Embedding=geom_Embedding.transform(g).tensor
-                #Get distance/error between the two (in theory, it should be zero)
-                loss_it=torch.norm(Embedding_trans-trans_Embedding)
+
+                Diff=Embedding_trans-trans_Embedding
                 #If wanted, control difference only on the inner cycle:
-                if inner_circle:
-                    n=Embedding_trans.size(3)
-                    ind=My_Tools.get_outer_circle_indices(n)
-                    for i,j in ind:
-                        Embedding_trans[0,:,i,j]=0
-                        trans_Embedding[0,:,i,j]=0
+                if inner_circle: Diff=My_Tools.set_outer_circle_zero(Diff) 
                 #Get distance/error between the two (in theory, it should be zero)
-                loss_it=torch.norm(Embedding_trans-trans_Embedding)
-                #Plot the embedding if wanted:
-                if plot:
-                    #Get the title:
-                    title="Embedding of transformed context| Group: "+self.Steerable_CNP.G_act.name+ "  |  Element: "+str(g)+" | loss: "+str(loss_it.item())
-                    self.Steerable_CNP.encoder.plot_embedding(Embedding_trans,trans_x_context,trans_y_context,title=title)
-                    title="Transformed Embedding of orig. context| Group: "+self.Steerable_CNP.G_act.name+ "  |  Element: "+str(g)+" | loss: "+str(loss_it.item())
-                    self.Steerable_CNP.encoder.plot_embedding(trans_Embedding,trans_x_context,trans_y_context,title=title)
-                #Add to aggregated loss:
-                loss=loss+loss_it
+                loss_it=torch.abs(Diff).sum(1).mean()
+                loss_it_normalized=(torch.abs(Diff).sum(1).mean([1,2])/normalizer).mean(0)
+                
+                #Add to aggregated loss (need to normalize by number of testing elements):
+                loss=loss+loss_it/n_testing_elements
+                loss_normalized=loss_normalized+loss_it_normalized/n_testing_elements
+                
+                #Plot the embedding of the transformed context:
+                if plot_trans:
+                    title="Embedding of transformed context| Group: "+self.G_act.name+ "  |  Element: "+str(g)+" | loss: "+str(loss_it.item())
+                    self.Steerable_CNP.encoder.plot_embedding(Embedding_trans[0],trans_x_context[0],trans_y_context[0],title=title)
+                
+                #Plot the transformed embedding:
+                if trans_plot:    
+                    title="Transformed Embedding of orig. context| Group: "+self.G_act.name+ "  |  Element: "+str(g)+" | loss: "+str(loss_it.item())
+                    self.Steerable_CNP.encoder.plot_embedding(trans_Embedding[0],trans_x_context[0],trans_y_context[0],title=title)
+                
+                #Plot the embedding of the transformed context transformed back again:
+                if plot_stable:
+                    geom_trans_Embedding=G_CNN.GeometricTensor(Embedding_trans,self.feature_emb)
+                    back_Embedding_trans=geom_trans_Embedding.transform(self.G_act.fibergroup.inverse(g)).tensor
+                    if inner_circle: back_Embedding_trans=My_Tools.set_outer_circle_zero(back_Embedding_trans)
+                    title="Embedding of transformed context transformed back| Group: "+self.G_act.name+ "  |  Element: "+str(g)+" | loss: "+str(loss_it.item())
+                    self.Steerable_CNP.encoder.plot_embedding(back_Embedding_trans[0],x_context[0],y_context[0],title=title)
+                    
         #Divide aggregated loss by the number of samples:
-        return(loss/n_samples)
+        return(loss/n_batches,loss_normalized/n_batches)
             
-    def test_equivariance_decoder(self,n_samples=1,plot=True,inner_circle=True):
+    def equiv_error_decoder(self,n_samples=1,inner_circle=True):
         '''
         Input: n_samples - int - number of context, target samples to consider
         Output: For every group element, it computes the "group equivariance error" of the decoder, i.e.
@@ -166,125 +204,154 @@ class Steerable_CNP_Evaluater(nn.Module):
                 decoder output of the non-transformed embedding.
                 returns: loss - float - mean aggregrated loss per sample
         '''
-        #Hyperparameter for size of plots:
-        size_scale=1
-        
-        #Float to save mean aggregrated loss:
+        #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss=torch.tensor(0.0)
-        for i in range(n_samples):
+        loss_normalized=torch.tensor(0.0)
+        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_testing_elements=len(list(self.G_act.testing_elements))
+
+        for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
+            X,Y=next(iter(self.val_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:
-            x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
+            x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
             
             #Get embedding and version:
             Emb = self.Steerable_CNP.encoder(x_context,y_context)
-            geom_Emb = G_CNN.GeometricTensor(Emb, self.Steerable_CNP.feature_emb)
+            geom_Emb = G_CNN.GeometricTensor(Emb, self.feature_emb)
             
             #Get output from decoder and geometric version:
             Out=self.Steerable_CNP.decoder(Emb)
-            geom_Out = G_CNN.GeometricTensor(Out, self.Steerable_CNP.feature_out)
+            geom_Out = G_CNN.GeometricTensor(Out, self.feature_out_grid)
             
+            #Get the normalizer:
+            normalizer=torch.abs(Out).sum(1).mean([1,2])
+
             #Get grid of encoder:
             grid=self.Steerable_CNP.encoder.grid
             
             #Go over all group (testing) elements:
-            for g in self.Steerable_CNP.G_act.testing_elements:
-                
+            for g in self.G_act.testing_elements:
                 #Transform embedding:
-                geom_Emb_transformed= geom_Emb.transform(g)
-                Emb_transformed=geom_Emb_transformed.tensor
+                Emb_transformed= geom_Emb.transform(g).tensor
                 
                 #Get output of transformed embedding and geometric version:
                 Out_transformed = self.Steerable_CNP.decoder(Emb_transformed)
                 
                 #Get transformed output:
-                transformed_Out= geom_Out.transform(g).tensor
-                #Set difference to zero out of the inner circle:
-                if inner_circle:
-                    n=Out_transformed.size(3)
-                    ind=My_Tools.get_outer_circle_indices(n)
-                    for i,j in ind:
-                        transformed_Out[0,:,i,j]=0
-                        Out_transformed[0,:,i,j]=0
-                
-                #Get the difference:        
+                transformed_Out= geom_Out.transform(g).tensor    
+
+                #Get the difference and if wanted set it to zero outside of the inner circle:    
                 Diff=transformed_Out-Out_transformed
-                normalizer=torch.norm(Out_transformed)
-                #Get iteration loss and add:
-                loss_it=torch.norm(Diff)/normalizer
-                loss=loss+loss_it
-                #If wanted, plot mean rotations:
-                if plot:
-                    Means_transformed=Out_transformed.squeeze()[:2].permute(dims=(2,1,0)).reshape(-1,2)
-                    fig, ax = plt.subplots(nrows=1,ncols=1,figsize=(size_scale*10,size_scale*5))
-                    plt.gca().set_aspect('equal', adjustable='box')
-                    ax.quiver(grid[:,0],grid[:,1],Means_transformed[:,0].detach(),Means_transformed[:,1].detach(),scale=quiver_scale)
-                    #Get the title:
-                    title="Decoder Output | Group: "+self.Steerable_CNP.G_act.name+ "  |  Element: "+str(g)+" | loss: "+str(loss_it.item())
-                    ax.set_title(title)
+                if inner_circle: Diff=My_Tools.set_outer_circle_zero(Diff)
+
+                #Get error - mean l1 norm:
+                loss_it=torch.abs(Diff).sum(1).mean()
+                loss_it_normalized=(torch.abs(Diff).sum(1).mean([1,2])/normalizer).mean(0)
+                
+                #Add to aggregated loss (need to normalize by number of testing elements):
+                loss=loss+loss_it/n_testing_elements
+                loss_normalized=loss_normalized+loss_it_normalized/n_testing_elements
+
         #Get mean aggregrated loss:
-        return(loss/n_samples)
+        return(loss/n_batches,loss_normalized/n_batches)
         
-    def test_equivariance_target_smoother(self,n_samples=1):
+    def equiv_error_target_smoother(self,n_samples=1):
         '''
         Input: n_samples - int - number of context, target samples to consider
         Output: For every group element, it computes the "group equivariance error" of the target smoother, i.e.
                 the difference between the target smoothing of the transformed decoder output and the transformed target 
                 and the target smoothing of the decoder output and the transformed target 
-                returns: loss - float - mean aggregrated loss per sample
-                NOTE: THIS FUNCTION ONLY CONTROLS EQUIVARIANCE OF THE MEANS, NOT OF THE VARIANCE (since the prediction of variances is not equivariant)
+                returns: loss list - [float,float] - 
         '''
-        loss_Means=torch.tensor(0.0)
-        loss_Sigmas=torch.tensor(0.0)
-        for i in range(n_samples):
+
+        #Initialize container for loss, number of batches to consider and number of group (testing) elements:
+        loss_mean=torch.tensor(0.0)
+        loss_mean_normalized=torch.tensor(0.0)
+        loss_sigma=torch.tensor(0.0)
+        loss_sigma_normalized=torch.tensor(0.0)
+
+        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_testing_elements=len(list(self.G_act.testing_elements))
+
+        for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
+            X,Y=next(iter(self.val_data_loader))
             #Get random number context points:
             n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
             #Get random split in context and target set:
-            x_context,y_context,x_target,_=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
+            x_context,y_context,x_target,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
             #Get embedding:
             Emb = self.Steerable_CNP.encoder(x_context,y_context)
             #Get output of embedding and geometric version:
             Out=self.Steerable_CNP.decoder(Emb)
-            geom_Out=G_CNN.GeometricTensor(Out, self.Steerable_CNP.feature_out)
+            geom_Out=G_CNN.GeometricTensor(Out, self.feature_out_grid)
             
             #Get smoothed means on target:
-            Means,_=self.Steerable_CNP.target_smoother(x_target,Out.squeeze())
-            
-            normalizer=torch.norm(Means)
-            
-            for g in self.Steerable_CNP.G_act.testing_elements:
+            Means,Sigmas=self.Steerable_CNP.target_smoother(x_target,Out)
+            #Get squared norm per batch element as a normalizer:
+            normalizer_mean=torch.abs(Means).sum(2).mean(1)
+            normalizer_sigma=torch.abs(Sigmas).sum([2,3]).mean(1)
+
+            for g in self.G_act.testing_elements:
                 #Get representation on the output:
-                M=torch.tensor(self.Steerable_CNP.feature_in.representation(g),dtype=torch.get_default_dtype())
+                M=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())
                 #Transform means, target and output:
                 trans_Means=torch.matmul(Means,M.t())
+                trans_Sigmas=torch.matmul(M,torch.matmul(Sigmas,M.t()))
                 trans_x_target=torch.matmul(x_target,M.t())
                 trans_geom_Out=geom_Out.transform(g)
                 
                 #Get means on transformed target and Output:
-                Means_trans,_=self.Steerable_CNP.target_smoother(trans_x_target,
+                Means_trans,Sigmas_trans=self.Steerable_CNP.target_smoother(trans_x_target,
                                                            trans_geom_Out.tensor.squeeze())
-                #Get current loss and add it to the aggregrated loss:
-                loss_it=torch.norm(Means_trans-trans_Means)
-                loss_Means=loss_Means+loss_it
+                #Get the difference:
+                Diff_means=Means_trans-trans_Means
+                Diff_sigmas=Sigmas_trans-trans_Sigmas
+
+                #Get the loss for the current iteration:
+                loss_mean_it=torch.abs(Diff_means).sum(2).mean([0,1])
+                loss_sigma_it=torch.abs(Diff_sigmas).sum([2,3]).mean([0,1])
+
+                loss_mean_normalized_it=(torch.abs(Diff_means).sum(2).mean(1)/normalizer_mean).mean()
+                loss_sigma_normalized_it=(torch.abs(Diff_sigmas).sum([2,3]).mean(1)/normalizer_sigma).mean()
+
+                #Add to aggregated loss (need to normalize by number of testing elements):
+                loss_mean=loss_mean+loss_mean_it/n_testing_elements
+                loss_sigma=loss_sigma+loss_sigma_it/n_testing_elements
+
+                loss_mean_normalized=loss_mean_normalized+loss_mean_normalized_it/n_testing_elements
+                loss_sigma_normalized=loss_sigma_normalized+loss_sigma_normalized_it/n_testing_elements
+
+        out_dict={'loss_mean': loss_mean.item()/n_batches,'loss_mean_normalized': loss_mean_normalized.item()/n_batches,
+                  'loss_sigma': loss_sigma.item()/n_batches, 'loss_sigma_normalized': loss_sigma_normalized.item()/n_batches}
         #Get mean aggregrated loss:
-        return(loss_Means/n_samples,loss_Sigmas/n_samples)
+        return(out_dict)
     
-    def equiv_error_model(self,n_batches):
+    def equiv_error_model(self,n_samples=10,plot_trans=False,trans_plot=False,plot_stable=False,title=""):
         '''
-        Input:  n_batches - int - number of minibatches to consider
+        Input:  n_samples - int - number of data samples to consider
         Output: For every group element, it computes the "group equivariance error" of the model, i.e.
                 the difference between the model output of the transformed context and target set and the transformed 
                 output of the non-transformed context and target set divided by the norm 
                 returns: loss - float - mean aggregrated loss per sample
         '''
-        #Get loss:
+        #If n_samples is too large, do not plot:
+        if n_samples>4:
+            plot_trans=False
+            plot_stable=False
+            trans_plot=False
+
+        #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss_mean=torch.tensor(0.0)
+        loss_mean_normalized=torch.tensor(0.0)
         loss_sigma=torch.tensor(0.0)
+        loss_sigma_normalized=torch.tensor(0.0)
+
+        n_batches=max(n_samples//self.val_data_loader.batch_size,1)
+        n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
@@ -295,96 +362,85 @@ class Steerable_CNP_Evaluater(nn.Module):
             x_context,y_context,x_target,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
             #Get means and variances:
             Means,Sigmas=self.Steerable_CNP.forward(x_context,y_context,x_target)
-            normalizer_mean=torch.sum(Means**2,dim=(1,2))
-            normalizer_sigma=torch.sum(Sigmas**2,dim=(1,2,3))
+            #Get squared norm per batch element as a normalizer:
+            normalizer_mean=torch.abs(Means).sum(2).mean(1)
+            normalizer_sigma=torch.abs(Sigmas).sum([2,3]).mean(1)
 
             #Go over all group (testing) elements:
             for g in self.G_act.testing_elements:
                 #Get input representation of g and transform context:
-                M_in=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())
-                trans_x_context=torch.matmul(x_context,M_in.t())
-                trans_y_context=torch.matmul(y_context,M_in.t())
-                trans_x_target=torch.matmul(x_target,M_in.t())
-
-                #Get output representation of g and transform target (here output representation on means is same as input):
-                #M_sigma=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())
+                M=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())
+                trans_x_context=torch.matmul(x_context,M.t())
+                trans_y_context=torch.matmul(y_context,M.t())
+                trans_x_target=torch.matmul(x_target,M.t())
                 
                 #Get means and variances of transformed context and transformed target:
                 Means_trans,Sigmas_trans=self.Steerable_CNP.forward(trans_x_context,trans_y_context,trans_x_target)
                 #Get transformed  means and variances:
-                trans_Means=torch.matmul(Means,M_in.t())
-                #trans_Sigmas=torch.matmul(M_out,torch.matmul(Sigmas_trans,M_out.t()))
-                #Compute the error and add to aggregrated loss and take the average over the batch:
-                loss_mean+=(torch.sum((Means_trans-trans_Means)**2,dim=(1,2))/normalizer_mean.unsqueeze(1)).mean()
-                #loss_sigma+=(torch.sum((trans_Sigmas-Sigmas_trans)**2,dim=(1,2,3))/normalizer_sigma.unsqueeze(1)).mean()
-        
-        #Get mean aggregrated loss:
-        return(loss_mean/n_batches,loss_sigma/n_batches)
-    
-    def test_equivariance_model(self,n_samples=1,plot=True,title=""):
-        '''
-        Input: n_samples - int - number of context, target samples to consider
-        Output: For every group element, it computes the "group equivariance error" of the model, i.e.
-                the difference between the model output of the transformed context and target set and the transformed 
-                model output of the non-transformed context and target set.
-                returns: loss - float - mean aggregrated loss per sample
-        '''
-        #Get loss:
-        loss=torch.tensor(0.0)
-        for i in range(n_samples):
-            #Get random mini batch:
-            X,Y=next(iter(self.val_data_loader))
-            #Get random number context points:
-            n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
-            #Get random split in context and target set:
-            x_context,y_context,x_target,_=My_Tools.Rand_Target_Context_Splitter(X[0],Y[0],n_context_points)
-            #Get means and variances:
-            Means,Sigmas=self.Steerable_CNP.forward(x_context,y_context,x_target)
-            #Go over all group (testing) elements:
-            for g in self.Steerable_CNP.G_act.testing_elements:
-                #Get input representation of g and transform context:
-                M_in=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())
-                trans_x_context=torch.matmul(x_context,M_in.t())
-                trans_y_context=torch.matmul(y_context,M_in.t())
-                #Get output representation of g and transform target (here output representation on means is same as input):
-                M_out=torch.tensor(self.feature_in.representation(g),dtype=torch.get_default_dtype())
-                trans_x_target=torch.matmul(x_target,M_out.t())
-                
-                #Get means and variances of transformed context and transformed target:
-                Means_trans,Sigmas_trans=self.Steerable_CNP.forward(trans_x_context,trans_y_context,trans_x_target)
-                #Get transformed  means and variances:
-                trans_Means=torch.matmul(Means,M_out.t())
-                #???TRANS_SIGMA???
-                #Compute the error and add to aggregrated loss:
-                it_loss=torch.norm(Means_trans-trans_Means)
-                loss=loss+it_loss
-                #If wanted plot the inference:
-                if plot:
-                    sup_title=title+"Group: "+self.Steerable_CNP.G_act.name+ "  |  Element: "+str(g)+"| Loss "+str(it_loss.detach().item())
-                    My_Tools.Plot_Inference_2d(trans_x_context,trans_y_context,trans_x_target,
-                                           Y_Target=None,Predict=Means_trans.detach(),Cov_Mat=Sigmas_trans.detach(),title=sup_title)
-        #Get mean aggregrated loss:
-        return(loss/n_samples)
+                trans_Means=torch.matmul(Means,M.t())
+                trans_Sigmas=torch.matmul(M,torch.matmul(Sigmas_trans,M.t()))
 
-Encoder=My_Models.Steerable_Encoder()
-Decoder=My_Models.Cyclic_Decoder(fib_reps=[[1,0],[1,-1],[1,0]],kernel_sizes=[5,7],N=4,non_linearity=['NormReLU'])
+                #Get the difference:
+                Diff_means=Means_trans-trans_Means
+                Diff_sigmas=Sigmas_trans-trans_Sigmas
+
+                #Get the loss for the current iteration:
+                loss_mean_it=torch.abs(Diff_means).sum(2).mean([0,1])
+                loss_sigma_it=torch.abs(Diff_sigmas).sum([2,3]).mean([0,1])
+
+                loss_mean_normalized_it=(torch.abs(Diff_means).sum(2).mean(1)/normalizer_mean).mean()
+                loss_sigma_normalized_it=(torch.abs(Diff_sigmas).sum([2,3]).mean(1)/normalizer_sigma).mean()
+
+                #Add to aggregated loss (need to normalize by number of testing elements):
+                loss_mean=loss_mean+loss_mean_it/n_testing_elements
+                loss_sigma=loss_sigma+loss_sigma_it/n_testing_elements
+
+                loss_mean_normalized=loss_mean_normalized+loss_mean_normalized_it/n_testing_elements
+                loss_sigma_normalized=loss_sigma_normalized+loss_sigma_normalized_it/n_testing_elements
+                
+                if plot_trans:
+                    sup_title=title+"Output of transformed input | "+"Group: "+self.G_act.name+ "  |  Element: "+str(g)+"| Loss mean: "+str(loss_mean_it.detach().item())\
+                        +"| Loss sigma: "+str(loss_sigma_it.detach().item())
+                    My_Tools.Plot_Inference_2d(trans_x_context[0],trans_y_context[0],trans_x_target[0],
+                                           Y_Target=None,Predict=Means_trans[0].detach(),Cov_Mat=Sigmas_trans[0].detach(),title=sup_title)
+
+                if plot_stable:
+                    back_Means_trans=torch.matmul(Means_trans,M)
+                    back_Sigmas_trans=torch.matmul(M.t(),torch.matmul(Sigmas_trans,M))
+                    sup_title=title+"Back transformed output of transformed input | "+"Group: "+self.G_act.name+ "  |  Element: "+str(g)+"| Loss mean: "+str(loss_mean_it.detach().item())\
+                        +"| Loss sigma: "+str(loss_sigma_it.detach().item())
+                    My_Tools.Plot_Inference_2d(x_context[0],y_context[0],x_target[0],
+                                           Y_Target=None,Predict=back_Means_trans[0].detach(),Cov_Mat=back_Sigmas_trans[0].detach(),title=sup_title)
+
+        out_dict={'loss_mean': loss_mean.item()/n_batches,'loss_mean_normalized': loss_mean_normalized.item()/n_batches,
+                  'loss_sigma': loss_sigma.item()/n_batches, 'loss_sigma_normalized': loss_sigma_normalized.item()/n_batches}
+        #Get mean aggregrated loss:
+        return(out_dict)
+
+
+'''
+Encoder=My_Models.Steerable_Encoder(l_scale=0.4,x_range=[-4,4],n_x_axis=20)
+Decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=[[1,-1],[1,-1]],kernel_sizes=[5,7,9],dim_cov_est=3,N=16,non_linearity=['NormReLU'])
 G_act=Decoder.G_act
-feature_in=G_CNN.FieldType(G_act,[G_act.irrep(1)])
-feature_sigma=G_CNN.FieldType(G_act,[G_act.trivial_repr])
-CNP=My_Models.Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=1)
+in_repr=G_act.irrep(1)
+CNP=My_Models.Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=3)
 GP_train_data_loader,GP_test_data_loader=GP.load_2d_GP_data(Id="37845",batch_size=3)
+
 if torch.cuda.is_available():
     device = torch.device("cuda:0")  
     print("Running on the GPU")
 else:
     device = torch.device("cpu")
     print("Running on the CPU")
+
 _,_,filename=Training.train_CNP(CNP, GP_train_data_loader,GP_test_data_loader, device=device,
-              Max_n_context_points=50,n_epochs=3,n_iterat_per_epoch=1,
+              Max_n_context_points=50,n_epochs=5,n_iterat_per_epoch=3,
               filename="Test_CNP",n_val_samples=50)
-CNP_dict=torch.load(filename)
-Evaluater=Steerable_CNP_Evaluater(CNP_dict,G_act,feature_in,feature_sigma)
-Evaluater.plot_loss_memory()
+
+CNP_dict=torch.load("Test_CNP_2020_07_23_16_16")
+Evaluater=Steerable_CNP_Evaluater(CNP_dict,G_act,in_repr)
+#Evaluater.plot_loss_memory()
 GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
-Evaluater.plot_test_random(GP_parameters=GP_parameters)
-print(Evaluater.equiv_error_model(n_batches=10))
+#Evaluater.plot_test_random(GP_parameters=GP_parameters)
+print("Equiv. error:", Evaluater.equiv_error_model(n_samples=1,plot_stable=True))
+'''
