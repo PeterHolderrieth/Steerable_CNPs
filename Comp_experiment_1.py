@@ -165,19 +165,24 @@ filename=CONV_FILENAME)
 '''
 #EVALUATE STEERABLE CNP:
 '''
-geom_file_loc="Comp_experiment_1_Steerable_CNP_2020_07_24_13_03"
+geom_file_loc="Trained_Models/Comp_experiments/Comp_experiment_1_Steerable_CNP_2020_07_24_13_03"
 G_act=geom_decoder.G_act
 in_repr=G_act.irrep(1)
 
 geom_dict=torch.load(geom_file_loc,map_location=torch.device('cpu'))
 geom_evaluater=Evaluation.Steerable_CNP_Evaluater(geom_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
-#geom_evaluater.plot_loss_memory()
+geom_evaluater.plot_loss_memory()
 geom_evaluater.equiv_error_model(n_samples=4,plot_stable=True)
-#geom_evaluater.plot_test_random(n_samples=1,GP_parameters=GP_PARAMETERS)
+geom_evaluater.plot_test_random(n_samples=4,GP_parameters=GP_PARAMETERS)
 #%%
 '''
 #EVALUATE CONV CNP:
 '''
 conv_file_loc="Trained_Models/Comp_experiments/Comp_experiment_1_Conv_CNP_2020_07_24_13_19"
-conv_dict=torch.load(conv_file_loc)
+conv_dict=torch.load(conv_file_loc,map_location=torch.device('cpu'))
 conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
+conv_evaluater.plot_loss_memory()
+conv_evaluater.equiv_error_model(n_samples=4,plot_stable=True)
+conv_evaluater.plot_test_random(n_samples=4,GP_parameters=GP_PARAMETERS)
+
+# %%
