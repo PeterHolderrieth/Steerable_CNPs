@@ -68,10 +68,10 @@ STEERABLE CNP
 '''
 #Set parameters for Steerable Decoder:
 DIM_COV_EST=3
-N=16
-GEOM_KERNEL_SIZES=[7,9]
+N=4
+GEOM_KERNEL_SIZES=[7,9,11,15,17]
 GEOM_NON_LINEARITY=['NormReLU']
-HIDDEN_FIB_REPS=[[-1,-1,1,1]]
+HIDDEN_FIB_REPS=[[-1,-1],[-1,-1,1,1],[-1,-1,-1,1,1,1],[-1,-1,-1,1,1,1]]
 
 geom_decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=HIDDEN_FIB_REPS,kernel_sizes=GEOM_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=GEOM_NON_LINEARITY,N=N)
 geom_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST)
@@ -79,8 +79,8 @@ geom_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_es
 '''
 CONV CNP
 '''
-CONV_KERNEL_SIZES=[5,7,9]
-LIST_HID_CHANNELS=[6,9]
+CONV_KERNEL_SIZES=[5,7,9,11]
+LIST_HID_CHANNELS=[6,9,6]
 CONV_NON_LINEARITY=['ReLU']
 
 conv_decoder=My_Models.CNN_Decoder(list_hid_channels=LIST_HID_CHANNELS,kernel_sizes=CONV_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=CONV_NON_LINEARITY)
@@ -92,11 +92,11 @@ conv_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=conv_decoder,dim_cov_es
 TRAINING PARAMETERS
 '''
 
-N_EPOCHS=3
-N_ITERAT_PER_EPOCH=1
+N_EPOCHS=30
+N_ITERAT_PER_EPOCH=1000
 MIN_N_CONTEXT_POINTS=2
 MAX_N_CONTEXT_POINTS=40
-LEARNING_RATE=1e-3
+LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
@@ -111,7 +111,7 @@ Train Steerable CNP
 print("---------Train Steerable CNP--------")
 geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
-GEOM_FILENAME=FOLDER+"Equal_par_exp_Steerable_CNP"
+GEOM_FILENAME=FOLDER+"Comp_experiment_1_Steerable_CNP"
 
 _,_,geom_file_loc=Training.train_CNP(
 Steerable_CNP=geom_cnp, 
@@ -138,7 +138,7 @@ print("---------Train CONV CNP--------")
 
 conv_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
 
-CONV_FILENAME=FOLDER+"Equal_par_exp_Conv_CNP"
+CONV_FILENAME=FOLDER+"Comp_experiment_1_Conv_CNP"
 
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=conv_cnp, 
@@ -162,7 +162,7 @@ filename=CONV_FILENAME)
 
 #%%
 
-
+'''
 '''
 #EVALUATE STEERABLE CNP:
 '''
@@ -178,4 +178,4 @@ geom_evaluater.equiv_error_model(n_samples=4,plot_stable=True)
 '''
 #conv_dict=torch.load(conv_file_loc)
 #conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
-
+'''

@@ -67,10 +67,10 @@ STEERABLE CNP
 '''
 #Set parameters for Steerable Decoder:
 DIM_COV_EST=3
-N=16
-GEOM_KERNEL_SIZES=[7,9,11,15,17]
+N=4
+GEOM_KERNEL_SIZES=[7,9,11,15,17,19]
 GEOM_NON_LINEARITY=['NormReLU']
-HIDDEN_FIB_REPS=[[-1,1],[-1,-1,-1,-1,1],[-1,-1,-1,1,1,1],[-1,-1,-1,1,1,1]]
+HIDDEN_FIB_REPS=[[-1,1],[-1,-1,-1,1,1],[-1,-1,-1,-1,1,1,1,1],[-1,-1,-1,1,1,1],[-1,-1,-1,1,1,1]]
 
 geom_decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=HIDDEN_FIB_REPS,kernel_sizes=GEOM_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=GEOM_NON_LINEARITY,N=N)
 geom_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST)
@@ -110,7 +110,7 @@ Train Steerable CNP
 print("---------Train Steerable CNP--------")
 geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
-GEOM_FILENAME=FOLDER+"Comp_experiment_4_Steerable_CNP"
+GEOM_FILENAME=FOLDER+"TEST"#"Comp_experiment_4_Steerable_CNP"
 
 _,_,geom_file_loc=Training.train_CNP(
 Steerable_CNP=geom_cnp, 
@@ -137,7 +137,7 @@ print("---------Train CONV CNP--------")
 
 conv_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
 
-CONV_FILENAME=FOLDER+"Comp_experiment_4_Conv_CNP"
+CONV_FILENAME=FOLDER+"TEST"#"Comp_experiment_4_Conv_CNP"
 
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=conv_cnp, 

@@ -110,7 +110,7 @@ Train Steerable CNP
 print("---------Train Steerable CNP--------")
 geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
-GEOM_FILENAME=FOLDER+"Equal_par_exp_Steerable_CNP"
+GEOM_FILENAME=FOLDER+"Comp_experiment_2_Steerable_CNP"
 
 _,_,geom_file_loc=Training.train_CNP(
 Steerable_CNP=geom_cnp, 
@@ -137,7 +137,7 @@ print("---------Train CONV CNP--------")
 
 conv_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
 
-CONV_FILENAME=FOLDER+"Equal_par_exp_Conv_CNP"
+CONV_FILENAME=FOLDER+"Comp_experiment_2_Conv_CNP"
 
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=conv_cnp, 
