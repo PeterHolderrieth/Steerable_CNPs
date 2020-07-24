@@ -92,8 +92,8 @@ conv_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=conv_decoder,dim_cov_es
 TRAINING PARAMETERS
 '''
 
-N_EPOCHS=3
-N_ITERAT_PER_EPOCH=1
+N_EPOCHS=30
+N_ITERAT_PER_EPOCH=1000
 MIN_N_CONTEXT_POINTS=2
 MAX_N_CONTEXT_POINTS=40
 LEARNING_RATE=1e-3
@@ -162,7 +162,7 @@ filename=CONV_FILENAME)
 
 #%%
 
-
+'''
 '''
 #EVALUATE STEERABLE CNP:
 '''
@@ -178,4 +178,4 @@ geom_evaluater.equiv_error_model(n_samples=4,plot_stable=True)
 '''
 #conv_dict=torch.load(conv_file_loc)
 #conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
-
+'''
