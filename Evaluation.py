@@ -99,7 +99,7 @@ class Steerable_CNP_Evaluater(nn.Module):
                GP_parameters - dictionary - parameters of GP to compare to
         '''
         plt.figure(plt.gcf().number+1)
-        self.Steerable_CNP.plot_Context_Target(x_context,y_context,x_target,y_target,title=title)
+        self.Steerable_CNP.plot_Context_Target(x_context,y_context,x_target,y_target,title="Model")
         if GP_parameters is not None:
             plt.figure(plt.gcf().number+1)
             Means_GP,Cov_Mat_GP,Var_GP=GP.GP_inference(x_context[0],y_context[0],x_target[0], **GP_parameters)

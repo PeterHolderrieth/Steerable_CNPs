@@ -52,7 +52,7 @@ DATA
 BATCH_SIZE=16
 GP_TRAIN_DATA_LOADER,GP_TEST_DATA_LOADER=GP.load_2d_GP_data(Id="37845",batch_size=BATCH_SIZE)
 DATA_IDENTIFIER="GP_data_Id_37845"
-
+GP_PARAMETERS={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
 '''
 ENCODER
 '''
@@ -112,7 +112,7 @@ print("---------Train Steerable CNP--------")
 geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
 GEOM_FILENAME=FOLDER+"Comp_experiment_1_Steerable_CNP"
-
+'''
 _,_,geom_file_loc=Training.train_CNP(
 Steerable_CNP=geom_cnp, 
 train_data_loader=GP_TRAIN_DATA_LOADER,
@@ -129,7 +129,7 @@ shape_reg=SHAPE_REG,
 n_plots=N_PLOTS,
 n_val_samples=N_VAL_SAMPLES,
 filename=GEOM_FILENAME)
-
+'''
 
 '''
 Train Steerable CNP
@@ -139,7 +139,7 @@ print("---------Train CONV CNP--------")
 conv_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
 
 CONV_FILENAME=FOLDER+"Comp_experiment_1_Conv_CNP"
-
+'''
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=conv_cnp, 
 train_data_loader=GP_TRAIN_DATA_LOADER,
@@ -156,26 +156,28 @@ shape_reg=SHAPE_REG,
 n_plots=N_PLOTS,
 n_val_samples=N_VAL_SAMPLES,
 filename=CONV_FILENAME)
-
+'''
 
 
 
 #%%
 
 '''
-'''
 #EVALUATE STEERABLE CNP:
 '''
+geom_file_loc="Comp_experiment_1_Steerable_CNP_2020_07_24_13_03"
 G_act=geom_decoder.G_act
 in_repr=G_act.irrep(1)
 
-geom_dict=torch.load(geom_file_loc)
+geom_dict=torch.load(geom_file_loc,map_location=torch.device('cpu'))
 geom_evaluater=Evaluation.Steerable_CNP_Evaluater(geom_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
+#geom_evaluater.plot_loss_memory()
 geom_evaluater.equiv_error_model(n_samples=4,plot_stable=True)
-
+#geom_evaluater.plot_test_random(n_samples=1,GP_parameters=GP_PARAMETERS)
+#%%
 '''
 #EVALUATE CONV CNP:
 '''
-#conv_dict=torch.load(conv_file_loc)
-#conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
-'''
+conv_file_loc="Trained_Models/Comp_experiments/Comp_experiment_1_Conv_CNP_2020_07_24_13_19"
+conv_dict=torch.load(conv_file_loc)
+conv_evaluater=Evaluation.Steerable_CNP_Evaluater(conv_dict,G_act,in_repr,GP_TEST_DATA_LOADER)
