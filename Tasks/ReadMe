@@ -1,0 +1,4 @@
+This folder contains different folders with different "tasks" of our model.
+A task specifies:
+1. A data set with 2d output data
+2. A python script to load that data into the data loader
