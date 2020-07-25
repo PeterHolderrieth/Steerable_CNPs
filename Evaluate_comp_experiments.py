@@ -40,7 +40,7 @@ CONV_PATH="Trained_Models/Comp_experiments/Equal_par_exp_Steerable_CNP_2020_07_2
 geom_dict=torch.load(GEOM_PATH,map_location=torch.device('cpu'))
 conv_dict=torch.load(CONV_PATH,map_location=torch.device('cpu'))
 
-N=geom_dict['CNP_dict']['decoder_dict']['N']
+N=4
 G_act=gspaces.Rot2dOnR2(N=N)
 
 geom_eval=Evaluation.Steerable_CNP_Evaluater(geom_dict,G_act,G_act.irrep(1))
