@@ -1,0 +1,16 @@
+This folder provides the task of predicting a dataset of GP samples. The properties of that data set are as follows:
+
+The parameters for sampling the GP are:
+
+GP_parameters={'l_scale':0.5,
+'sigma_var': 2., 
+'kernel_type':"div_free",
+'obs_noise':1e-4}
+
+The X-locations were chosen as a grid where every is created by torch.linspace(-2,2,20).
+So n=100 here.
+
+The number of training samples is 50 000, the number of validation and test samples is each 10 000.
+
+
+

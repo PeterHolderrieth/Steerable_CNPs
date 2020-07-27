@@ -1,0 +1,7 @@
+This folder contains different folders with different "tasks" of our model.
+A task specifies:
+1. A subfolder 'Data' containing six files: X and Y pairs for the train, validation and test set.
+2. A python script to load the train, validation and test data.
+3. An info file giving information about the task
+4. A notebook plotting the data for illustration
+(For artificial data: 5. A sampling file sampling the data)

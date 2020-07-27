@@ -6,7 +6,8 @@ __pycache__/
 #Folders:
 Container/
 Trained_Models/
-*/Data/*
+**/Data/**
+**/Old_Tasks/**
 
 # C extensions
 *.so
