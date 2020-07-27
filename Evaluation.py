@@ -32,6 +32,8 @@ import Kernel_and_GP_tools as GP
 import My_Tools
 import Steerable_CNP_Models as My_Models
 import Training
+import Tasks.Dataset
+import Tasks.GP_div_free_small.loader as GP_loader
 
 
 
@@ -45,13 +47,13 @@ IMPLEMENT SUMMARY PRINT OF MODEL
 '''
 
 class Steerable_CNP_Evaluater(nn.Module):
-    def __init__(self,dictionary,G_act,in_repr,test_data_loader):
+    def __init__(self,dictionary,G_act,in_repr,test_dataset):
         super(Steerable_CNP_Evaluater, self).__init__()
         '''
         Input: dictionary - obtained from train_CNP    
                G_act      - instance of e2cnn.gspaces - underlying G-space 
                in_repr    - in_repr - instance of e2cnn.group.irrep - input representation
-               test_data_loader - torch.data.utils.DataLoader - providing test data 
+               test_dataset - instance of Tasks.CNPDataset
 
         '''
         self.dictionary=dictionary
@@ -63,7 +65,7 @@ class Steerable_CNP_Evaluater(nn.Module):
         self.val_log_ll=dictionary['val_log ll_history']
         self.shape_reg=dictionary['shape_reg']
 
-        self.test_data_loader=test_data_loader
+        self.test_dataset=test_dataset
 
 
         #Save the G-space:
@@ -109,15 +111,10 @@ class Steerable_CNP_Evaluater(nn.Module):
     def plot_test_random(self,n_samples=4,GP_parameters=None):
         for i in range(n_samples):
             #Get one single example:
-            X,Y=next(iter(self.test_data_loader))
-            X=X[0].unsqueeze(0)
-            Y=Y[0].unsqueeze(0)
-            #Split in context target:
-            n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
-            x_context,y_context,x_target,y_target=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
+            x_context,y_context,x_target,y_target=self.test_dataset.get_rand_batch(batch_size=1,cont_in_target=False)
             self.plot_test(x_context,y_context,x_target,y_target,GP_parameters=GP_parameters)
 
-    def equiv_error_encoder(self,n_samples=1,inner_circle=False,plot_trans=False,trans_plot=False,plot_stable=False):
+    def equiv_error_encoder(self,n_samples=1,batch_size=1,inner_circle=False,plot_trans=False,trans_plot=False,plot_stable=False):
         '''
         Input: n_samples - int - number of context, target samples to consider
         Output: For every group element, it computes the "group equivariance error" of the encoder, i.e.
@@ -134,16 +131,12 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss=torch.tensor(0.0)
         loss_normalized=torch.tensor(0.0)
-        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
+        n_batches=max(n_samples//batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
-            #Get random number context points:
-            n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
-            #Get random split in context and target set:
-            x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
+            x_context,y_context,_,_=self.test_dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
             #Get embedding:
             Embedding=self.Steerable_CNP.encoder(x_context,y_context)
             #Get geometric version of embedding:
@@ -196,7 +189,7 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Divide aggregated loss by the number of samples:
         return(loss/n_batches,loss_normalized/n_batches)
             
-    def equiv_error_decoder(self,n_samples=1,inner_circle=True):
+    def equiv_error_decoder(self,n_samples=1,inner_circle=True,batch_size=3):
         '''
         Input: n_samples - int - number of context, target samples to consider
         Output: For every group element, it computes the "group equivariance error" of the decoder, i.e.
@@ -207,17 +200,13 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Initialize container for loss, number of batches to consider and number of group (testing) elements:
         loss=torch.tensor(0.0)
         loss_normalized=torch.tensor(0.0)
-        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
+        n_batches=max(n_samples//batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
-            #Get random number context points:
-            n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
-            #Get random split in context and target set:
-            x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
-            
+            x_context,y_context,_,_=self.test_dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
+
             #Get embedding and version:
             Emb = self.Steerable_CNP.encoder(x_context,y_context)
             geom_Emb = G_CNN.GeometricTensor(Emb, self.feature_emb)
@@ -258,7 +247,7 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Get mean aggregrated loss:
         return(loss/n_batches,loss_normalized/n_batches)
         
-    def equiv_error_target_smoother(self,n_samples=1):
+    def equiv_error_target_smoother(self,n_samples=1,batch_size=3):
         '''
         Input: n_samples - int - number of context, target samples to consider
         Output: For every group element, it computes the "group equivariance error" of the target smoother, i.e.
@@ -273,16 +262,13 @@ class Steerable_CNP_Evaluater(nn.Module):
         loss_sigma=torch.tensor(0.0)
         loss_sigma_normalized=torch.tensor(0.0)
 
-        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
+        n_batches=max(n_samples//batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
-            #Get random number context points:
-            n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
-            #Get random split in context and target set:
-            x_context,y_context,x_target,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
+            x_context,y_context,x_target,y_target=self.test_dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
+
             #Get embedding:
             Emb = self.Steerable_CNP.encoder(x_context,y_context)
             #Get output of embedding and geometric version:
@@ -330,7 +316,7 @@ class Steerable_CNP_Evaluater(nn.Module):
         #Get mean aggregrated loss:
         return(out_dict)
     
-    def equiv_error_model(self,n_samples=10,plot_trans=False,trans_plot=False,plot_stable=False,title=""):
+    def equiv_error_model(self,n_samples=10,batch_size=1,plot_trans=False,trans_plot=False,plot_stable=False,title=""):
         '''
         Input:  n_samples - int - number of data samples to consider
         Output: For every group element, it computes the "group equivariance error" of the model, i.e.
@@ -350,16 +336,12 @@ class Steerable_CNP_Evaluater(nn.Module):
         loss_sigma=torch.tensor(0.0)
         loss_sigma_normalized=torch.tensor(0.0)
 
-        n_batches=max(n_samples//self.test_data_loader.batch_size,1)
+        n_batches=max(n_samples//batch_size,1)
         n_testing_elements=len(list(self.G_act.testing_elements))
 
         for i in range(n_batches):
             #Get random mini batch:
-            X,Y=next(iter(self.test_data_loader))
-            #Get random number context points:
-            n_context_points=torch.randint(size=[],low=2,high=self.Max_n_context_points)
-            #Get random split in context and target set:
-            x_context,y_context,x_target,_=My_Tools.Rand_Target_Context_Splitter(X,Y,n_context_points)
+            x_context,y_context,x_target,y_target=self.test_dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
             #Get means and variances:
             Means,Sigmas=self.Steerable_CNP.forward(x_context,y_context,x_target)
             #Get squared norm per batch element as a normalizer:
@@ -418,13 +400,17 @@ class Steerable_CNP_Evaluater(nn.Module):
         return(out_dict)
 
 
+BATCH_SIZE=16
+DATA_PATH="Tasks/GP_div_free_small/"
+TRAIN_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='train')
+VAL_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='valid')
+TEST_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='test')
 '''
 Encoder=My_Models.Steerable_Encoder(l_scale=0.4,x_range=[-4,4],n_x_axis=20)
 Decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=[[1,-1],[1,-1]],kernel_sizes=[5,7,9],dim_cov_est=3,N=16,non_linearity=['NormReLU'])
 G_act=Decoder.G_act
 in_repr=G_act.irrep(1)
 CNP=My_Models.Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=3)
-GP_train_data_loader,GP_test_data_loader=GP.load_2d_GP_data(Id="37845",batch_size=3)
 
 if torch.cuda.is_available():
     device = torch.device("cuda:0")  
@@ -432,18 +418,18 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
     print("Running on the CPU")
-
-_,_,filename=Training.train_CNP(CNP, GP_train_data_loader,GP_test_data_loader, device=device,
-              Max_n_context_points=50,n_epochs=5,n_iterat_per_epoch=3,
+_,_,filename=Training.train_CNP(CNP, TRAIN_DATASET,VAL_DATASET, data_identifier="Test",device=device,
+              n_epochs=5,n_iterat_per_epoch=3,
               filename="Test_CNP",n_val_samples=50)
-
-CNP_dict=torch.load("Test_CNP_2020_07_23_16_16")
-Evaluater=Steerable_CNP_Evaluater(CNP_dict,G_act,in_repr)
-#Evaluater.plot_loss_memory()
+CNP_dict=torch.load('Test_CNP_2020_07_27_08_51')
+Evaluater=Steerable_CNP_Evaluater(CNP_dict,G_act,in_repr,TEST_DATASET)
+Evaluater.plot_loss_memory()
 GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
-#Evaluater.plot_test_random(GP_parameters=GP_parameters)
+Evaluater.plot_test_random(GP_parameters=GP_parameters)
 print("Equiv. error:", Evaluater.equiv_error_model(n_samples=1,plot_stable=True))
+print("Equiv. error:", Evaluater.equiv_error_encoder(n_samples=1,plot_trans=True))
+print("Equiv. error:", Evaluater.equiv_error_target_smoother(n_samples=1))
+print("Equiv. error:", Evaluater.equiv_error_decoder(n_samples=1))
 '''
-
 
 # %%

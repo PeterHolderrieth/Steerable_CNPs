@@ -469,28 +469,6 @@ def vec_GP_sampler_2dim(min_x=-2,max_x=2,n_grid_points=10,l_scale=1,sigma_var=1,
     #Return grid and samples:
     return(X,Y)
     
-#%%    
-#A function to load the GP data which I sampled:
-def load_2d_GP_data(Id,folder='Test_data/2d_GPs/',batch_size=1,share_test_set=0.2):
-    X=np.load(folder+"GP_data_X"+Id+".npy")
-    Y=np.load(folder+"GP_data_Y"+Id+".npy")
-    X=torch.tensor(X,dtype=torch.get_default_dtype())
-    Y=torch.tensor(Y,dtype=torch.get_default_dtype())
-    n,m,_=X.size()
-    for it in range(X.size(0)):
-        vec_shuffle=torch.randperm(m)
-        X[it]=X[it][vec_shuffle]
-        Y[it]=Y[it][vec_shuffle]
-    ind_shuffle=torch.randperm(n)
-    n_test_points=int(n*share_test_set//1)
-    test_ind=ind_shuffle[:n_test_points]
-    train_ind=ind_shuffle[n_test_points:]
-    
-    GP_train_data=utils.TensorDataset(X[train_ind],Y[train_ind])
-    GP_test_data=utils.TensorDataset(X[test_ind],Y[test_ind])
-    GP_train_data_loader=utils.DataLoader(GP_train_data,batch_size=batch_size,shuffle=True,drop_last=True)
-    GP_test_data_loader=utils.DataLoader(GP_test_data,batch_size=batch_size,shuffle=True,drop_last=True)
-    return(GP_train_data_loader,GP_test_data_loader)
     
     
 # In[29]:

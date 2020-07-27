@@ -47,19 +47,13 @@ TO DO:
 How to save identity of data loader without actually having to save it for every model
 '''
 
-def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,device,
-              Max_n_context_points,Min_n_context_points=2,n_epochs=3, n_iterat_per_epoch=1,
+def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
                  learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None):
         '''
         Input: 
           Steerable_CNP: Steerable_CNP Module (see above)
 
-          train_data_loader,val_data_loader: torch.utils.data.DataLoader - gives training and validation data
-                       every minibatch is a list of length 2 with 
-                       1st element: data features - torch.tensor - shape (minibatch_size,n,2)
-                       2nd element: data labels   - torch.tensor - shape (minibatch_size,n,2)
-                       !!!We assume that the training set is shuffled along the observations in total
-                       but also that the indices of the features and labels are shuffled.
+          train_dataset,val_dataset - instance of Tasks.CNPDataSet - giving train and valid sets
           data_identifier - string - identifier for what data set was used
           device: instance of torch.device 
           n_epochs: int -number of epochs for training
@@ -87,7 +81,6 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,
           We choose a random function and random context before training and plot the development
           of the predictions (mean of the distributions) over the training
         '''
-        minibatch_size=train_data_loader.batch_size
         Steerable_CNP=Steerable_CNP.to(device)
 
         #------------------Tracking training progress ----------------------
@@ -108,20 +101,18 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,
             log_ll_epoch=My_Tools.AverageMeter()
             #-------------------------ITERATION IN ONE EPOCH ---------------------
             for it in range(n_iterat_per_epoch):
-                #Get the next minibatch and send it to device:
-                features, labels=next(iter(train_data_loader))
-                features=features.to(device)
-                labels=labels.to(device)
-                
                 #Set the loss to zero:
                 loss=torch.tensor(0.0,device=device)
-                
-                #Sample new training example:
-                n_context_points=torch.randint(size=[],low=Min_n_context_points,high=Max_n_context_points)
-                x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(features, labels, n_context_points)
+                x_context,y_context,x_target,y_target=train_dataset.get_rand_batch(batch_size=minibatch_size,cont_in_target=True)
+                #Load data to device:
+                x_context=x_context.to(device)
+                y_context=y_context.to(device)
+                x_target=x_target.to(device)
+                y_target=y_target.to(device)
+
                 #The target set includes the context set here:
-                Means,Sigmas=Steerable_CNP(x_context,y_context,features) 
-                loss,log_ll=Steerable_CNP.loss(labels,Means,Sigmas,shape_reg=shape_reg)
+                Means,Sigmas=Steerable_CNP(x_context,y_context,x_target) 
+                loss,log_ll=Steerable_CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)
 
                 #Set gradients to zero:
                 optimizer.zero_grad()
@@ -139,7 +130,7 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,
             train_log_ll_tracker.append(log_ll_epoch.avg)
 
             if n_val_samples is not None:
-              val_log_ll=test_CNP(Steerable_CNP,val_data_loader,device,Min_n_context_points,Max_n_context_points,n_val_samples)
+              val_log_ll=test_CNP(Steerable_CNP,val_dataset,device,n_val_samples,batch_size=minibatch_size)
               val_log_ll_tracker.append(val_log_ll)
               print("Epoch: %d | train loss: %.5f | train log ll:  %.5f | val log ll: %.5f"%(epoch,loss_epoch.avg,log_ll_epoch.avg,val_log_ll))
 
@@ -156,8 +147,8 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,
                     'train_loss_history':   train_loss_tracker,
                     'train_log_ll_history': train_log_ll_tracker,
                     'val_log ll_history': val_log_ll_tracker,
-                    'Min_n_context_points':Min_n_context_points,
-                    'Max_n_context_points': Max_n_context_points,
+                    'Min_n_context_points':train_dataset.Min_n_cont,
+                    'Max_n_context_points': train_dataset.Max_n_cont,
                     'shape_reg': shape_reg,
                     'n_parameters:': My_Tools.count_parameters(Steerable_CNP),
                     'final_log_ll:': val_log_ll_tracker[-1]}
@@ -167,22 +158,23 @@ def train_CNP(Steerable_CNP, train_data_loader,val_data_loader, data_identifier,
         #Return the model and the loss memory:
         return(Steerable_CNP,train_loss_tracker,complete_filename)
 
-def test_CNP(CNP,val_data_loader,device,Min_n_context,Max_n_context,n_samples=400):
+def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1):
         with torch.no_grad():
-            n_iterat=n_samples//val_data_loader.batch_size
+            n_iterat=n_samples//batch_size
             log_ll=torch.tensor(0.0, device=device)
             for i in range(n_iterat):
-                    #Get the next minibatch:
-                    features, labels=next(iter(val_data_loader))
-                    #Send it to the correct device:
-                    features=features.to(device)
-                    labels=labels.to(device)
-                    #Set the loss to zero:
-                    n_context_points=torch.randint(size=[],low=Min_n_context,high=Max_n_context)
-                    x_context,y_context,_,_=My_Tools.Rand_Target_Context_Splitter(features, labels, n_context_points)
+                    #Get random minibatch:
+                    x_context,y_context,x_target,y_target=val_dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
+                    
+                    #Load data to device:
+                    x_context=x_context.to(device)
+                    y_context=y_context.to(device)
+                    x_target=x_target.to(device)
+                    y_target=y_target.to(device)
+
                     #The target set includes the context set here:
-                    Means,Sigmas=CNP(x_context,y_context,features) 
-                    _, log_ll_it=CNP.loss(labels,Means,Sigmas,shape_reg=None)
+                    Means,Sigmas=CNP(x_context,y_context,x_target) 
+                    _, log_ll_it=CNP.loss(x_target,Means,Sigmas,shape_reg=None)
                     log_ll+=log_ll_it/n_iterat
         return(log_ll.item())
 

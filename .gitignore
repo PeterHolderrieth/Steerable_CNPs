@@ -4,7 +4,9 @@ __pycache__/
 *$py.class
 
 #Folders:
-#Trained_Models/
+Container/
+Trained_Models/
+*/Data/*
 
 # C extensions
 *.so

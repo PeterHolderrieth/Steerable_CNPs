@@ -38,8 +38,6 @@ from e2cnn import nn as G_CNN
 #HYPERPARAMETERS:
 #Set default as double:
 torch.set_default_dtype(torch.float)
-#Scale for plotting with plt quiver
-quiver_scale=15
 
 #%%
 '''
@@ -162,7 +160,7 @@ def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatte
 #%%
 #            
 #Tool to plot context set, ground truth for target and predictions for target in one plot:
-def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=None,Cov_Mat=None,title=""):
+def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=None,Cov_Mat=None,title="",size_scale=2, ellip_scale=0.8,quiver_scale=15,plot_points=False):
     '''
     Inputs: X_Context,Y_Context: torch.tensor - shape (n_context_points,2) - given context set
             X_Target,Y_Target: torch.tensor - shape (n_target_points,2) - target locations and outputs vectors 
@@ -172,10 +170,6 @@ def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=No
             title: string -  suptitle
     Outputs: None - plots the above tensors in two plots: one plots the means against the context sets, the other one the covariances/variances
     '''
-    #Function hyperparameters for plotting in notebook:
-    size_scale=2
-    ellip_scale=0.8
-    
     #Create plots:
     fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(size_scale*10,size_scale*5))
     plt.gca().set_aspect('equal', adjustable='box')
@@ -186,7 +180,8 @@ def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=No
     ax[1].set_title("Variances")
     
     #Plot context set in blue:
-    ax[0].scatter(X_Context[:,0],X_Context[:,1],color='black')
+    if plot_points:
+        ax[0].scatter(X_Context[:,0],X_Context[:,1],color='black')
     ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],
       color='black',pivot='mid',label='Context set',scale=quiver_scale)
     
