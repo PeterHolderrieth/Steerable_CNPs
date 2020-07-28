@@ -35,6 +35,11 @@ import Training
 import Evaluation
 import Tasks.GP_div_free_small.loader as GP_loader
 
+#Set hyperparameters:
+torch.set_default_dtype(torch.float)
+torch.manual_seed(3012)
+np.random.seed(3012)
+
 '''
 SET DEVICE:
 '''
@@ -80,48 +85,45 @@ GEOM_NON_LINEARITY=['NormReLU']
 HIDDEN_FIB_REPS=[[-1,-1],[-1,-1,1,1],[-1,-1,-1,1,1,1],[-1,-1,-1,1,1,1]]
 
 geom_decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=HIDDEN_FIB_REPS,kernel_sizes=GEOM_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=GEOM_NON_LINEARITY,N=N)
-geom_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST)
 
-'''
-CONV CNP
-'''
-CONV_KERNEL_SIZES=[5,7,9,11]
-LIST_HID_CHANNELS=[6,9,6]
-CONV_NON_LINEARITY=['ReLU']
+#Set parameters for kernel dict out:
+KERNEL_DICT_OUT_RBF={'kernel_type': 'rbf'}
+KERNEL_DICT_OUT_DIV_FREE={'kernel_type': 'div_free'}
 
-conv_decoder=My_Models.CNN_Decoder(list_hid_channels=LIST_HID_CHANNELS,kernel_sizes=CONV_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=CONV_NON_LINEARITY)
-conv_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=conv_decoder,dim_cov_est=DIM_COV_EST)
-
+#Define two different cnps:
+rbf_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST,kernel_dict_out=KERNEL_DICT_OUT_RBF)
+div_free_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST,
+                                        kernel_dict_out=KERNEL_DICT_OUT_DIV_FREE, normalize_output=False)
 
 
 '''
 TRAINING PARAMETERS
 '''
 
-N_EPOCHS=3
+N_EPOCHS=2
 N_ITERAT_PER_EPOCH=1
-MIN_N_CONTEXT_POINTS=2
-MAX_N_CONTEXT_POINTS=40
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
-N_VAL_SAMPLES=200
+N_VAL_SAMPLES=2
 
 #File path to save models:
-FOLDER="Trained_Models/Comp_experiments/"
+FOLDER="Trained_Models/Comp_experiments/Rbf_vs_div_free_kernel/"
 
 '''
-Train Steerable CNP
+Train Steerable CNP with non-div-free kernel:
 '''
-print("---------Train Steerable CNP--------")
 geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
-GEOM_FILENAME=FOLDER+"Comp_experiment_1_Steerable_CNP"
+
+print("---------Train rbf SteerCNP--------")
+
+RBF_FILENAME=FOLDER+"Exp_1_rbf.py"
 
 
 _,_,geom_file_loc=Training.train_CNP(
-Steerable_CNP=geom_cnp, 
+Steerable_CNP=rbf_cnp, 
 train_dataset=TRAIN_DATASET,
 val_dataset=VAL_DATASET, 
 data_identifier=DATA_IDENTIFIER,
@@ -137,17 +139,15 @@ filename=None)
 
 
 '''
-Train Steerable CNP
+Train Steerable CNP with div-free kernel:
 '''
 
-print("---------Train CONV CNP--------")
+print("---------Train div free SteerCNP--------")
 
-conv_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
-
-CONV_FILENAME=FOLDER+"Comp_experiment_1_Conv_CNP"
+DIV_FREE_FILENAME=FOLDER+"Exp_1_div_free.py"
 
 _,_,conv_file_loc=Training.train_CNP(
-Steerable_CNP=conv_cnp, 
+Steerable_CNP=div_free_cnp, 
 train_dataset=TRAIN_DATASET,
 val_dataset=VAL_DATASET, 
 data_identifier=DATA_IDENTIFIER,

@@ -32,9 +32,10 @@ import My_Tools
 
 
 
-#HYPERPARAMETERS:
+#HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
-quiver_scale=15
+
+
 
 ''''
 TO DO:
@@ -524,7 +525,7 @@ class Steerable_CNP(nn.Module):
         #So far, the dimension of the covariance estimator has to be either 1 or 3 
         #(i.e. number of output channels either 3 or 5):
         if (self.dim_cov_est!=1) and (self.dim_cov_est!=3): sys.exit("N out channels must be either 3 or 5")
-        if 'l_scale' in kernel_dict_out: sys.exit("l scale is variable and not fixed")
+        if 'l_scale' in kernel_dict_out: sys.exit("Encoder error: l scale is variable and not fixed")
         if not isinstance(self.normalize_output,bool): sys.exit("Normalize output has to be boolean.")
         if not isinstance(l_scale,float): sys.exit("l_scale initialization has to be a float.")
         if not isinstance(encoder,Steerable_Encoder): sys.exit("Enoder is not correct.")
@@ -550,14 +551,11 @@ class Steerable_CNP(nn.Module):
         Output: Predictions on X_target - Means_target - torch.tensor - shape (batch_size,n_target,2)
                 Covariances on X_target - Covs_target - torch.tensor - shape (batch_size,n_target,2,2)
         '''
-        point=datetime.datetime.today()
         batch_size=X_target.size(0)
         #-----------SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
         #Reshape the Final Feature Map:
         Resh_Final_Feature_Map=Final_Feature_Map.permute(dims=(0,2,3,1)).reshape(batch_size,self.encoder.n_y_axis*self.encoder.n_x_axis,
                                                             self.dim_cov_est+2)
-        point=datetime.datetime.today()
-
         #Split into mean and parameters for covariance:
         Means_grid=Resh_Final_Feature_Map[:,:,:2]
         Pre_Activ_Covs_grid=Resh_Final_Feature_Map[:,:,2:]
@@ -572,7 +570,7 @@ class Steerable_CNP(nn.Module):
         else:
             Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
         #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
-        point=datetime.datetime.today()
+
         #-----------APPLY KERNEL SMOOTHING --------------------------------------
         #Set the lenght scale (clamp for numerical stability):
         l_scale=torch.exp(torch.clamp(self.log_l_scale_out,max=5.,min=-5.))
@@ -590,11 +588,10 @@ class Steerable_CNP(nn.Module):
         Covs_target_flat=GP.Batch_Kernel_Smoother_2d(X_Context=expand_grid,
                                             Y_Context=Covs_grid_flat,
                                           X_Target=X_target,normalize=self.normalize_output,
-                                          l_scale=l_scale,**self.kernel_dict_out)                                 
+                                          l_scale=l_scale,kernel_type="rbf")                                 
         #Reshape covariance matrices to proper matrices --> shape (batch_size,n_target,2,2):
         Covs_target=Covs_target_flat.view(batch_size,X_target.size(1),2,2)
         #-----------END APPLY KERNEL SMOOTHING --------------------------------------
-        point=datetime.datetime.today()
         return(Means_target, Covs_target)
 
     #Define the forward pass of ConvCNP: 

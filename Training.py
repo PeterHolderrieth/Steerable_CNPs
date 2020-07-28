@@ -39,8 +39,6 @@ import Steerable_CNP_Models as My_Models
 
 #HYPERPARAMETERS:
 torch.set_default_dtype(torch.float)
-quiver_scale=15
-
 
 '''
 TO DO:
@@ -110,6 +108,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                 x_target=x_target.to(device)
                 y_target=y_target.to(device)
 
+                #DEBUG:
                 #The target set includes the context set here:
                 Means,Sigmas=Steerable_CNP(x_context,y_context,x_target) 
                 loss,log_ll=Steerable_CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)

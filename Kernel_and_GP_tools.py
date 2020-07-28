@@ -38,14 +38,13 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import My_Tools
 
 
-# In[23]:
+
 
 
 #HYPERPARAMETERS:
 #Set default as double:
 torch.set_default_dtype(torch.float)
 
-#%%
 '''
 ____________________________________________________________________________________________________________________
 
