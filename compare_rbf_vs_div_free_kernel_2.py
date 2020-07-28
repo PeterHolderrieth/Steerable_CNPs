@@ -80,9 +80,9 @@ STEERABLE CNP
 #Set parameters for Steerable Decoder:
 DIM_COV_EST=3
 N=4
-GEOM_KERNEL_SIZES=[7,9,11,15,17]
+GEOM_KERNEL_SIZES=[7,9,11]
 GEOM_NON_LINEARITY=['NormReLU']
-HIDDEN_FIB_REPS=[[-1,-1],[-1,-1,1,1],[-1,-1,-1,1,1,1],[-1,-1,-1,1,1,1]]
+HIDDEN_FIB_REPS=[[-1,-1],[-1,-1,1,1]]
 
 geom_decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=HIDDEN_FIB_REPS,kernel_sizes=GEOM_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=GEOM_NON_LINEARITY,N=N)
 
@@ -101,12 +101,12 @@ TRAINING PARAMETERS
 '''
 
 N_EPOCHS=30
-N_ITERAT_PER_EPOCH=200
+N_ITERAT_PER_EPOCH=400
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
-N_VAL_SAMPLES=2
+N_VAL_SAMPLES=200
 
 #File path to save models:
 FOLDER="Trained_Models/Comp_experiments/Rbf_vs_div_free_kernel/"
@@ -119,7 +119,7 @@ geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
 
 print("---------Train rbf SteerCNP--------")
 
-RBF_FILENAME=FOLDER+"Exp_1_rbf.py"
+RBF_FILENAME=FOLDER+"Exp_2_rbf.py"
 
 
 _,_,geom_file_loc=Training.train_CNP(
@@ -144,7 +144,7 @@ Train Steerable CNP with div-free kernel:
 
 print("---------Train div free SteerCNP--------")
 
-DIV_FREE_FILENAME=FOLDER+"Exp_1_div_free.py"
+DIV_FREE_FILENAME=FOLDER+"Exp_2_div_free.py"
 
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=div_free_cnp, 
