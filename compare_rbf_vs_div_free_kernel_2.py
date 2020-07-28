@@ -101,7 +101,7 @@ TRAINING PARAMETERS
 '''
 
 N_EPOCHS=30
-N_ITERAT_PER_EPOCH=400
+N_ITERAT_PER_EPOCH=3000
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
@@ -134,7 +134,7 @@ learning_rate=LEARNING_RATE,
 weight_decay=WEIGHT_DECAY,
 shape_reg=SHAPE_REG,
 n_plots=N_PLOTS,
-n_val_samples=400,
+n_val_samples=N_VAL_SAMPLES,
 filename=RBF_FILENAME)
 
 
@@ -158,7 +158,7 @@ learning_rate=LEARNING_RATE,
 weight_decay=WEIGHT_DECAY,
 shape_reg=SHAPE_REG,
 n_plots=N_PLOTS,
-n_val_samples=400,
+n_val_samples=N_VAL_SAMPLES,
 filename=DIV_FREE_FILENAME)
 
 
