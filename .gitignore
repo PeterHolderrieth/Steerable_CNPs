@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 
 #Folders:
-Container/
 Trained_Models/
 **/Data/**
 **/Old_Tasks/**
