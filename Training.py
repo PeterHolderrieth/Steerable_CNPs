@@ -146,7 +146,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                     'train_loss_history':   train_loss_tracker,
                     'train_log_ll_history': train_log_ll_tracker,
                     'val_log ll_history': val_log_ll_tracker,
-                    'Min_n_context_points':train_dataset.Min_n_cont,
+                    'Min_n_context_points': train_dataset.Min_n_cont,
                     'Max_n_context_points': train_dataset.Max_n_cont,
                     'shape_reg': shape_reg,
                     'n_parameters:': My_Tools.count_parameters(Steerable_CNP),

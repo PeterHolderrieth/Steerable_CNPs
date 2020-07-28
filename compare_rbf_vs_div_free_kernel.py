@@ -135,7 +135,7 @@ weight_decay=WEIGHT_DECAY,
 shape_reg=SHAPE_REG,
 n_plots=N_PLOTS,
 n_val_samples=400,
-filename=None)
+filename=RBF_FILENAME)
 
 
 '''
@@ -159,6 +159,6 @@ weight_decay=WEIGHT_DECAY,
 shape_reg=SHAPE_REG,
 n_plots=N_PLOTS,
 n_val_samples=400,
-filename=None)
+filename=DIV_FREE_FILENAME)
 
 
