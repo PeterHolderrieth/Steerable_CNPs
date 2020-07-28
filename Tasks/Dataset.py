@@ -75,7 +75,7 @@ class CNPDataset(utils.IterableDataset):
         in range [self.Min_n_cont,high=self.Max_n_cont]
         If n_context_points is None, it is randomly sampled.
         '''
-        inds=torch.randperm(batch_size)
+        inds=torch.randperm(self.dim_0)[:batch_size]
         if n_context_points is None:
             n_context_points=torch.randint(low=self.Min_n_cont,high=self.Max_n_cont,size=[1])
         return(self.get_batch(inds,n_context_points,cont_in_target=cont_in_target))
