@@ -69,8 +69,8 @@ ENCODER
 '''
 #Set hyperparamters:
 X_RANGE=[-4,4]
-N_X_AXIS=20
-L_SCALE_ENC=0.4
+N_X_AXIS=40
+L_SCALE_ENC=0.2
 #Define the model:
 Encoder=My_Models.Steerable_Encoder(l_scale=L_SCALE_ENC,x_range=X_RANGE,n_x_axis=N_X_AXIS)
 
@@ -80,19 +80,19 @@ STEERABLE CNP
 #Set parameters for Steerable Decoder:
 DIM_COV_EST=3
 N=4
-GEOM_KERNEL_SIZES=[7,9,11,15,17]
-GEOM_NON_LINEARITY=['NormReLU']
-HIDDEN_FIB_REPS=[[-1,-1],[-1,-1,1,1],[-1,-1,-1,1,1,1],[-1,-1,-1,1,1,1]]
+CONV_KERNEL_SIZES=[5,7,9,11]
+LIST_HID_CHANNELS=[6,9,6]
+CONV_NON_LINEARITY=['ReLU']
 
-geom_decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=HIDDEN_FIB_REPS,kernel_sizes=GEOM_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=GEOM_NON_LINEARITY,N=N)
-
+conv_decoder=My_Models.CNN_Decoder(list_hid_channels=LIST_HID_CHANNELS,kernel_sizes=CONV_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=CONV_NON_LINEARITY)
 #Set parameters for kernel dict out:
 KERNEL_DICT_OUT_RBF={'kernel_type': 'rbf'}
 KERNEL_DICT_OUT_DIV_FREE={'kernel_type': 'div_free'}
 
 #Define two different cnps:
-rbf_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST,kernel_dict_out=KERNEL_DICT_OUT_RBF)
-div_free_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST,
+rbf_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=conv_decoder,dim_cov_est=DIM_COV_EST,kernel_dict_out=KERNEL_DICT_OUT_RBF)
+
+div_free_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=conv_decoder,dim_cov_est=DIM_COV_EST,
                                         kernel_dict_out=KERNEL_DICT_OUT_DIV_FREE, normalize_output=False)
 
 
@@ -101,7 +101,7 @@ TRAINING PARAMETERS
 '''
 
 N_EPOCHS=30
-N_ITERAT_PER_EPOCH=2000
+N_ITERAT_PER_EPOCH=1000
 LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
@@ -114,12 +114,12 @@ FOLDER="Trained_Models/Comp_experiments/Rbf_vs_div_free_kernel/"
 '''
 Train Steerable CNP with non-div-free kernel:
 '''
-geom_n_param=My_Tools.count_parameters(geom_decoder,print_table=True)
+geom_n_param=My_Tools.count_parameters(conv_decoder,print_table=True)
 
 
-print("---------Train rbf SteerCNP--------")
+print("---------Train rbf ConvCNP--------")
 
-RBF_FILENAME=FOLDER+"Exp_1_rbf.py"
+RBF_FILENAME=FOLDER+"Exp_4_rbf.py"
 
 
 _,_,geom_file_loc=Training.train_CNP(
@@ -142,9 +142,9 @@ filename=RBF_FILENAME)
 Train Steerable CNP with div-free kernel:
 '''
 
-print("---------Train div free SteerCNP--------")
+print("---------Train div free ConvCNP--------")
 
-DIV_FREE_FILENAME=FOLDER+"Exp_1_div_free.py"
+DIV_FREE_FILENAME=FOLDER+"Exp_4_div_free.py"
 
 _,_,conv_file_loc=Training.train_CNP(
 Steerable_CNP=div_free_cnp, 

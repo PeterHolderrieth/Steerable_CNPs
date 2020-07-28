@@ -222,7 +222,7 @@ def Batch_Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,K
         #Get matrix of outer product --> shape (batch_size,n,m,d,d)
         Outer_Prod_Mat=torch.matmul(Diff.unsqueeze(4),Diff.unsqueeze(3))
         #Get n*m copies of identity matrices in Rd--> shape (batch_size,n,m,d,d)
-        Ids=torch.eye(d)
+        Ids=torch.eye(d).to(X.device)
         Ids=Ids.view(1,1,1,d,d)
         Ids=Ids.expand(batch_size,n,m,d,d)
         #First matrix component for divergence-free kernel-->shape (batch_size,n,m,d,d)
