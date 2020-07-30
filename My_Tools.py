@@ -182,8 +182,9 @@ def Plot_Inference_2d(X_Context,Y_Context,X_Target=None,Y_Target=None,Predict=No
     #Plot context set in blue:
     if plot_points:
         ax[0].scatter(X_Context[:,0],X_Context[:,1],color='black')
-    ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],
-      color='black',pivot='mid',label='Context set',scale=quiver_scale)
+    if X_Context is not None and Y_Context is not None:
+        ax[0].quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],
+        color='black',pivot='mid',label='Context set',scale=quiver_scale)
     
     #Plot ground truth in red if given:
     if Y_Target is not None and X_Target is not None:       
