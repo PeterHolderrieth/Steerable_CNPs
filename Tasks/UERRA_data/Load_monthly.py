@@ -12,7 +12,10 @@ for var in variables:
                                 month='0'+month
                         
                         filename='UERRA_'+var+'_'+year+'_'+month+'.grib'
-                              
+                        
+                        print(filename)
+
+                        '''      
                         c.retrieve(
                         'reanalysis-uerra-europe-height-levels',
                         {
@@ -41,5 +44,6 @@ for var in variables:
                                 'format': 'grib',
                         },
                         filename)
+                        '''
                         
                         
