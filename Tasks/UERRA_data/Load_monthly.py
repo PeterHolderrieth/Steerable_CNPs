@@ -4,7 +4,7 @@ c = cdsapi.Client()
 variables=['wind_speed','wind_direction','temperature','relative_humidity','pressure']
 
 for var in variables:
-        for i in range(2019,1960,-1):
+        for i in range(2018,1960,-1):
                 year=str(i)
                 for j in range(12,0,-1):
                         month=str(j)
@@ -41,5 +41,6 @@ for var in variables:
                                 'format': 'grib',
                         },
                         filename)
+                        
                         
                         
