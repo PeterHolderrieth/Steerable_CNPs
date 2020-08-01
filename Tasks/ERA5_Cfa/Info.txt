@@ -1,0 +1,9 @@
+This task contains two square coordinate excerpts from subtropical
+climate zones:
+1. In the US Southeast --> around Louisana, Arkansas, etc.
+2. In Southeastern China
+
+The goal is to train the models on one (maybe the US) and let it predict
+on the Chinese data. By this, we can see how the model is able to infer general
+climate data mechansim and not relying on the place itself.
+
