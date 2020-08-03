@@ -1,0 +1,4 @@
+grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Cfa_US/Data/ERA5_Cfa_US.grib > Cfa_US/Data/ERA5_Cfa_US_unformatted.csv
+grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Cfa_China/Data/ERA5_Cfa_China.grib > Cfa_US/Data/ERA5_Cfa_China_unformatted.csv 
+python Cfa_US/Format_CSV_Cfa_US.py
+python Cfa_China/Format_CSV_Cfa_China.py
