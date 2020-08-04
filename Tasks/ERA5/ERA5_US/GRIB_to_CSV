@@ -15,13 +15,13 @@ do
 	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"_ERA5_US.grib > Data/"$c"_ERA5_US_unformatted.csv
     
     #Format the csv file:
-    python Format_GRIB_CSV.py -FLAG??? Data/"$c"_ERA5_US_unformatted.csv Data/"$c"_ERA5_US_unprocessed.csv
+    python ../Format_CSV_ERA5.py ERA5_US/Data/"$c"_ERA5_US_unformatted.csv ERA5_US/Data/"$c"_ERA5_US_unprocessed.csv
 
     #Delete the unformatted but unprocessed CSV file:
     rm Data/"$c"_ERA5_US_unformatted.csv
     
     #Merge the CSV file to one data frame and save it to a CSV file:
-    python Process_ERA5.py Data/"$c"_ERA5_US_unprocessed.csv Data/"$c"_ERA5_US.csv
+    python ../Process_ERA5.py ERA5_US/Data/"$c"_ERA5_US_unprocessed.csv ERA5_US/Data/"$c"_ERA5_US.csv
 
     #Delete the unprocessed CSV file:
     rm Data/"$c"_ERA5_US_unprocessed.csv
