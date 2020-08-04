@@ -1,0 +1,47 @@
+This task contains two square coordinate excerpts from subtropical
+climate zones:
+1. In the US Southeast --> around Louisana, Arkansas, etc.
+2. In Southeastern China
+
+Goals:
+1. The first goal is to train the model on the surface data and let it predict data at "flight level"
+
+2.Another goal is to train the models on one (maybe the US) and let it predict
+on the Chinese data. By this, we can see how the model is able to infer general
+climate data mechansim and not relying on the place itself.
+
+The data is obtained from https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=form
+and the variables are:
+2m temperature
+Surface pressure
+10m u-component of wind
+10m v-component of wind
+100m u-component of wind
+100m v-component of wind
+Oreography (geopotential)
+
+Years: 1990 - 2018
+Month: January
+Days, Time: All
+
+The North-South difference in degrees is: 10
+The West-East difference in degrees is: 10
+
+Positive longitudes are east of the prime meridian, and negative ones are west.
+
+For the US: We choose the following coordinates:
+West: 96 W -96
+North:40 N +40
+East: 86 W -86
+South: 30 N +30
+
+i.e. Alabama, Louisana, Arkansas, Tennessee, Mississippi
+
+
+For China: We choose the following coordinates:
+West: 105 E +105
+North: 35 N +35
+East: 115 E +115
+South: 25 N +25
+
+i.e. the Southeastern "Non-Coast" region of China
