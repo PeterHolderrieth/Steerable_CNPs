@@ -20,12 +20,17 @@ Surface pressure
 100m v-component of wind
 Oreography (geopotential)
 
-Years: 1990 - 2018
-Month: January
+Years: 1980 - 2018
+Months: December, January, February
 Days, Time: All
+
+--> 3*24*30*38=82 000 data samples
 
 The North-South difference in degrees is: 10
 The West-East difference in degrees is: 10
+
+The resolution of the data set is 0.25 degree --> we get 40 grid points per axis, i.e. one sample has 
+160 points --> which is perfect for comparison.
 
 Positive longitudes are east of the prime meridian, and negative ones are west.
 
