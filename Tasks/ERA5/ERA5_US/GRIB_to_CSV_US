@@ -1,29 +1,42 @@
 
 #grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName ERA5_US_Central.grib
 MIN=1980
-MAX=1984
+MAX=2018
+: '
 #Check the data:
 for (( c=$MIN; c<=$MAX; c++ ))
 do  
 	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"_ERA5_US.grib | head -n5
 done
 
-'''
+'
+
 for (( c=$MIN; c<=$MAX; c++ ))
 do  
+    echo "Year: $c"
     #Create an unformatted CSV file:
 	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"_ERA5_US.grib > Data/"$c"_ERA5_US_unformatted.csv
+    echo "Saved unformatted csv file"
     
     #Format the csv file:
-    python ../Format_CSV_ERA5.py ERA5_US/Data/"$c"_ERA5_US_unformatted.csv ERA5_US/Data/"$c"_ERA5_US_unprocessed.csv
-
+    python ../Format_CSV_ERA5.py Data/"$c"_ERA5_US_unformatted.csv Data/"$c"_ERA5_US_unprocessed.csv
+    
+    echo "Created unprocessed csv file"
+    
     #Delete the unformatted but unprocessed CSV file:
     rm Data/"$c"_ERA5_US_unformatted.csv
     
+    echo "Removed unformatted csv file"
+
     #Merge the CSV file to one data frame and save it to a CSV file:
-    python ../Process_ERA5.py ERA5_US/Data/"$c"_ERA5_US_unprocessed.csv ERA5_US/Data/"$c"_ERA5_US.csv
+    python ../Process_ERA5.py Data/"$c"_ERA5_US_unprocessed.csv Data/"$c"_ERA5_US.csv
+
+    echo "Create processed csv file"
 
     #Delete the unprocessed CSV file:
     rm Data/"$c"_ERA5_US_unprocessed.csv
+
+    echo "Remove unprocessed CSV file"
 done
-'''
+
+echo "Process completed."

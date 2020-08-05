@@ -50,3 +50,13 @@ East: 115 E +115
 South: 25 N +25
 
 i.e. the Southeastern "Non-Coast" region of China
+
+
+We did some test to count the number of rows in the processes CSV files:
+Difference between unformatted and unprocessed:
+#The number of deleted rows is for 1980: 25714416-25699129=15287 (1980 was a leap year) 15288/168=91
+#The number of deleted rows is for 1981: 25431840-25416721=15119 (difference to 1980: 168) 15119/168=81
+#The number of deleted rows is for 1982: 25431840-25416721=15119 (difference to 1980: 168) 15119/168=81
+#The number of deleted rows is for 1983: 25431840-25416721=15119 (difference to 1980: 168) 15119/168=81
+
+It seems to be consist! --> Format_CSV_ERA5.py seems to be correct (at least consistent throughout files.)
