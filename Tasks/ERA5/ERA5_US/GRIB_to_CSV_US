@@ -1,42 +1,31 @@
+#Bash command file to process GRIB file data:
 
-#grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName ERA5_US_Central.grib
+
 MIN=1980
-MAX=2018
-: '
-#Check the data:
-for (( c=$MIN; c<=$MAX; c++ ))
-do  
-	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"_ERA5_US.grib | head -n5
-done
-
-'
+MAX=1981
+FILEnoYEAR="_ERA5_US"
 
 for (( c=$MIN; c<=$MAX; c++ ))
 do  
     echo "Year: $c"
+
     #Create an unformatted CSV file:
-	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"_ERA5_US.grib > Data/"$c"_ERA5_US_unformatted.csv
+	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"${FILEnoYEAR}.grib > Data/"$c"${FILEnoYEAR}_unformatted.csv
     echo "Saved unformatted csv file"
-    
-    #Format the csv file:
-    python ../Format_CSV_ERA5.py Data/"$c"_ERA5_US_unformatted.csv Data/"$c"_ERA5_US_unprocessed.csv
-    
-    echo "Created unprocessed csv file"
-    
-    #Delete the unformatted but unprocessed CSV file:
-    rm Data/"$c"_ERA5_US_unformatted.csv
-    
+
+    #Format the csv file to a proper table:
+    python ../1_Build_Value_Table_ERA5.py Data/"$c"${FILEnoYEAR}_unformatted.csv Data/"$c"${FILEnoYEAR}_uncompressed.csv
+    echo "Formatted CSV file to proper table."
+
+    #Remove unformatted csv file:
+    rm Data/"$c"${FILEnoYEAR}_unformatted.csv
     echo "Removed unformatted csv file"
 
-    #Merge the CSV file to one data frame and save it to a CSV file:
-    python ../Process_ERA5.py Data/"$c"_ERA5_US_unprocessed.csv Data/"$c"_ERA5_US.csv
+    #Build the value ordered per measurement to a data table where all measurements per data point are joined in one row:
+    python ../2_Build_Data_Table_ERA5.py Data/"$c"${FILEnoYEAR}_uncompressed.csv Data/"$c"${FILEnoYEAR}.pickle
 
-    echo "Create processed csv file"
+    #Remove uncompressed file:
+    rm Data/"$c"${FILEnoYEAR}_uncompressed.csv
+    echo "Removed uncompressed file"
 
-    #Delete the unprocessed CSV file:
-    rm Data/"$c"_ERA5_US_unprocessed.csv
-
-    echo "Remove unprocessed CSV file"
-done
-
-echo "Process completed."
+echo "Process completed"

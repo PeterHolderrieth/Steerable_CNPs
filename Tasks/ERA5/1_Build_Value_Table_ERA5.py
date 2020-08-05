@@ -1,5 +1,13 @@
 import pandas as pd
 import sys 
+'''
+This code is taken from the Copernicus Climate Data Store website and slighlty modified
+to make the CSV file having only one header.
+The input is a csv file were the first column has three components: Latitude, Longitude and Time 
+(all other variables are saved in different columns).
+This code splits this column containing three variables into three different columns.
+'''
+
 
 old_filename=sys.argv[1]
 new_filename=sys.argv[2]

@@ -41,3 +41,27 @@ do
 done
 
 echo "Process completed."
+: '  
+    #Format the csv file:
+    python ../Format_CSV_ERA5.py Data/"$c"_ERA5_US_unformatted.csv Data/"$c"_ERA5_US_unprocessed.csv
+    
+    echo "Created unprocessed csv file"
+    
+    #Delete the unformatted but unprocessed CSV file:
+    rm Data/"$c"_ERA5_US_unformatted.csv
+    
+    echo "Removed unformatted csv file"
+
+    #Merge the CSV file to one data frame and save it to a CSV file:
+    python ../Process_ERA5.py Data/"$c"_ERA5_US_unprocessed.csv Data/"$c"_ERA5_US.csv
+
+    echo "Create processed csv file"
+
+    #Delete the unprocessed CSV file:
+    rm Data/"$c"_ERA5_US_unprocessed.csv
+
+    echo "Remove unprocessed CSV file"
+done
+echo "Process completed."
+
+'

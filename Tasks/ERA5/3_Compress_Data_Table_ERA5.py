@@ -51,6 +51,33 @@ data.drop(columns=["dataDate"],inplace=True)
 data.drop(columns=["dataTime"],inplace=True) 
 data.rename(columns={'validityDate': "Date", 'validityTime': "Time"},inplace=True)
 
+#Load the data:
+data=pd.read_pickle(old_filename)
+
+#----------TIME COLUMN------------------------
+#Format time column to 4-element string:
+data['Time']=data['Time'].apply(lambda x: '{0:0>4}'.format(x)).astype(str)
+#Format date column to string:
+data['Date']=data['Date'].astype(str)
+#Insert datetime column:
+data.insert(0,"datetime",pd.to_datetime(data['Date']+data['Time'], format='%Y%m%d%H%M'))
+#Drop time and data:
+data.drop(columns=['Time','Date'],inplace=True)
+#---------------------------------------------
+
+#-----------SORT BY TIME---------------------
+#Order via datetime:
+data=data.sort_values("datetime").reset_index(drop=True)
+
+#Control whether the number of data points per time is equal:
+n_total_grid_points_control=data.groupby("datetime").count()['Latitude'][0]
+
+any_inequal=(data.groupby("datetime").count()!=n_total_grid_points_control).any().any()
+if any_inequal:
+    sys.exit("ERROR: The number of points per time is not equal.")
+#---------------------------------------------
+
+#----------FORMAT VARIABLES-----------------------
 #Divide z by geopotential:
 g=9.80665
 data.z=data.z/g
@@ -69,7 +96,7 @@ data.rename(columns={'10u': 'wind_10m_north',
                     '10v':'wind_10m_east',
                     '100u':'wind_100m_north',
                     '100v': 'wind_100m_east'},inplace=True)
-
+#------------------------------------------------------------
 
 
 #Compress by choosing right file format:
@@ -77,7 +104,6 @@ data=compress(data)
 
 #Save to pickle:                  
 data.to_pickle(filename_new)
-data.to_csv(filename_new)
 
 #Reload data for control:
 reloaded_data=pd.read_pickle(filename_new)

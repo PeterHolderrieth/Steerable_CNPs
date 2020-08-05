@@ -1,9 +1,15 @@
 import sys
 import pandas as pd
 
+#The short names of the variables which we want to use:
+SHORTNAMES=["z","sp","2t","10u","10v","100u","100v"]
+
+
+#The arguments give the old and the new filename of the data frame:
 filename_old=sys.argv[1]
 filename_new=sys.argv[2]
 
+#Read file to data frame:
 data=pd.read_csv(filename_old,delimiter=",")
 
 #Permute columns:
@@ -12,9 +18,7 @@ cols_perm=cols[:2]+cols[3:]+[cols[2]]
 data=data[cols_perm]
 
 
-#Get a list of data frames per variable:
-#List of shortnames:
-shortnames=["z","sp","2t","10u","10v","100u","100v"]
+#Get a list of data frames per variable--------------------
 data_list_single_var=[]
 for var in shortnames:
     #Extract data for certain variable and reset index:
@@ -25,13 +29,15 @@ for var in shortnames:
     data_single_var.drop(columns=["shortName"],inplace=True) 
     #Append to the list:
     data_list_single_var.append(data_single_var)
+#----------------------------------------------------------
 
-#Merge data:
+#Merge data from different variables-----------------------
 merged_data=data_list_single_var[0]
 for i in range(1,len(shortnames)):
     merged_data=pd.merge(merged_data,data_list_single_var[i])
+#----------------------------------------------------------
 
-#Control that merged data has the correct number of rows:
+#Control that merged data has the correct number of rows-----
 n_rows_merged_data=len(merged_data.index)
 n_rows_data=len(data.index)
 n_control=int(n_rows_data/len(shortnames))
@@ -39,13 +45,16 @@ n_control=int(n_rows_data/len(shortnames))
 if n_control!=n_rows_merged_data:
     sys.exit("Error when processing data: Numbers of rows of unprocessed and processed do not fit.")
     print("Filename old: ", filename_old)
+#------------------------------------------------------------
+
 
 #Save the file:
 merged_data.to_csv(filename_new,index=False)
 
-#Control with reloaded data:
+#Control with reloaded data---------------------------------
 reloaded_data=pd.read_csv(filename_new,delimiter=",")
 EPS=1e-5
 diff_sum=(merged_data-reloaded_data).abs().sum().sum()
 if diff_sum>1e-4:
     sys.exit("Error when reloading file: it seems that the sum of differences is fairly large.")
+#-----------------------------------------------------------
