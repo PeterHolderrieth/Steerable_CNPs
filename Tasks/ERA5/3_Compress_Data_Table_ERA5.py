@@ -10,7 +10,6 @@ def compress(df, verbose=True):
     start_mem = df.memory_usage().sum() / 1024**2    
     for col in df.columns:
         col_type = df[col].dtypes
-        print("Col type before: ", col_type)
         if col_type in numerics:
             c_min = df[col].min()
             c_max = df[col].max()
@@ -30,7 +29,6 @@ def compress(df, verbose=True):
                     df[col] = df[col].astype(np.float32)
                 else:
                     df[col] = df[col].astype(np.float64)
-        print("Col type afterwards: ", df[col].dtypes)
     end_mem = df.memory_usage().sum() / 1024**2
     if verbose: print('Mem. usage decreased to {:5.2f} Mb ({:.1f}% reduction)'.format(end_mem, 100 * (start_mem - end_mem) / start_mem))
     return df
@@ -72,8 +70,20 @@ data.rename(columns={'10u': 'wind_10m_north',
                     '100u':'wind_100m_north',
                     '100v': 'wind_100m_east'},inplace=True)
 
+
+
 #Compress by choosing right file format:
 data=compress(data)
 
-#Save to csv:                    
+#Save to pickle:                  
 data.to_pickle(filename_new)
+data.to_csv(filename_new)
+
+#Reload data for control:
+reloaded_data=pd.read_pickle(filename_new)
+
+#Control whether reloading changes anything:
+EPS=1e-5
+diff_sum=(data-reloaded_data).abs().sum().sum()
+if diff_sum>EPS:
+    sys.exit("Error when reloading file: it seems that the sum of differences is fairly large.")
