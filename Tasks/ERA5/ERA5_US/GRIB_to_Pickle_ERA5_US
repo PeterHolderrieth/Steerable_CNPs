@@ -11,7 +11,7 @@ do
     ls -l --block-size=M Data/"$c"${FILEnoYEAR}.grib
 
     #Create an unformatted CSV file:
-	grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"${FILEnoYEAR}.grib > Data/"$c"${FILEnoYEAR}_unformatted.csv
+    grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"${FILEnoYEAR}.grib > Data/"$c"${FILEnoYEAR}_unformatted.csv
     echo "Saved unformatted csv file"
 
     ls -l --block-size=M Data/"$c"${FILEnoYEAR}_unformatted.csv

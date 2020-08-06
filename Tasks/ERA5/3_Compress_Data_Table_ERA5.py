@@ -51,8 +51,6 @@ data.drop(columns=["dataDate"],inplace=True)
 data.drop(columns=["dataTime"],inplace=True) 
 data.rename(columns={'validityDate': "Date", 'validityTime': "Time"},inplace=True)
 
-#Load the data:
-data=pd.read_pickle(old_filename)
 
 #----------TIME COLUMN------------------------
 #Format time column to 4-element string:
@@ -108,10 +106,20 @@ data.to_pickle(filename_new)
 #Reload data for control:
 reloaded_data=pd.read_pickle(filename_new)
 
+#Save:
+orig_datetime=data.datetime
+rel_datetime=reloaded_data.datetime
+
+#drop time:
+data.drop(columns=['datetime'],inplace=True)
+reloaded_data.drop(columns=['datetime'],inplace=True)
+
 #Control whether reloading changes anything:
 EPS=1e-5
-diff_sum=(data-reloaded_data).abs().sum().sum()
-if diff_sum>EPS:
+diff_sum_numeric=(data-reloaded_data).abs().sum().sum()
+time_change=(orig_datetime!=rel_datetime).any()
+
+if diff_sum_numeric>EPS or time_change:
     sys.exit("Error when reloading file: it seems that the sum of differences is fairly large.")
 else:
     print("Compressed data - sample:")
