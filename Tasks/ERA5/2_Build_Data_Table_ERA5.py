@@ -20,7 +20,7 @@ data=data[cols_perm]
 
 #Get a list of data frames per variable--------------------
 data_list_single_var=[]
-for var in shortnames:
+for var in SHORTNAMES:
     #Extract data for certain variable and reset index:
     data_single_var=data[data.shortName==var].reset_index(drop=True)
     #Rename the "value" column to the name of the variable:
@@ -33,14 +33,14 @@ for var in shortnames:
 
 #Merge data from different variables-----------------------
 merged_data=data_list_single_var[0]
-for i in range(1,len(shortnames)):
+for i in range(1,len(SHORTNAMES)):
     merged_data=pd.merge(merged_data,data_list_single_var[i])
 #----------------------------------------------------------
 
 #Control that merged data has the correct number of rows-----
 n_rows_merged_data=len(merged_data.index)
 n_rows_data=len(data.index)
-n_control=int(n_rows_data/len(shortnames))
+n_control=int(n_rows_data/len(SHORTNAMES))
 
 if n_control!=n_rows_merged_data:
     sys.exit("Error when processing data: Numbers of rows of unprocessed and processed do not fit.")

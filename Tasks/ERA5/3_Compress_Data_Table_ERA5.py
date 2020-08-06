@@ -113,3 +113,6 @@ EPS=1e-5
 diff_sum=(data-reloaded_data).abs().sum().sum()
 if diff_sum>EPS:
     sys.exit("Error when reloading file: it seems that the sum of differences is fairly large.")
+else:
+    print("Compressed data - sample:")
+    print(data.sample(10))
