@@ -51,6 +51,13 @@ South: 25 N +25
 
 i.e. the Southeastern "Non-Coast" region of China
 
+#For China: An alternative region might be:
+#West: 105 E +105
+#North: 35 N +35
+#East: 115 E +115
+#South: 25 N +25
+#This would be further east but the topological properties of the region but be more similiar to what we see in the US.
+
 
 We did some test to count the number of rows in the processes CSV files:
 Difference between unformatted and unprocessed:
