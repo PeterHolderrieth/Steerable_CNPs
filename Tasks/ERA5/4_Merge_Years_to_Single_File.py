@@ -6,7 +6,7 @@ location=sys.argv[1]
 filename_without_year=sys.argv[2]
 filename_merged=sys.argv[3]
 
-MIN_YEAR=1980
+MIN_YEAR=2010
 MAX_YEAR=2018
 
 

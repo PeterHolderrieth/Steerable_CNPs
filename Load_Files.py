@@ -29,9 +29,10 @@ import My_Tools
 import Steerable_CNP_Models as My_Models
 import Training
 
-file_single="Tasks/ERA5/ERA5_US/Data/ERA5_US_FILE.pickle"
+file_single="Tasks/ERA5/ERA5_US/Data/10_to_18_ERA5_US.pickle"
 
 df_single=pd.read_pickle(file_single)
+print("Loaded file.")
 DATA_ARRAY=df_single.to_numpy().reshape((-1,1681, 7))
 print("DATA array shape: ", DATA_ARRAY.shape)
 
@@ -59,9 +60,9 @@ STARTTIME=datetime.strptime("1980_01_01_00", '%Y_%m_%d_%H')
 MAX_N_DAYS=57
 FILELOC="Tasks/ERA5/ERA5_US/Data/Single_Files/"
 FILENAME="_ERA5_US.pickle"
-for BATCH_SIZE in range(3,200,10):
+for BATCH_SIZE in range(3,10,4):
     print("BATCH_SIZE: ", BATCH_SIZE)
-    for j in range(10):
+    for j in range(1):
         diff_single_agg=timedelta(0.0)
         diff_split_agg=timedelta(0.0)
         point=datetime.today()
