@@ -8,14 +8,18 @@ filename=sys.argv[1]
 pd.set_option('display.max_rows', 1000)
 
 df=pd.read_pickle(filename)
-#df.set_index(["datetime","Latitude","Longitude"],inplace=True)
-#df.sort_index(level=[0,1,2],inplace=True)
+df.set_index(["datetime","Latitude","Longitude"],inplace=True)
+df.sort_index(level=[0,1,2],inplace=True)
 ##print(df.head(600))
-#print(df.index)
-df.to_hdf('data.hdf5', key='df', mode='w',format='table',data_columns=True)
+#print(df.index)umns=T
+df.to_hdf('ERA5_data.hdf5', key='ERA5', mode='w')
 
 hf = pd.read_hdf('data.hdf5')
 
+print(hf.head())
+
+
+'''
 group_key = list(hf.keys())[0]
 ds = hf[group_key]
 
@@ -29,7 +33,7 @@ arr = ds[:n]
 # should load the whole dataset into memory.
 # this should be avoided
 arr = ds[:]
-
+'''
 
 '''
 store = pd.HDFStore('data.hdf5')
