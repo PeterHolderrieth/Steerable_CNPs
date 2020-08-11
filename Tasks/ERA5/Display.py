@@ -7,16 +7,22 @@ filename=sys.argv[1]
 
 pd.set_option('display.max_rows', 1000)
 
-df=pd.read_pickle(filename)
-df.set_index(["datetime","Latitude","Longitude"],inplace=True)
-df.sort_index(level=[0,1,2],inplace=True)
-##print(df.head(600))
-#print(df.index)umns=T
-df.to_hdf('ERA5_data.hdf5', key='ERA5', mode='w')
+#df=pd.read_pickle(filename)
+#df.set_index(["datetime","Latitude","Longitude"],inplace=True)
+#df.sort_index(level=[0,1,2],inplace=True)
+#df.to_hdf('ERA5_data.hdf5', key='ERA5', mode='w')
 
-hf = pd.read_hdf('data.hdf5')
+#hf = pd.read_hdf('ERA5_data.hdf5')
 
-print(hf.head())
+f = h5py.File('ERA5_data.hdf5', 'r')
+keys=list(f.keys())
+print("Keys:", keys)
+group=f['ERA5']
+print(type(group))
+print(list(group.keys()))
+for key in group.keys():
+    print(group[key])
+    
 
 
 '''
