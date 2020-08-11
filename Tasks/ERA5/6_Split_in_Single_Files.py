@@ -9,7 +9,6 @@ filename_to_split=sys.argv[1]
 fileloc_new=sys.argv[2]
 filename_without_time=sys.argv[3]
 
-SAVE_GRID=True
 LAT_LOW=30.
 LAT_HIGH=40.
 STEP_LAT=0.25
@@ -43,12 +42,17 @@ df.set_index(keys=['datetime'], drop=False,inplace=True)
 #Get all times:
 datetimes=df['datetime'].unique().tolist()
 
+#time=pd.to_datetime(datetimes[0])
+#df_single_time=df.loc[df['datetime']==time].copy()
+#df_single_time.drop(columns=['datetime'],inplace=True)
+#df_single_time[['Longitude','Latitude']].to_pickle(fileloc_new+"Grid_df.pickle")
+
 
 #Get the control 
 grid_df_control=pd.read_pickle(fileloc_new+"Grid_df.pickle")
 X_control=grid_df_control.to_numpy()
 
-for time_int in datetimes[:100]:
+for time_int in datetimes:
     time=pd.to_datetime(time_int)
     df_single_time=df.loc[df['datetime']==time].copy()
     df_single_time.drop(columns=['datetime'],inplace=True)
@@ -63,4 +67,4 @@ for time_int in datetimes[:100]:
         #Choose variables:
         df_single_time=df_single_time[VAR_LIST].reset_index(drop=True)
         df_single_time.to_pickle(fileloc_new+time_str+filename_without_time)
-
+print("Finished one file.")

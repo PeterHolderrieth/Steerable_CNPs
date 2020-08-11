@@ -29,7 +29,7 @@ import My_Tools
 import Steerable_CNP_Models as My_Models
 import Training
 
-file_single="Tasks/ERA5/ERA5_US/Data/10_to_18_ERA5_US.pickle"
+file_single="Tasks/ERA5/ERA5_US/Data/00_to_18_ERA5_US.pickle"
 
 df_single=pd.read_pickle(file_single)
 print("Loaded file.")

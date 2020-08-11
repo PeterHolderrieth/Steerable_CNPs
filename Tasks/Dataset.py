@@ -5,7 +5,8 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
-import datetime
+from datetime import datetime
+from datetime import timedelta
 
 class CNPDataset(utils.IterableDataset):
     def __init__(self, X,Y,Min_n_cont,Max_n_cont,n_total):
@@ -79,3 +80,48 @@ class CNPDataset(utils.IterableDataset):
         if n_context_points is None:
             n_context_points=torch.randint(low=self.Min_n_cont,high=self.Max_n_cont,size=[1])
         return(self.get_batch(inds,n_context_points,cont_in_target=cont_in_target))
+
+class ERA5WindDataset(utils.IterableDataset):
+    def __init__(self, path_to_folder,grid_file,file_without_time,min_year,max_year,months=[1,2,12],Min_n_cont,Max_n_cont,n_total):
+        '''
+        path_to_folder - string - file path to the folder containing the grid file and the data files
+        grid_file - string ending with .pickle - filename of the grid file - this must be a pickle file
+        file_without_time - string - "%Y_%m_%d_%H"+file_without_time should give files containing the features of the grid
+        min_year,max_year - int - range of years to sample from
+        months - list of ints - containing the months 
+        '''
+
+        self.path_to_folder=path_to_folder
+        self.grid_file=grid_file
+        self.file_without_time=file_without_time
+        self.min_year=min_year
+        self.max_year=max_year
+        self.Min_n_cont=Min_n_cont
+        self.Max_n_cont=Max_n_cont
+        self.n_total=n_total 
+        self.months=months
+
+        #Load the grid:
+        self.df_grid=pd.read_pickle(self.path_to_folder+self.grid_file)
+    
+    def get_string_from_time_object(self,time):
+        return(time.strftime(format=("%Y_%m_%d_%H")))
+    
+    def sample_rand_time(self):
+        year=np.random.randint(low=self.min_year,high=self.max_year+1)
+        month=np.sample(self.months)
+        day=np.random.randint(low=0,high=29)
+        hour=np.random.randin(low=0,high=24)
+        return(datetime(year,month,day,hour))
+    
+    def get_item(self,time):
+        filename=self.get_string_from_time_object(time)+self.file_without_year
+        return(pd.read_pickle(filename))
+
+    def rand_get_item(self):
+        time=self.sample_rand_time()
+        return(self.get_item(time))
+    
+    def get_rand_get_batch(self)
+
+    
