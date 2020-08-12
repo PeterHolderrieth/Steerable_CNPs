@@ -27,7 +27,7 @@ sys.path.append("./")
 
 #Own files:
 import Kernel_and_GP_tools as GP
-import Tasks.Dataset as MyDataset
+import Tasks.GP_Dataset as MyDataset
 
 #A function to load the GP data which I sampled:
 def load_GP_div_free(data_set='train',path_to_folder='Tasks/GP_div_free_small/'):

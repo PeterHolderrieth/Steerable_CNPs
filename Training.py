@@ -107,10 +107,22 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                 y_context=y_context.to(device)
                 x_target=x_target.to(device)
                 y_target=y_target.to(device)
+                print('x_context shape: ',x_context.shape)
+                print('y_context shape: ',x_context.shape)
+                print('x_target shape: ',x_target.shape)
+                print('y_target shape: ',y_target.shape)
+                
+                print('x_context sample: ', x_context.flatten()[5:10])
+                print('y_context sample: ', y_context.flatten()[5:10])
+                print('x_target sample: ', x_target.flatten()[5:10])
+                print('y_target sample: ', y_target.flatten()[5:10])
 
                 #DEBUG:
                 #The target set includes the context set here:
                 Means,Sigmas=Steerable_CNP(x_context,y_context,x_target) 
+                print("Means shape: ", Means.shape)
+                print("Sigmas shape: ", Sigmas.shape)
+                print("Means sample: ", Means.flatten()[:3])
                 loss,log_ll=Steerable_CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)
 
                 #Set gradients to zero:
