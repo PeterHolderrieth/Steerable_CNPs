@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
-
+import xarray
 
 #E(2)-steerable CNNs - librar"y:
 from e2cnn import gspaces                                          
@@ -34,7 +34,7 @@ import Tasks.GP_div_free_small.loader as GP_loader
 
 #HYPERPARAMETERS:
 torch.set_default_dtype(torch.float)
-
+'''
 PATH_TO_FOLDER="Tasks/ERA5/ERA5_US/Data/Single_Files_Wind/"
 GRID_FILE="Grid_df.pickle"
 FILE_WITHOUT_TIME="_ERA5_US_Wind.pickle"
@@ -56,11 +56,11 @@ for i in range(N_ITERAT):
 
 elapsed_time=datetime.datetime.today()-start
 print("Elapsed time for Wind Dataset: ", elapsed_time)
+'''
 
-
-
-
-
+BATCH_SIZE=60
+N_ITERAT=100000
+'''
 GP_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='train')
 DATA_IDENTIFIER="GP_data_small"
 GP_PARAMETERS={'l_scale':0.5,
@@ -70,7 +70,36 @@ GP_PARAMETERS={'l_scale':0.5,
 print(GP_DATASET.X_data.shape)
 start=datetime.datetime.today()
 for i in range(N_ITERAT):
-    X_c,Y_c,X_t,Y_t=GP_DATASET.get_rand_batch(batch_size=60)
-
+    ind=np.random.randint(low=0,high=2184,size=(BATCH_SIZE))
+    X_sample=GP_DATASET.X_data[ind]
+    Y_sample=GP_DATASET.Y_data[ind]
 elapsed_time=datetime.datetime.today()-start
-print("Elapsed time for GP dataset: ", elapsed_time)
+print("Elapsed time for GP dataset: ", elapsed_time/N_ITERAT)
+'''
+X_disk=xarray.open_dataset("Tasks/ERA5/ERA5_US/Data/00_to_18_ERA5_US.nc").to_array()
+print("Start transpose.")
+X_disk=X_disk.transpose("datetime","Longitude","Latitude","variable")
+n_times=X_disk.shape[0]
+print("Number of times: ", n_times)
+
+datetimes=X_disk.indexes['datetime']
+print(type(datetimes))
+print(X_disk.coords['datetime'].values)
+print(X_disk.coords['Longitude'].values)
+print(X_disk.coords['Latitude'].values)
+
+#for j in range(3):
+#    print(X_disk[j].indexes)
+#    print(X_disk[j].coords)
+#    times_list.append(1)
+
+print("Finished transpose.")
+'''
+start=datetime.datetime.today()
+for i in range(N_ITERAT):
+    ind=np.random.randint(low=0,high=2184,size=(BATCH_SIZE))
+    sample=X_disk[ind]
+elaps_time=datetime.datetime.today()-start
+print("Elapsed time: ", elaps_time/N_ITERAT)
+'''
+
