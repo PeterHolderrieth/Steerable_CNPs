@@ -1,7 +1,8 @@
 
 #Tensors:
-import torch
 import numpy as np
+import pandas as pd
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
@@ -82,11 +83,12 @@ class CNPDataset(utils.IterableDataset):
         return(self.get_batch(inds,n_context_points,cont_in_target=cont_in_target))
 
 class ERA5WindDataset(utils.IterableDataset):
-    def __init__(self, path_to_folder,grid_file,file_without_time,min_year,max_year,months=[1,2,12],Min_n_cont,Max_n_cont,n_total):
+    def __init__(self, path_to_folder,grid_file,file_without_time,Min_n_cont,Max_n_cont,n_total,min_year,max_year,months=[1,2,12]):
         '''
         path_to_folder - string - file path to the folder containing the grid file and the data files
         grid_file - string ending with .pickle - filename of the grid file - this must be a pickle file
         file_without_time - string - "%Y_%m_%d_%H"+file_without_time should give files containing the features of the grid
+        Min_n_cont,Max_n_cont, n_total - int - minimum and maximum number of context points, total number of points per sample
         min_year,max_year - int - range of years to sample from
         months - list of ints - containing the months 
         '''
@@ -102,26 +104,49 @@ class ERA5WindDataset(utils.IterableDataset):
         self.months=months
 
         #Load the grid:
-        self.df_grid=pd.read_pickle(self.path_to_folder+self.grid_file)
+        self.grid_df=pd.read_pickle(self.path_to_folder+self.grid_file)
+        self.grid_tensor=torch.tensor(self.grid_df.values,dtype=torch.get_default_dtype())
+
+        self.n_grid=self.grid_tensor.size(0)
     
     def get_string_from_time_object(self,time):
         return(time.strftime(format=("%Y_%m_%d_%H")))
     
     def sample_rand_time(self):
         year=np.random.randint(low=self.min_year,high=self.max_year+1)
-        month=np.sample(self.months)
-        day=np.random.randint(low=0,high=29)
-        hour=np.random.randin(low=0,high=24)
+        month=self.months[np.random.randint(low=0,high=len(self.months))]
+        day=np.random.randint(low=1,high=29)
+        hour=np.random.randint(low=0,high=24)
         return(datetime(year,month,day,hour))
     
     def get_item(self,time):
-        filename=self.get_string_from_time_object(time)+self.file_without_year
+        filename=self.path_to_folder+self.get_string_from_time_object(time)+\
+                    self.file_without_time
         return(pd.read_pickle(filename))
 
     def rand_get_item(self):
         time=self.sample_rand_time()
         return(self.get_item(time))
     
-    def get_rand_get_batch(self)
+    def get_rand_pair(self,transform=True):
+        Y=torch.tensor(self.rand_get_item().values,dtype=torch.get_default_dtype())
+        shuffle_ind=torch.randperm(n=self.n_grid)
+        X=self.grid_tensor[shuffle_ind]
+        Y=Y[shuffle_ind]
+        if transform:
+            pass
+        return(X,Y)
 
-    
+    def get_rand_batch(self,batch_size,n_context_points=None,cont_in_target=False):
+        '''
+        times - list of datetime.datetime objects - times to sample
+        '''
+        X_list,Y_list=zip(*[self.get_rand_pair() for i in range(batch_size)])
+        X=torch.stack(X_list,dim=0)
+        Y=torch.stack(Y_list,dim=0)
+        if n_context_points is None:
+            n_context_points=np.random.randint(low=0,high=X.size(1))    
+        if cont_in_target:
+            return(X[:,:n_context_points],Y[:,:n_context_points],X,Y)
+        else:
+            return(X[:,:n_context_points],Y[:,:n_context_points],X[:,n_context_points:],Y[:,n_context_points:])
