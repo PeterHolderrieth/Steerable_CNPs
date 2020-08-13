@@ -107,7 +107,7 @@ LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
-N_VAL_SAMPLES=None
+N_VAL_SAMPLES=10
 
 #File path to save models:
 FOLDER="Trained_Models/ERA5_Wind_Test/"
