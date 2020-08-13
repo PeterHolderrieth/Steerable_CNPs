@@ -16,13 +16,14 @@ from datetime import timedelta
 torch.set_default_dtype(torch.float)
 
 class ERA5Dataset(utils.IterableDataset):
-    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,n_total=None,var_names=None):
+    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,n_total=None,var_names=None, normalize=True):
         '''
         path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
                                    having index "datetime","Longitude","Latitude" and the data variables
                                    ['height_in_m','sp_in_kPa','t_in_Cels','wind_10m_east','wind_10m_north',
                                     'wind_100m_east', 'wind_100m_north']
         Min_n_cont,Max_n_cont,n_total - int - minimum and maximum number of context points and the number of total points per sample
+        var_names - list of strings - gives names of variables which are supposed to be in the dataset, if None then all variables are used
         '''
         #Load the data as an xarray:
         self.Y_data=xarray.open_dataset(path_to_nc_file).to_array()
@@ -30,12 +31,10 @@ class ERA5Dataset(utils.IterableDataset):
         if var_names is not None:
             #Save list of current variables:
             self.variables=list(self.Y_data.coords['variable'].values)
-            print(self.Y_data.shape)
             #Get index of new variables in old variable array:
             ind=self.give_index_for_var(var_names)
             #Extract:
             self.Y_data=self.Y_data[ind]
-            print(self.Y_data.shape)
         
         #Save variables list:
         self.variables=list(self.Y_data.coords['variable'].values)
@@ -70,6 +69,7 @@ class ERA5Dataset(utils.IterableDataset):
         self.n_total=self.n_points_per_obs if n_total is None else n_total
         self.Min_n_cont=Min_n_cont
         self.Max_n_cont=Max_n_cont
+        self.normalize=normalize
 
         #Compute the mean and the standard deviation for X
         #self.X_std=self.X_tensor.std(dim=0,unbiased=False)
@@ -84,7 +84,7 @@ class ERA5Dataset(utils.IterableDataset):
             self.Y_mean[self.ind_wind_10]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
             mean_norm_10m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_10m_east','wind_10m_north']].values,axis=3).mean()
             self.Y_std[self.ind_wind_10]=torch.tensor(mean_norm_10m,dtype=torch.get_default_dtype())
-
+        
         if self.ind_wind_100 is not None:
             self.Y_mean[self.ind_wind_100]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
             mean_norm_100m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_100m_east','wind_100m_north']].values,axis=3).mean()
@@ -106,8 +106,8 @@ class ERA5Dataset(utils.IterableDataset):
         print("-----")
         print("Shape: ", self.Y_data.shape)
         print("Variables: ", self.variables)
-        print("West-East Longtitude: ", self.Longitude[0],self.Longitude[-1])
-        print("South-North Latitude: ",self.Latitude[0],self.Latitude[-1])
+        print("West-East Longtitude: ", self.Longitude[0].item(),self.Longitude[-1].item())
+        print("South-North Latitude: ",self.Latitude[0].item(),self.Latitude[-1].item())
         print("Grid points per map: ", self.n_points_per_obs)
         print("________________________")
         print()
@@ -200,6 +200,8 @@ class ERA5Dataset(utils.IterableDataset):
         X_list,Y_list=zip(*[self.get_rand_map(transform=transform) for i in range(batch_size)])
         X=torch.stack(X_list,dim=0)
         Y=torch.stack(Y_list,dim=0)
+        if self.normalize:
+            Y=self.norm_Y(Y)
         if n_context_points is None:
             n_context_points=np.random.randint(low=self.Min_n_cont,high=self.Max_n_cont)    
         if cont_in_target:
