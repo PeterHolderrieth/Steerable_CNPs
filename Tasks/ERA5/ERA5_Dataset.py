@@ -16,7 +16,7 @@ from datetime import timedelta
 torch.set_default_dtype(torch.float)
 
 class ERA5Dataset(utils.IterableDataset):
-    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,n_total=None,var_names=None, normalize=True):
+    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,n_total=None,var_names=None, normalize=False):
         '''
         path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
                                    having index "datetime","Longitude","Latitude" and the data variables
