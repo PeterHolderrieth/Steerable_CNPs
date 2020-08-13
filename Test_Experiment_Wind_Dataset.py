@@ -54,9 +54,16 @@ MAX_N_CONT=100
 N_TOTAL=None
 BATCH_SIZE=50
 N_ITERAT=100
+VAR_NAMES=['wind_10m_east', 'wind_10m_north']
 
-ERA5_WIND_DATA=Dataset.ERA5Dataset(PATH_TO_FILE,MIN_N_CONT,MAX_N_CONT,N_TOTAL)
+ERA5_WIND_DATA=Dataset.ERA5Dataset(PATH_TO_FILE,MIN_N_CONT,MAX_N_CONT,N_TOTAL,VAR_NAMES)
 DATA_IDENTIFIER="ERA5_TEST"
+for i in range(3):
+    X_c,Y_c,X_t,Y_t=ERA5_WIND_DATA.get_rand_batch(batch_size=BATCH_SIZE)
+    print(X_c)
+    print(Y_c)
+    #print(X_t.shape)
+    #print(Y_t.shape)
 
 '''
 ENCODER
