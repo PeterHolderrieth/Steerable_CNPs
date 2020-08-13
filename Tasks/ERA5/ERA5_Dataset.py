@@ -14,16 +14,17 @@ from datetime import timedelta
 
 class ERA5Dataset(utils.IterableDataset):
     def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,n_total=None):
+        '''
+        path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
+                                   having index "datetime","Longitude","Latitude" and the data variables
+                                   ['height_in_m','sp_in_kPa','t_in_Cels','wind_10m_east','wind_10m_north',
+                                    'wind_100m_east', 'wind_100m_north']
+        Min_n_cont,Max_n_cont,n_total - int - minimum and maximum number of context points and the number of total points per sample
+        '''
         #Load the data and permute columns:
         self.Y_data=xarray.open_dataset(path_to_nc_file).to_array()
-        print("Start transpose.")
         self.Y_data=self.Y_data.transpose("datetime","Longitude","Latitude","variable")
-        print("Finished transpose.")
         self.n_obs=self.Y_data.shape[0]
-        print("Loaded data with shape: ", self.Y_data.shape)
-
-        if self.n_obs!=len(self.Y_data.coords['datetime'].values):
-            sys.exit("Error: Coordinates of datetime do not match.")
 
         self.Longitude=torch.tensor(self.Y_data.coords['Longitude'].values,dtype=torch.get_default_dtype())
         self.Latitude=torch.tensor(self.Y_data.coords['Latitude'].values,dtype=torch.get_default_dtype())
@@ -35,51 +36,102 @@ class ERA5Dataset(utils.IterableDataset):
         
         self.X_tensor=torch.stack([self.Longitude.repeat_interleave(self.n_per_axis),self.Latitude.repeat(self.n_per_axis)],dim=1)
 
+        self.variables=self.Y_data.coords['variable'].values
+
         self.n_total=self.n_points_per_obs if n_total is None else n_total
         self.Min_n_cont=Min_n_cont
         self.Max_n_cont=Max_n_cont
 
         #Compute the mean and the standard deviation:
-        self.X_std=self.X_tensor.std(dim=0)
+        self.X_std=self.X_tensor.std(dim=0,unbiased=False)
         self.X_mean=self.X_tensor.mean(dim=0)
 
         self.Y_mean=torch.tensor(self.Y_data.mean(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
         self.Y_std=torch.tensor(self.Y_data.std(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
 
-        for i in range(10):
-            _,_,_,Y_t=self.get_rand_batch(batch_size=10)
-            Y_norm=self.norm_Y(Y_t)
-            print("Mean: ", Y_norm.mean(dim=0))
-            print("Std: ", Y_norm.std(dim=0))
-            Y_recon=self.denorm_Y(Y_norm)
-            print("Any difference: ", (Y_recon-Y_t).abs().sum())
-###### 
-RECONSTRUCTION DOES NOT WORK!!!!
-WHY IS IT NOT EXACT???
-######
+        if not isinstance(self.Min_n_cont,int) or not isinstance(self.Max_n_cont,int) or self.Min_n_cont>self.Max_n_cont\
+            or self.Min_n_cont<2 or self.Max_n_cont>self.n_total or self.n_total>self.n_points_per_obs:
+            print("Error: Combination of minimum and maximum number of context points and number of total points not compatible.")
+
+        if self.n_obs!=len(self.Y_data.coords['datetime'].values):
+            sys.exit("Error: Coordinates of datetime do not match.")
+        
+        self.print_report()
+
+    def print_report(self):
+        print()
+        print("_______________________")
+        print("Loaded weather data: ")
+        print("-----")
+        print("Shape: ", self.Y_data.shape)
+        print("Variables: ", self.variables)
+        print("West-East Longtitude: ", self.Longitude[0],self.Longitude[-1])
+        print("South-North Latitude: ",self.Latitude[0],self.Latitude[-1])
+        print("Grid points per map: ", self.n_points_per_obs)
+        print("________________________")
+        print()
     def norm_X(self,X):
         '''
         X - torch.Tensor - shape (*,2)
+        --> returns torch.Tensor with same shape translated and scaled with mean and std for self.X_Tensor
         '''
         return(X.sub(self.X_mean[None,:]).div(self.X_std[None,:]))
 
     def denorm_X(self,X):
         '''
         X - torch.Tensor - shape (*,2)
+        --> Inverse of self.norm_X
         '''
         return(X.mul(self.X_std[None,:]).add(self.X_mean[None,:]))
     
     def norm_Y(self,Y):
         '''
         Y - torch.Tensor - shape (*,2)
+        --> returns torch.Tensor with same shape translated and scaled with mean and std for self.Y_data
         '''
         return(Y.sub(self.Y_mean[None,:]).div(self.Y_std[None,:]))
 
     def denorm_Y(self,Y):
+        '''
+        Y - torch.Tensor - shape (*,2)
+        --> Inverse of self.norm_Y
+        '''
         return(Y.mul(self.Y_std[None,:]).add(self.Y_mean[None,:]))
 
+    def give_index_for_var(self,var_names):
+        '''
+        Input: var_names - list of strings - names of variables whose index is to return
+        Output: list of ints - giving index of variables in self.variables
+        '''
+        return([self.variables.index(name) for name in var_names])
+    
+    def rand_rot_mat(self):
+        '''
+        Output: torch.Tensor - shape (2,2) - a random rotation matrix
+        '''
+        alpha=2*np.pi*np.random.uniform()
+        R=torch.tensor([[torch.cos(alpha),-torch.sin(alpha)],[torch.sin(alpha),torch.cos(alpha),]])
+        return(R)
 
-    def get_rand_pair(self,transform=True):
+    def rand_transform(self,X,Y):
+        '''
+        Input: X,Y - torch.Tensor - shape (n,2), (n,7)
+        Output: X,Y - torch.Tensor - shape (n,2), (n,7) - randomly rotated X and rotated Y 
+        (only the wind components of Y are transformed, the scalar values )
+        '''
+        R=self.rand_rot_mat()
+        X=torch.matmul(X,R.t())
+        ind_wind_10=self.give_index_for_var(['wind_10m_east','wind_10m_north'])
+        ind_wind_100=self.give_index_for_var(['wind_100m_east','wind_100m_north'])
+        Y[:,ind_wind_10]=torch.matmul(Y[:,ind_wind_10],R.t()))
+        Y[:,ind_wind_100]=torch.matmul(Y[:,ind_wind_100],R.t()))
+
+        return(X,Y)
+    def get_rand_pair(self,transform=True,var_names=None):
+        '''
+        Input: transform - Boolean - indicates whether a random transformation is performed
+        Output: X,Y - torch.Tensor - shape ()
+        '''
         ind=torch.randint(low=0,high=self.n_obs,size=[1]).item()
         Y=torch.tensor(self.Y_data[ind].values,dtype=torch.get_default_dtype())
         Y=Y.view(-1,7)
@@ -87,7 +139,10 @@ WHY IS IT NOT EXACT???
         X=self.X_tensor[shuffle_ind]
         Y=Y[shuffle_ind]
         if transform:
-            pass
+            X,Y=self.rand_transform(X,Y)
+        if var_names is not None:
+            ind_var=self.give_index_for_var(var_names)
+            Y=Y[:,ind_var]
         return(X,Y)
     
     def get_rand_batch(self,batch_size,transform=True,n_context_points=None,cont_in_target=False):
