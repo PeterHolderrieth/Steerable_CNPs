@@ -73,7 +73,7 @@ class ERA5Dataset(utils.IterableDataset):
 
         #Compute the mean and the standard deviation for X
         #self.X_std=self.X_tensor.std(dim=0,unbiased=False)
-        #self.X_mean=self.X_tensor.mean(dim=0)
+        self.X_mean=self.X_tensor.mean(dim=0)
 
         #Compute the mean for the various components (not correct for wind components):
         self.Y_mean=torch.tensor(self.Y_data.mean(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
@@ -164,7 +164,7 @@ class ERA5Dataset(utils.IterableDataset):
         R=self.rand_rot_mat()
         
         #Rotate coordinates:
-        X=torch.matmul(X,R.t())
+        X=torch.matmul(X-self.X_mean[None,:],R.t())+self.X_mean[None,:]
 
         #Rotate wind components:
         if self.ind_wind_10 is not None:
@@ -173,10 +173,11 @@ class ERA5Dataset(utils.IterableDataset):
             Y[:,self.ind_wind_100]=torch.matmul(Y[:,self.ind_wind_100],R.t())
         return(X,Y)
 
-    def get_rand_pair(self,transform=True):
+    #This is the basis function returning maps to plotting and purposes which do not include training the pytorch model:
+    def get_rand_map(self,transform=True):
         '''
         Input: transform - Boolean - indicates whether a random transformation is performed
-        Output: X,Y - torch.Tensor - shape (n,2)
+        Output: X,Y - torch.Tensor - shape (n,2),(n,self.n_variables)
         '''
         ind=torch.randint(low=0,high=self.n_obs,size=[1]).item()
         Y=torch.tensor(self.Y_data[ind].values,dtype=torch.get_default_dtype())
@@ -187,9 +188,16 @@ class ERA5Dataset(utils.IterableDataset):
         if transform:
             X,Y=self.rand_transform(X,Y)
         return(X,Y)
-    
+    #Function which returns random batches for training:
     def get_rand_batch(self,batch_size,transform=True,n_context_points=None,cont_in_target=False):
-        X_list,Y_list=zip(*[self.get_rand_pair(transform=transform) for i in range(batch_size)])
+        '''
+        Input: transform - Boolean - indicates whether a random transformation is performed
+        Output: X_c,Y_c - torch.Tensor - shape (batch_size,n_context_points,2/self.n_variables)
+                X_t,Y_t - torch.Tensor - shape (batch_size,n_target_points,2/self.n_variables) if cont_in_target is False
+                                               (batch_size,n_target_points+n_context_points,2/self.n_variables) if cont_in_target is True
+
+        '''
+        X_list,Y_list=zip(*[self.get_rand_map(transform=transform) for i in range(batch_size)])
         X=torch.stack(X_list,dim=0)
         Y=torch.stack(Y_list,dim=0)
         if n_context_points is None:
