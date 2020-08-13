@@ -1,0 +1,50 @@
+#Bash command file to process GRIB file data:
+
+
+MIN=1980
+MAX=2018
+FILEnoYEAR="_ERA5_US"
+
+for (( c=$MIN; c<=$MAX; c++ ))
+do  
+    echo "Year: $c"
+    ls -l --block-size=M Data/"$c"${FILEnoYEAR}.grib
+
+    #Create an unformatted CSV file:
+    grib_get_data -p dataDate,dataTime,validityDate,validityTime,shortName Data/"$c"${FILEnoYEAR}.grib > Data/"$c"${FILEnoYEAR}_unformatted.csv
+    echo "Saved unformatted csv file"
+
+    ls -l --block-size=M Data/"$c"${FILEnoYEAR}_unformatted.csv
+
+    #Format the csv file to a proper table giving per row one measurement:
+    python ../1_Build_Value_Table_ERA5.py Data/"$c"${FILEnoYEAR}_unformatted.csv Data/"$c"${FILEnoYEAR}_per_measurement.csv
+    echo "Formatted CSV file to proper table."
+
+    #Remove unformatted csv file:
+    rm Data/"$c"${FILEnoYEAR}_unformatted.csv
+    echo "Removed unformatted csv file"
+
+    ls -l --block-size=M Data/"$c"${FILEnoYEAR}_per_measurement.csv
+
+    #Reshape the data table from "one row per measurement" to "one row per time point"
+    python ../2_Build_Data_Table_ERA5.py Data/"$c"${FILEnoYEAR}_per_measurement.csv Data/"$c"${FILEnoYEAR}_per_time.csv
+
+    #Remove per measurement file:
+    rm Data/"$c"${FILEnoYEAR}_per_measurement.csv
+    echo "Removed per_measurement file"
+
+    ls -l --block-size=M Data/"$c"${FILEnoYEAR}_per_time.csv
+
+    #Compress and process the data table to a pickle file:
+    python ../3_Compress_Data_Table_ERA5.py Data/"$c"${FILEnoYEAR}_per_time.csv Data/"$c"${FILEnoYEAR}.pickle
+
+    #Remove uncompressed file:
+    rm Data/"$c"${FILEnoYEAR}_per_time.csv
+    echo "Removed per_time file"
+
+    ls -l --block-size=M Data/"$c"${FILEnoYEAR}.pickle
+
+done
+
+echo "Process completed"
+
