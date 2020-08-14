@@ -64,8 +64,8 @@ ENCODER
 '''
 
 #Set hyperparamters:
-X_RANGE=[-96.,-86.]
-Y_RANGE=[30.,40]
+X_RANGE=[-98.,-84.]
+Y_RANGE=[28.,42]
 N_X_AXIS=50
 L_SCALE_ENC=1.
 #Define the model:
@@ -107,7 +107,7 @@ LEARNING_RATE=1e-4
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
-N_VAL_SAMPLES=None
+N_VAL_SAMPLES=20
 
 #File path to save models:
 FOLDER="Trained_Models/ERA5_Wind_Test/"
