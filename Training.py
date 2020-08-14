@@ -107,6 +107,11 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                 y_context=y_context.to(device)
                 x_target=x_target.to(device)
                 y_target=y_target.to(device)
+                
+                print("x_context sample: ", x_context[:5])
+                print("y_context sample: ", y_context[:5])
+                print("x_target sample: ", x_target[:5])
+                print("y_target sample: ", y_target[:5])
 
                 #DEBUG:
                 #The target set includes the context set here:

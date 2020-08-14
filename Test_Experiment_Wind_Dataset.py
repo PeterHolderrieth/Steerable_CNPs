@@ -67,7 +67,7 @@ ENCODER
 X_RANGE=[-98.,-84.]
 Y_RANGE=[28.,42]
 N_X_AXIS=50
-L_SCALE_ENC=1.
+L_SCALE_ENC=5.
 #Define the model:
 Encoder=My_Models.Steerable_Encoder(l_scale=L_SCALE_ENC,x_range=X_RANGE,n_x_axis=N_X_AXIS,y_range=Y_RANGE)
 
@@ -103,11 +103,15 @@ TRAINING PARAMETERS
 
 N_EPOCHS=int(sys.argv[2])
 N_ITERAT_PER_EPOCH=int(sys.argv[3])
-LEARNING_RATE=1e-4
+LEARNING_RATE=1e-5
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
+<<<<<<< HEAD
 N_VAL_SAMPLES=20
+=======
+N_VAL_SAMPLES=10
+>>>>>>> b71a2d0ffd467eca72fe6336fc125e4a538c8aaf
 
 #File path to save models:
 FOLDER="Trained_Models/ERA5_Wind_Test/"
