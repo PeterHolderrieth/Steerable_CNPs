@@ -108,6 +108,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                 x_target=x_target.to(device)
                 y_target=y_target.to(device)
                 
+                
                 print("x_context sample: ", x_context[:5])
                 print("y_context sample: ", y_context[:5])
                 print("x_target sample: ", x_target[:5])
@@ -116,6 +117,8 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                 #DEBUG:
                 #The target set includes the context set here:
                 Means,Sigmas=Steerable_CNP(x_context,y_context,x_target) 
+                print("Means sample: ", Means.flatten()[:100])
+                print("Sigmas samples: ", Sigmas.flatten()[:100])
                 loss,log_ll=Steerable_CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)
 
                 #Set gradients to zero:
@@ -154,8 +157,8 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                     'Min_n_context_points': train_dataset.Min_n_cont,
                     'Max_n_context_points': train_dataset.Max_n_cont,
                     'shape_reg': shape_reg,
-                    'n_parameters:': My_Tools.count_parameters(Steerable_CNP),
-                    'final_log_ll:': val_log_ll_tracker[-1]}
+                    'n_parameters:': My_Tools.count_parameters(Steerable_CNP)}#,`
+                    #'final_log_ll:': val_log_ll_tracker[-1]}
             torch.save(Report,complete_filename)
         else:
           complete_filename=None

@@ -69,13 +69,15 @@ Y_RANGE=[30.,40]
 N_X_AXIS=50
 L_SCALE_ENC=5.
 #Define the model:
-Encoder=My_Models.Steerable_Encoder(l_scale=L_SCALE_ENC,x_range=X_RANGE,n_x_axis=N_X_AXIS,y_range=Y_RANGE)
+Encoder=My_Models.Steerable_Encoder(l_scale=L_SCALE_ENC,x_range=X_RANGE,n_x_axis=N_X_AXIS,y_range=Y_RANGE,normalize=True)
+
+print('Encoder grid', Encoder.grid)
 
 '''
 STEERABLE CNP
 '''
 
-DIM_COV_EST=3
+DIM_COV_EST=1
 N=4
 
 #Set parameters for Steerable Decoder:
@@ -107,7 +109,7 @@ LEARNING_RATE=1e-5
 WEIGHT_DECAY=0.
 SHAPE_REG=None
 N_PLOTS=None
-N_VAL_SAMPLES=10
+N_VAL_SAMPLES=None#10
 
 #File path to save models:
 FOLDER="Trained_Models/ERA5_Wind_Test/"
