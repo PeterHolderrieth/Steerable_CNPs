@@ -52,7 +52,7 @@ PATH_TO_FILE="Tasks/ERA5/ERA5_US/Data/16_to_18_ERA5_US.nc"
 MIN_N_CONT=50
 MAX_N_CONT=100
 N_TOTAL=None
-BATCH_SIZE=50
+BATCH_SIZE=10
 VAR_NAMES=['wind_10m_east', 'wind_10m_north']
 
 ERA5_WIND_DATA=Dataset.ERA5Dataset(PATH_TO_FILE,MIN_N_CONT,MAX_N_CONT,N_TOTAL,VAR_NAMES)
@@ -79,6 +79,7 @@ STEERABLE CNP
 
 DIM_COV_EST=1
 N=4
+L_SCALE_OUT=5.
 
 #Set parameters for Steerable Decoder:
 if ARCHITECTURE=="small":
@@ -97,7 +98,7 @@ else:
     sys.exit("Unknown architecture")
 
 geom_decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=HIDDEN_FIB_REPS,kernel_sizes=GEOM_KERNEL_SIZES,dim_cov_est=DIM_COV_EST,non_linearity=GEOM_NON_LINEARITY,N=N)
-geom_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST)
+geom_cnp=My_Models.Steerable_CNP(encoder=Encoder,decoder=geom_decoder,dim_cov_est=DIM_COV_EST,l_scale=L_SCALE_OUT)
 
 '''
 TRAINING PARAMETERS
@@ -105,8 +106,8 @@ TRAINING PARAMETERS
 
 N_EPOCHS=int(sys.argv[2])
 N_ITERAT_PER_EPOCH=int(sys.argv[3])
-LEARNING_RATE=1e-5
-WEIGHT_DECAY=0.
+LEARNING_RATE=1e-4
+WEIGHT_DECAY=0.5
 SHAPE_REG=None
 N_PLOTS=None
 N_VAL_SAMPLES=None#10

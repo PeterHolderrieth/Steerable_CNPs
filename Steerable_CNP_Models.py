@@ -139,16 +139,16 @@ class Steerable_Encoder(nn.Module):
         Gram=GP.Batch_Gram_matrix(self.grid.unsqueeze(0).expand(batch_size,self.n_y_axis*self.n_x_axis,2),
                                   X,l_scale=l_scale,**self.kernel_dict,B=torch.ones((1),device=X.device))
         
-        print('Gram matrix:', Gram.flatten()[:100])
+        #print('Gram matrix:', Gram.flatten()[:100])
         #Compute feature expansion --> shape (batch_size,n,self.dim_Y+1)
         Expand_Y=self.Psi(Y)
-        print('Expand Y', Expand_Y.flatten()[:100])
+        #print('Expand Y', Expand_Y.flatten()[:100])
         #Compute feature map -->shape (self.n_y_axis*self.n_x_axis,self.dim_Y+1)
         Feature_Map=torch.matmul(Gram,Expand_Y)
 
         #If wanted, normalize the weights for the channel which is not the density channel:
         if self.normalize:
-            print('Unnormalized Feature Map: ', Feature_Map.flatten()[:100])
+            #print('Unnormalized Feature Map: ', Feature_Map.flatten()[:100])
             #Normalize the functional representation:
             Norm_Feature_Map=torch.empty(Feature_Map.size(),device=Feature_Map.device)
             Norm_Feature_Map[:,:,1:]=Feature_Map[:,:,1:]/Feature_Map[:,:,0].unsqueeze(2)
@@ -568,7 +568,7 @@ class Steerable_CNP(nn.Module):
         #Get shape (batch_size,n_x_axis*n_y_axis,2,2):
         if self.dim_cov_est==1:
             #Apply softplus (add noise such that variance does not become (close to) zero):
-            Covs_grid=1e-4+F.softplus(Pre_Activ_Covs_grid).repeat(1,1,2)
+            Covs_grid=0.1+0.9*F.sigmoid(Pre_Activ_Covs_grid).repeat(1,1,2)
             Covs_grid=Covs_grid.diag_embed()
         else:
             Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
@@ -610,12 +610,13 @@ class Steerable_CNP(nn.Module):
         '''
         #1.Context Set -> Embedding (via Encoder) --> shape (batch_size,3,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Embedding=self.encoder(X_context,Y_context)
-        print('Embedding: ', Embedding.flatten()[:100])
+        #print('Embedding: ', Embedding[0,1:].flatten()[:100])
         #2.Embedding ->Feature Map (via CNN) --> shape (batch_size,2+self.dim_cov_est,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Final_Feature_Map=self.decoder(Embedding)
+        #print('Final_Feature_Map: ', Final_Feature_Map.flatten()[:100])
         #Smooth the output:
         Means_target,Sigmas_target=self.target_smoother(X_target,Final_Feature_Map)
-        Sigmas_target=Sigmas_target.clamp(min=1e-1,max=10.)
+        #Sigmas_target=Sigmas_target.clamp(min=1e-1,max=10.)
         return(Means_target,Sigmas_target)
     def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None,title=""):
         '''

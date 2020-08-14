@@ -174,7 +174,7 @@ class ERA5Dataset(utils.IterableDataset):
         return(X,Y)
 
     #This is the basis function returning maps to plotting and purposes which do not include training the pytorch model:
-    def get_rand_map(self,transform=True):
+    def get_rand_map(self,transform=False):
         '''
         Input: transform - Boolean - indicates whether a random transformation is performed
         Output: X,Y - torch.Tensor - shape (n,2),(n,self.n_variables)
@@ -189,7 +189,7 @@ class ERA5Dataset(utils.IterableDataset):
             X,Y=self.rand_transform(X,Y)
         return(X,Y)
     #Function which returns random batches for training:
-    def get_rand_batch(self,batch_size,transform=True,n_context_points=None,cont_in_target=False):
+    def get_rand_batch(self,batch_size,transform=False,n_context_points=None,cont_in_target=False):
         '''
         Input: transform - Boolean - indicates whether a random transformation is performed
         Output: X_c,Y_c - torch.Tensor - shape (batch_size,n_context_points,2/self.n_variables)
