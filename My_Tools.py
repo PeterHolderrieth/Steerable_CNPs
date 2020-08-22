@@ -157,6 +157,10 @@ def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatte
         Z=Z.view(n_y_axis*n_x_axis,2)
     return(Z)
 
+def Radial_Grid(min,max,n_axis):
+    X=Give_2d_Grid(min,max,n_axis,flatten=False)
+    Ind=bool_inner_circle_indices(n_axis)
+    return(X[Ind])
 #%%
 #            
 #Tool to plot context set, ground truth for target and predictions for target in one plot:
