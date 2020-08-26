@@ -1,5 +1,6 @@
 #LIBRARIES:
 #Tensors:
+
 import numpy as np
 import math
 import torch
@@ -34,123 +35,117 @@ import My_Tools
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
 
-class EquivDeepSet(nn.Module):
-    def __init__(self, grid_size=1.,l_scale=1.,normalize=True):
-        super(EquivDeepSet, self).__init__()
+
+class EquivDeepSets(nn.Module):
+    def __init__(self, x_range,n_x_axis,y_range=None,n_y_axis=None,
+                 l_scale=1.,normalize=True,train_l_scale=False):
+        super(EquivDeepSets, self).__init__()
         '''
         Inputs:
-            grid_size: float - grid size for the grid where we smooth the context set on
-            l_scale: float - initialisation of length scale for the kernel
+            x_range,y_range: float lists of size 2 - give range of grid points at x-axis/y-axis
+            n_x_axis: int - number of grid points along the x-axis
+            n_y_axis: int - number of grid points along the y-axis
+            l_scale: float - initialisation of length scale
             normalize: boolean - indicates whether feature channels is divided by density channel
         '''
         #-------------------------SET PARAMETERS-----------------
-        #Bool whether to normalize:
+        #Save whether to normalize and train l scale:
         self.normalize=normalize
-        self.grid_size=grid_size
-
+        self.train_l_scale=train_l_scale
+        
         #Kernel parameters:
         self.kernel_type="rbf"
-        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=True)
+        self.log_l_scale=nn.Parameter(torch.log(torch.tensor(l_scale,dtype=torch.get_default_dtype())),requires_grad=train_l_scale)
+
+        #Grid parameters:
+        #x-axis:
+        self.x_range=x_range
+        self.n_x_axis=n_x_axis
+        #y-axis (same as for x-axis if not given):
+        self.y_range=y_range if y_range is not None else x_range
+        self.n_y_axis=n_y_axis if n_y_axis is not None else n_x_axis
+
+        #Grid:
+        '''
+        Create a flattened grid--> shape (n_y_axis*n_x_axis,2) 
+        #x-axis is counted periodically, y-axis stays the same per period of counting the x-axis.
+        i.e. self.grid[k*n_x_axis+j] corresponds to element k in the y-grid and j in the x-grid.
+        Important: The counter will go BACKWARDS IN THE Y-AXIS - this is because
+        if we look at a (m,n)-matrix as a matrix with pixels, then the higher 
+        the row index, the lower its y-axis value, i.e. the y-axis is counted 
+        mirrored.
+        '''
+        self.grid=nn.Parameter(My_Tools.Give_2d_Grid(min_x=self.x_range[0],max_x=self.x_range[1],
+                               min_y=self.y_range[1],max_y=self.y_range[0],
+                               n_x_axis=self.n_x_axis,n_y_axis=self.n_y_axis,flatten=True),requires_grad=False)
+            
         #-------------------------SET PARAMETERS FINISHED-----------------
         
         #-------------------------CONTROL PARAMETERS-----------------
-
-        #To prevent a clash, 'B' and 'l_scale' should not be in kernel_dict:        
         if not isinstance(l_scale,float) or l_scale<=0:
             sys.exit("Encoder error: l_scale not correct.")
-        if not isinstance(normalize,bool):
-            sys.exit("Encoder error: normalize is not a bool.")       
+        if self.x_range[0]>=self.x_range[1] or self.y_range[0]>=self.y_range[1]:
+            sys.exit("x and y range are not valid.")
         #-------------------------CONTROL PARAMETERS FINISHED-----------------
 
-    #Expansion of a label vector y in the embedding: y -> (1,y):
+    #Function to add a one to every vector: y->(1,y):
     def expand_with_ones(self,Y):
         '''
         Input: Y - torch.Tensor - shape (batch_size,n,C)
         Output: torch.Tensor -shape (batch_size,n,C+1) - added a column of ones to Y (at the start) Y[i,j]<--[1,Y[i,j]]
         '''
         return(torch.cat([torch.ones([Y.size(0),Y.size(1),1],device=Y.device),Y],dim=2))
-    
-    def get_surrounding_grid(X_c,X_t=None):
+
+    def forward(self,X,Y):
         '''
         Inputs:
-            X_c,X_t -torch.Tensor - shape (*,2) - context and target coordinates
+            X: torch.Tensor - shape (batch_size,n,2)
+            Y: torch.Tensor - shape (batch_size,n,dim_Y)
         Outputs:
-            torch.Tensor - shape (n,2) - a 2d grid including all context and target points
-        '''
-        if X_t is None:
-            X_t=X_c
-
-        #Get the range of points:
-        x1_min=min(torch.min(X1[:,0]),torch.min(X2[:,0]))
-        x2_min=min(torch.min(X1[:,1]),torch.min(X2[:,1]))
-        x1_max=max(torch.max(X1[:,0]),torch.max(X2[:,0]))
-        x2_max=max(torch.max(X1[:,1]),torch.max(X2[:,1]))
-
-        #Get the grid vectors in the x1- and x2-axis:
-        x1_grid_vec=torch.arange(x1_min,x1_max+self.grid_size,self.grid_size)
-        x2_grid_vec=torch.arange(x2_min,x2_max+self.grid_size,self.grid_size)
-        X2,X1=torch.meshgrid(x2_grid_vec,x1_grid_vec)
-        Z=torch.stack((X2,X1),2)
-        return(Z)
-
-    def forward(self,X_c,Y_c,X_t=None):
-        '''
-        Inputs:
-            X_c: torch.Tensor - shape (batch_size,n,2)
-            Y: torch.Tensor - shape (batch_size,n,self.dim_Y)
-        Outputs:
-            torch.Tensor - shape (batch_size,self.dim_Y+1,self.n_y_axis,self.n_x_axis)
+            torch.Tensor - shape (batch_size,dim_Y+1,self.n_y_axis,self.n_x_axis)
         '''
         #DEBUG: Control whether X and the grid are on the same device:
-        if self.grid.device!=X_c.device:
-            print("Grid and X are on different devices.")
-            self.grid=self.grid.to(X_c.device)
+        if self.grid.device!=X.device:
+            self.grid=self.grid.to(X.device)
         
-        #Get batch size:
-        batch_size=X_c.size(0)
+        #Get the batch size:
+        batch_size=X.size(0)
         #Compute the length scale out of the log-scale (clamp for numerical stability):
-        l_scale=torch.exp(torch.clamp(self.log_l_scale,max=5.,min=-5.))
+        l_scale=torch.exp(self.log_l_scale)#torch.clamp(self.log_l_scale,max=5.,min=-5.))
         
-        #Get a grid including the context and the target:
-        grid=self.get_surrounding_grid(X_c,X_t)
-        flat_grid=grid.view(-1,2)
-
         #Compute for every grid-point x' the value k(x',x_i) for all x_i in the data-->shape (batch_size,self.n_y_axis*self.n_x_axis,n)
-        Gram=GP.Batch_Gram_matrix(flat_grid.unsqueeze(0).repeat((batch_size,1,1,1)),
-                                  X_c,l_scale=l_scale,kernel_type=self.kernel_type,B=torch.ones((1),device=X.device))
+        Gram=GP.Batch_Gram_matrix(self.grid.unsqueeze(0).expand(batch_size,self.n_y_axis*self.n_x_axis,2),
+                                  X,l_scale=l_scale,kernel_type=self.kernel_type,B=torch.ones((1),device=X.device))
         
         #Compute feature expansion --> shape (batch_size,n,self.dim_Y+1)
         Expand_Y=self.expand_with_ones(Y)
-
         #Compute feature map -->shape (self.n_y_axis*self.n_x_axis,self.dim_Y+1)
         Feature_Map=torch.matmul(Gram,Expand_Y)
 
         #If wanted, normalize the weights for the channel which is not the density channel:
         if self.normalize:
             Feature_Map[:,:,1:]=Feature_Map[:,:,1:]/Feature_Map[:,:,0].unsqueeze(2)
-            #Reshape the Feature Map to the form (1,n_channels=3,n_y_axis,n_x_axis) (because this is the form required for a CNN):
         
-        return(Feature_Map.reshape(batch_size,self.n_y_axis,self.n_x_axis,Expand_Y.size(2)).permute(dims=(0,3,1,2)))        
-  
+        #Reshape the Feature Map to the form (batch_size,dim_Y+1,self.n_y_axis,self.n_x_axis) (because this is the form required for a an EquivCNN):
+        return(Feature_Map.reshape(batch_size,self.n_y_axis,self.n_x_axis,Expand_Y.size(2)).permute(dims=(0,3,1,2)))     
     
-    def plot_embedding(self,Embedding,X_context=None,Y_context=None,title=""):
+    def plot_embedding(self,Embedding,X_context=None,Y_context=None,title="",quiver_scale=1.,size_scale=2):
         '''
         Input: 
-               Embedding - torch.tensor - shape (3,self.n_y_axis,self.n_x_axis) - Embedding obtained from self.forward (usually  from X_context,Y_context)
-                                                                      where Embedding[:,0] is the density channel
-                                                                      and Embedding[:,1:] is the smoothing channel
-               X_context,Y_context - torch.tensor - shape (n,2) - context locations and vectors
+               Embedding - torch.Tensor - shape (3,self.n_y_axis,self.n_x_axis) - Single Embedding obtained from self.forward (usually  from X_context,Y_context)
+                                                                                    where Embedding[:,0] is the density channel
+                                                                                    and Embedding[:,1:] is the smoothing channel
+               X_context,Y_context - torch.Tensor - shape (n,2) - context locations and vectors
                title - string - title of plots
+               quiver_scale, size_scale - hyperparameters for size of arrows and figures for plots
         Plots locations X_context with vectors Y_context attached to it
         and on top plots the kernel smoothed version (i.e. channel 2,3 of the embedding)
-        Moreover, it plots a density plot (channel 1 of the embedding)
+        Moreover, it plots a density plot (channel 1 of the embedding).
         '''
-        #Hyperparameter for function for plotting in notebook:
-        size_scale=2
         #----------CREATE FIGURE --------------
         #Create figures, set title and adjust space:
         fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(size_scale*10,size_scale*5))
-        plt.gca().set_aspect('equal', adjustable='box')
+        #plt.gca().set_aspect('equal', adjustable='box')
         fig.suptitle(title)
         fig.subplots_adjust(wspace=0.2)
         #----------END CREATE FIGURE-------
@@ -159,17 +154,12 @@ class EquivDeepSet(nn.Module):
         #Set titles for subplots:
         ax[0].set_title("Smoothing channel")
         
-        if X_context is not None and Y_context is not None:
-            #Plot context set in black:
-            ax[0].scatter(X_context[:,0],X_context[:,1],color='black')
-            ax[0].quiver(X_context[:,0],X_context[:,1],Y_context[:,0],Y_context[:,1],
-              color='black',pivot='mid',label='Context set',scale=quiver_scale)
         #Get density channel --> shape (self.n_y_axis,self.n_x_axis)
         Density=Embedding[0]
         #Get Smoothed channel -->shape (self.n_y_axis*self.n_x_axis,2)
         Smoothed=Embedding[1:].permute(dims=(1,2,0)).reshape(-1,2)
         #Plot the kernel smoothing:
-        ax[0].quiver(self.grid[:,0],self.grid[:,1],Smoothed[:,0],Smoothed[:,1],color='red',pivot='mid',label='Embedding',scale=quiver_scale)
+        ax[0].quiver(self.grid[:,0],self.grid[:,1],Smoothed[:,0],Smoothed[:,1],color='black',pivot='mid',label='Smoothing Channel',scale=quiver_scale,scale_units='inches',alpha=0.7)
         #--------END SMOOTHING PLOT------
 
         #--------DENSITY PLOT -----------
@@ -183,15 +173,29 @@ class EquivDeepSet(nn.Module):
         ax[1].set_ylim(ax[0].get_ylim())
         #Plot a contour plot of the density channel:
         ax[1].set_title("Density channel")
-        ax[1].contour(X,Y, Density, levels=14, linewidths=0.5, colors='k')
+        ax[1].contourf(X,Y, Density, levels=14, linewidths=0.5, cmap=cm.get_cmap('cividis'),aspect='auto',label='Density Channel')
+
         #Add legend to first plot:
-        leg = ax[0].legend(loc='upper right')
+        #leg = ax[0].legend(loc='upper right')
         #---------END DENSITY PLOT--------
-    
+
+        #Add context points to the smoothing and density channel:
+        if X_context is not None and Y_context is not None:
+            ax[0].quiver(X_context[:,0],X_context[:,1],Y_context[:,0],Y_context[:,1],
+              color='firebrick',pivot='mid',label='Context set',scale=quiver_scale,scale_units='inches')
+            ax[1].scatter(X_context[:,0],X_context[:,1],color='firebrick',label='Context set')
+            
+    #A function to save a dictionary dict such that EquivDeepSets(**dict) will return the same object.
+    #This is used to save an instance of the class.     
     def give_dict(self):
         dictionary={
-            'grid_size': self.grid_size,
+            'x_range':self.x_range,
+            'n_x_axis':self.n_x_axis,
+            'y_range':self.y_range,
+            'n_y_axis':self.n_y_axis,
             'l_scale': torch.exp(self.log_l_scale).item(),
-            'normalize': self.normalize
+            'normalize': self.normalize,
+            'train_l_scale': self.train_l_scale
         }
         return(dictionary)
+
