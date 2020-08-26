@@ -46,9 +46,9 @@ TO DO:
 IMPLEMENT SUMMARY PRINT OF MODEL 
 '''
 
-class Steerable_CNP_Evaluater(nn.Module):
+class GP_CNP_Evaluater(nn.Module):
     def __init__(self,dictionary,G_act,in_repr,test_dataset):
-        super(Steerable_CNP_Evaluater, self).__init__()
+        super(GP_CNP_Evaluater, self).__init__()
         '''
         Input: dictionary - obtained from train_CNP    
                G_act      - instance of e2cnn.gspaces - underlying G-space 
@@ -422,7 +422,7 @@ _,_,filename=Training.train_CNP(CNP, TRAIN_DATASET,VAL_DATASET, data_identifier=
               n_epochs=5,n_iterat_per_epoch=3,
               filename="Test_CNP",n_val_samples=50)
 CNP_dict=torch.load('Test_CNP_2020_07_27_08_51')
-Evaluater=Steerable_CNP_Evaluater(CNP_dict,G_act,in_repr,TEST_DATASET)
+Evaluater=GP_CNP_Evaluater(CNP_dict,G_act,in_repr,TEST_DATASET)
 Evaluater.plot_loss_memory()
 GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
 Evaluater.plot_test_random(GP_parameters=GP_parameters)

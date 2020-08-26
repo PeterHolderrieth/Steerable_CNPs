@@ -157,6 +157,34 @@ def Give_2d_Grid(min_x,max_x,n_x_axis,min_y=None,max_y=None,n_y_axis=None,flatte
         Z=Z.view(n_y_axis*n_x_axis,2)
     return(Z)
 
+def Give_2d_Grid(grid_size,min_x,max_x,min_y=None,max_y=None,flatten=True):
+    '''
+    Input:
+        grid_size: float - length between two sucessive grid points
+        min_x,max_x,min_y,max_y: float - range of x-axis/y-axis
+        flatten: Boolean - determines shape of output
+    Output:
+        torch.tensor - if flatten is True: shape (n_y_axis*n_x_axis,2) 
+                                          (element i*n_x_axis+j gives i-th element in y-grid 
+                                           and j-th element in  x-grid.
+                                           In other words: x is periodic counter and y the stable counter)
+                       if flatten is not True: shape (n_y_axis,n_x_axis,2)
+    '''
+    if min_y is None:
+        min_y=min_x
+    if max_y is None:
+        max_y=max_x
+    if n_y_axis is None:
+        n_y_axis=n_x_axis
+        
+    x_grid_vec=torch.linspace(min_x,max_x,n_x_axis)
+    y_grid_vec=torch.linspace(min_y,max_y,n_y_axis)
+    Y,X=torch.meshgrid(y_grid_vec,x_grid_vec)
+    Z=torch.stack((X,Y),2)
+    if flatten:
+        Z=Z.view(n_y_axis*n_x_axis,2)
+    return(Z)
+
 def Radial_Grid(min,max,n_axis):
     X=Give_2d_Grid(min,max,n_axis,flatten=False)
     Ind=bool_inner_circle_indices(n_axis)

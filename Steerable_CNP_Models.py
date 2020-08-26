@@ -39,11 +39,6 @@ torch.set_default_dtype(torch.float)
 
 ''''
 TO DO:
-0. What is the correct way of normalizing the batch: normalize by number of target points, size of minibatch?
-1. Original ConvCNP makes grid variable (i.e. originally forward pass creates grid around context points while we fix it throughout.)
-(so the height and width can vary of the input tensors)
-(to me, this would not be smart to do for Steerable Encoder since height and width should be fixed and the same, otherwise we have too many
-points out of the square)
 
 '''
 '''
@@ -225,6 +220,7 @@ class Steerable_Encoder(nn.Module):
             'normalize': self.normalize
         }
         return(dictionary)
+
 
 '''
 -------------------------------------------------------------------------
@@ -697,3 +693,20 @@ class Steerable_CNP(nn.Module):
         '''
         dictionary=torch.load(f=filename)
         return(Steerable_CNP.create_model_from_dict(dictionary))
+
+
+def covariance_converter(Pre_Activ_Covs_grid,conv_type='eigenvalue'):
+    '''
+    conv_type - string = either 'quadratic', 'eigenvalue' or 'scalar'
+    Pre_Activ_Covs_grid - torch.Tensor - shape (batch_size,n,dim_cov_est)
+
+    '''
+    #Get the dimension of the covariance estimation:
+    dim_cov_est=Pre_Activ_Covs_grid.size(2)
+    #If it is one:
+    if self.dim_cov_est==1:
+        #Apply softplus (add noise such that variance does not become (close to) zero):
+        Covs_grid=0.1+0.9*F.sigmoid(Pre_Activ_Covs_grid).repeat(1,1,2)
+        Covs_grid=Covs_grid.diag_embed()
+    else:
+        Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
