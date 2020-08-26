@@ -9,6 +9,7 @@ import torch.utils.data as utils
 #E(2)-steerable CNNs - librar"y:
 from e2cnn import gspaces    
 from e2cnn import nn as G_CNN   
+from e2cnn import group  
 import e2cnn
 
 #Plotting in 2d/3d:
@@ -27,8 +28,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #Own files:
 import Kernel_and_GP_tools as GP
 import My_Tools
-import EquivDeepSets 
-
+import Cov_Converter 
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
@@ -38,7 +38,9 @@ torch.set_default_dtype(torch.float)
 --------------------------DECODER CLASSES----------------------------------
 -------------------------------------------------------------------------
 '''
-#A STACK OF CNN LAYERS:
+#-----------------------------------------------------
+#A CONVOLUTIONAL DECODER (STACK OF CONVOLUTIONAL LAYERS AND ACTIVATION FUNCTIONS):
+#------------------------------------------------------
 class CNNDecoder(nn.Module):
     def __init__(self,list_hid_channels,kernel_sizes,dim_cov_est,non_linearity=["ReLU"],dim_features_inp=2):
         '''
@@ -113,7 +115,7 @@ class CNNDecoder(nn.Module):
         '''
         return(self.decoder(X))
     
-    def give_dict(self):
+    def give_model_dict(self):
         dictionary={
             'list_hid_channels': self.list_hid_channels,
             'kernel_sizes': self.kernel_sizes,
@@ -127,7 +129,7 @@ class CNNDecoder(nn.Module):
         return(dictionary)
 
     def save_model_dict(self,filename):
-        torch.save(self.give_dict(),f=filename)
+        torch.save(self.give_model_dict(),f=filename)
 
     def create_model_from_dict(dictionary):
         '''
@@ -150,35 +152,50 @@ class CNNDecoder(nn.Module):
         return(CNN_Decoder.create_model_from_dict(dictionary))
 
 
-#A decoder class which is equivariant with respect the cyclic group C_N (i.e. rotations of 360/N degrees):
+#-----------------------------------------------------
+#AN EQUIVARIANT DECODER (STACK OF EQUIVARIANT CONVOLUTIONAL LAYERS AND ACTIVATION FUNCTIONS):
+#------------------------------------------------------
 class EquivDecoder(nn.Module):
-    def __init__(self,hidden_fib_reps,kernel_sizes,dim_cov_est,context_fib_rep=[1],non_linearity=["NormReLU"],N=4,flip=False):
+    def __init__(self,hidden_reps_ids,kernel_sizes,dim_cov_est,context_rep_ids=[1],N=4,flip=False,non_linearity=["NormReLU"],max_frequency=30):
         '''
-        Input: context_fib_rep - list of ints: gives the input fiber representation
-               hidden_fib_reps - list of lists of ints - "-1"...encodes regular repr
-                                                  k=0,1,2,...,flatten(N/2) (for )...encodes irrep(k) 
-                                                  In particular: "0"...encodes trivial repr
-               kernel_sizes - list of ints - sizes of kernels for convolutional layers
-               dim_cov_est - dimension of covariance estimation, either 1,2,3 or 4
-               non_linearity - list of strings - gives names of non-linearity to be used
-                                                 Either length 1 (then same non-linearity for all)
-                                                 or length is the number of layers (giving a custom non-linearity for every
-                                                 layer)                   
+        Input:  hidden_reps_ids - list: encoding the hidden fiber representation (see give_fib_reps_from_ids)
+                kernel_sizes - list of ints - sizes of kernels for convolutional layers
+                dim_cov_est - dimension of covariance estimation, either 1,2,3 or 4                
+                context_rep_ids - list: gives the input fiber representation (see give_fib_reps_from_ids)
+                non_linearity - list of strings - gives names of non-linearity to be used
+                                    Either length 1 (then same non-linearity for all)
+                                    or length is the number of layers (giving a custom non-linearity for every
+                                    layer)   
+                N - int - gives the group order, -1 is infinite
+                flip - Bool - indicates whether we have a flip in the rotation group (i.e.O(2) vs SO(2), D_N vs C_N)
+                max_frequency - int - maximum irrep frequency to computed, only relevant if N=-1
         '''
+
         super(EquivDecoder, self).__init__()
         #Save the rotation group, if flip is true, then include all corresponding reflections:
-        if flip:
-            self.G_act=gspaces.FlipRot2dOnR2(N=N)
-        else:
-            self.G_act=gspaces.Rot2dOnR2(N=N)
-        #Save the group order (if N=-1 it is infinity):
-        self.Group_order=N 
+        self.flip=flip
+        self.max_frequency=max_frequency
 
+        if self.flip:
+            self.G_act=gspaces.FlipRot2dOnR2(N=N) if N!=-1 else gspaces.FlipRot2dOnR2(N=N,maximum_frequency=self.max_frequency)
+            #The output fiber representation is the identity:
+            self.target_rep=self.G_act.irrep(1,1)
+        else:
+            self.G_act=gspaces.Rot2dOnR2(N=N)   if N!=-1 else gspaces.Rot2dOnR2(N=N,maximum_frequency=self.max_frequency)
+            #The output fiber representation is the identity:
+            self.target_rep=self.G_act.irrep(1)
+
+        #Save the N defining D_N or C_N (if N=-1 it is infinity):
+        self.polygon_corners=N 
+        
+        #Save the id's for the context representation and extract the context fiber representation:
+        self.context_rep_ids=context_rep_ids
+        self.context_rep=group.directsum(self.give_reps_from_ids(self.context_rep_ids))
+        
         #Save the parameters:
         self.kernel_sizes=kernel_sizes
         self.n_layers=len(hidden_fib_reps)+2
-        self.context_fib_rep=context_fib_rep
-        self.hidden_fib_reps=hidden_fib_reps
+        self.hidden_reps_ids=hidden_reps_ids
         self.dim_cov_est=dim_cov_est
         
         #-----CREATE LIST OF NON-LINEARITIES----
@@ -198,7 +215,7 @@ class EquivDecoder(nn.Module):
         '''
         #Create list of feature types:
         feat_types=self.give_feat_types()
-        self.feature_in=feat_types[0]
+        self.feature_emb=feat_types[0]
         self.feature_out=feat_types[-1]
         #Create layers list and append it:
         layers_list=[G_CNN.R2Conv(feat_types[0],feat_types[1],kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
@@ -222,6 +239,30 @@ class EquivDecoder(nn.Module):
         if len(self.non_linearity)!=(self.n_layers-2): sys.exit("Number of layers and number of non-linearities do not match.")
         #------------END CONTROL INPUTS--------------
     
+    def give_reps_from_ids(self,ids):
+        '''
+        Input: ids - list - elements 0,-11 stand for trivial and regular rep, 
+                             elements k=1,2,3,4,... for irrep(k) if self.flip is false,
+                             elements [l,k] for l=0,1; k=1,2,3,4,... if self.flip is true 
+        Output: list of irreducible representations
+        '''
+        new_layer=[]
+        for id in ids:
+                #The representation can be trivial (irrep(0)), regular or a non-trivial irreducible:
+                if id==0:
+                    new_layer.append(self.G_act.trivial_repr)
+
+                elif id==-1:
+                    new_layer.append(self.G_act.regular_repr)
+
+                elif flip:
+                    if len(id)!=2:
+                        sys.exit('Error in give_feat_types: for group with flip the a representation must be either 0,-1 or of the form [k,l].')
+                    new_layer.append(self.G_act.irrep(*id))
+                else:
+                    new_layer.append(self.G_act.irrep(id))
+        return(new_layer)
+
     #A tool for initialising the class:
     def give_feat_types(self):
         '''
@@ -230,28 +271,23 @@ class EquivDecoder(nn.Module):
                              k_i stands for irrep(k_i) of the rotation group or if k_i=-1 for the regular representation
                              the sume of rep(k_1),...,rep(k_l) determines the ith element of "feat_types"
         '''
-        feat_types=[G_CNN.FieldType(self.G_act,[self.G_act.trivial_repr,self.G_act.irrep(self.context_fib_rep)])]
-        for reps in self.hidden_fib_reps:
+        #Feat type of embedding consist of sums of trivial and context fiber representation:
+        feat_types=[G_CNN.FieldType(self.G_act,[self.G_act.trivial_repr,self.context_rep])]
+        #Go over all hidden fiber reps:
+        for ids in self.hidden_reps_ids:
             #New layer collects the sum of individual representations to one list:
-            new_layer=[]
-            for rep in reps:
-                #The representation can be trivial (irrep(0)), regular or a non-trivial irreducible:
-                if rep==0:
-                    new_layer.append(self.G_act.trivial_repr)
-                elif rep==-1:
-                    new_layer.append(self.G_act.regular_repr)
-                elif rep%1==0 and 1<=rep and rep<=math.floor(self.Group_order/2):
-                    new_layer.append(self.G_act.irrep(rep))
-                else:
-                    sys.exit("Unknown fiber representation.")
+            print(ids)
+            new_layer=self.give_reps_from_ids(ids)
+
             #Append a new feature type given by the new layer:
             feat_types.append(G_CNN.FieldType(self.G_act, new_layer))
 
-        if self.dim_cov_est==1:
-            pre_cov_rep=self.G_act.trivial_repr
-        else:
-            pre_cov_rep,_=My_Tools.get_pre_psd_rep(self.G_act)
-        feat_types.append(G_CNN.FieldType(self.G_act,[self.G_act.irrep(1),pre_cov_rep]))
+        #Get the fiber representation for the pre-covariance tensor:
+        pre_cov_rep=Cov_Converter.get_pre_cov_rep(self.G_act,self.dim_cov_est)
+
+        #The final fiber representation is given by the sum of the identity (=rotation) representation and 
+        #the covariance matrix:
+        feat_types.append(G_CNN.FieldType(self.G_act,[self.target_rep,pre_cov_rep]))
         return(feat_types)
     
     def forward(self,X):
@@ -260,29 +296,33 @@ class EquivDecoder(nn.Module):
         Output: torch.tensor - shape (batch_size,n_out_channels,m,n)
         '''
         #Convert X into a geometric tensor:
-        X=G_CNN.GeometricTensor(X, self.feature_in)
+        X=G_CNN.GeometricTensor(X, self.feature_emb)
         #Send it through the decoder:
         Out=self.decoder(X)
         #Return the resulting tensor:
         return(Out.tensor)
-
+    
     #Two functions to save the model in a dictionary:
     #1.Create dictionary with parameters:
-    def give_dict(self):
+    def give_model_dict(self):
         dictionary={
-            'N': self.Group_order,
-            'hidden_fib_reps': self.hidden_fib_reps,
-            'dim_cov_est': self.dim_cov_est,
+            'hidden_reps_ids': self.hidden_reps_ids,
             'kernel_sizes': self.kernel_sizes,
+            'dim_cov_est': self.dim_cov_est,
+            'context_rep_ids': self.context_rep_ids,
+            'N': self.polygon_corners,
+            'flip': self.flip,
             'non_linearity': self.non_linearity,
+            'max_frequency': self.max_frequency,
             'decoder_class': self.__class__.__name__,
             'decoder_info': self.decoder.__str__(),
             'decoder_par': self.decoder.state_dict()
         }
         return(dictionary)
+
     #2.Save dictionary:
     def save_model_dict(self,filename):
-        torch.save(self.give_dict(),f=filename)
+        torch.save(self.give_model_dict(),f=filename)
 
     #Two functions to load the model from file:
     #1.Create Model from dictionary:
@@ -291,13 +331,16 @@ class EquivDecoder(nn.Module):
         Input: dictionary - dictionary - gives parameters for decoder which is randomly initialised
                                         if decoder parameters (weights and biases) are given 
                                         the weights are loaded into the decoder
-        Output: Decoder - instance of Cyclic_Decoder (see above) 
+        Output: Decoder - instance of EquivDecoder (see above) 
         '''
-        Decoder=Cyclic_Decoder(N=dictionary['N'],
-                                    hidden_fib_reps=dictionary['hidden_fib_reps'],
-                                    dim_cov_est=dictionary['dim_cov_est'],
-                                    kernel_sizes=dictionary['kernel_sizes'],
-                                    non_linearity=dictionary['non_linearity'],
+        Decoder=EquivDecoder( hidden_reps_ids=dictionary['hidden_reps_ids'],
+                                kernel_sizes=dictionary['kernel_sizes'],
+                                dim_cov_est=dictionary['dim_cov_est'],
+                                context_rep_ids=dictionary['context_rep_ids'],
+                                N=dictionary['N'],
+                                flip=dictionary['flip'],
+                                non_linearity=dictionary['non_linearity'],
+                                max_frequency=dictionary['max_frequency']
                                 )
         if 'decoder_par' in dictionary:
             if dictionary['decoder_par'] is not None:
@@ -308,7 +351,7 @@ class EquivDecoder(nn.Module):
     def load_model_from_dict(filename):
         '''
         Input: filename - string - name of file where dictionary is saved
-        Output: instance of Cyclic_Decoder with parameters as specified at "filename"
+        Output: instance of EquivDecoder with parameters as specified at "filename"
         '''
         dictionary=torch.load(f=filename)
-        return(Cyclic_Decoder.create_model_from_dict(dictionary))
+        return(EquivDecoder.create_model_from_dict(dictionary))
