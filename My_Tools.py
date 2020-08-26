@@ -503,31 +503,7 @@ def batch_multivar_log_ll(Means,Covs,Data):
     log_ll=log_normalizer-0.5*Quad_Term
     return(log_ll)
 
-def get_pre_psd_rep(G_act):
-    '''
-        Input:
-            G_act - instance of e2cnn.gspaces.r2.rot2d_on_r2.Rot2dOnR2 - underlying group
-            
-        Output:
-            psd_rep - instance of e2cnn.group.Representation - group representation of the group representation before the covariance 
-            feat_type_pre_rep - instance of G_CNN.FieldType - corresponding field type
-    '''
-    
-    change_of_basis=np.array([[1,1.,0.],
-                          [0.,0.,1.],
-                          [1,-1.,0.]])
-    if G_act.name=='4-Rotations':
-        psd_rep=e2cnn.group.Representation(group=G_act.fibergroup,name="psd_rep",irreps=['irrep_0','irrep_2','irrep_2'],
-                                   change_of_basis=change_of_basis,
-                                   supported_nonlinearities=['n_relu'])
-    elif G_act.name=='8-Rotations' or G_act.name=='16-Rotations':
-        psd_rep=e2cnn.group.Representation(group=G_act.fibergroup,name="psd_rep",irreps=['irrep_0','irrep_2'],
-                                   change_of_basis=change_of_basis,
-                                   supported_nonlinearities=['n_relu'])
-    else:
-        sys.exit("Group not enabled for a pre psd representation yet.")
-    feat_type_pre_rep=G_CNN.FieldType(G_act,[psd_rep])
-    return(psd_rep,feat_type_pre_rep)
+
 
 
 '''
