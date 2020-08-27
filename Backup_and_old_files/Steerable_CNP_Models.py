@@ -50,7 +50,7 @@ TO DO:
 --------------------------STEERABLE CNP CLASS----------------------------
 -------------------------------------------------------------------------
 '''     
-class Steerable_CNP(nn.Module):
+class EquivCNP(nn.Module):
     def __init__(self, encoder, decoder, dim_cov_est=3,
                          kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
         '''
@@ -65,7 +65,7 @@ class Steerable_CNP(nn.Module):
             normalize_output  - Boolean - indicates whether kernel smoothing is performed with normalizing
         '''
         #-----------------------SAVING OF PARAMETERS ----------------------------------
-        super(Steerable_CNP, self).__init__()
+        super(EquivCNP, self).__init__()
         #Initialse the encoder:
         self.encoder=encoder
         #Decoder and save the type (Convolutional, Steerable and if Steerable which group)
@@ -212,7 +212,7 @@ class Steerable_CNP(nn.Module):
     def give_dict(self):
         dictionary={
             'encoder_dict': self.encoder.give_dict(),
-            'decoder_dict': self.decoder.give_dict(),
+            'decoder_dict': self.decoder.give_model_dict(),
             'decoder_class': self.decoder_type,
             'log_l_scale_out': self.log_l_scale_out.detach().item(),
             'normalize_output': self.normalize_output,
@@ -228,8 +228,8 @@ class Steerable_CNP(nn.Module):
     #1.Create model from dictionary:
     def create_model_from_dict(dictionary):
         '''
-        Input: dictionary - dict - parameters to load into Steerable_CNP class (including weights and biases for decoder and encoder)
-        Output: instance of Steerable_CNP with parameters as specified in dictionary
+        Input: dictionary - dict - parameters to load into EquivCNP class (including weights and biases for decoder and encoder)
+        Output: instance of EquivCNP with parameters as specified in dictionary
         '''
         #Load Encoder:
         Encoder=EquivDeepSets.EquivDeepSets(**dictionary['encoder_dict'])
@@ -242,7 +242,7 @@ class Steerable_CNP(nn.Module):
             sys.exit("Unknown decoder type.")
     
         #Create model:
-        Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,
+        Model=EquivCNP(encoder=Encoder,decoder=Decoder,
                         dim_cov_est=dictionary['dim_cov_est'], kernel_dict_out=dictionary['kernel_dict_out'],
                         l_scale=math.exp(dictionary['log_l_scale_out']), normalize_output=dictionary['normalize_output'])
         return(Model)
@@ -251,21 +251,8 @@ class Steerable_CNP(nn.Module):
     def load_model_from_dict(filename):
         '''
         Input: filename - string -location of dictionary
-        Output: instance of Steerable_CNP with parameters as specified in dictionary at path "filename"
+        Output: instance of EquivCNP with parameters as specified in dictionary at path "filename"
         '''
         dictionary=torch.load(f=filename)
-        return(Steerable_CNP.create_model_from_dict(dictionary))
+        return(EquivCNP.create_model_from_dict(dictionary))
 
-
-def covariance_converter(Pre_Activ_Covs_grid,dim_cov_est):
-    '''
-    Pre_Activ_Covs_grid - torch.Tensor - shape (batch_size,n,dim_cov_est)
-
-    '''
-    #If it is one:
-    if self.dim_cov_est==1:
-        #Apply softplus (add noise such that variance does not become (close to) zero):
-        Covs_grid=0.1+0.9*F.sigmoid(Pre_Activ_Covs_grid).repeat(1,1,2)
-        Covs_grid=Covs_grid.diag_embed()
-    else:
-        Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)

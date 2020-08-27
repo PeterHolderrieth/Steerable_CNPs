@@ -30,8 +30,9 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import Kernel_and_GP_tools as GP
 import My_Tools
 import EquivDeepSets 
-import Architectures 
 from Cov_Converter import cov_converter
+import Decoder_Models as models
+import Architectures
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
@@ -190,16 +191,17 @@ class EquivCNP(nn.Module):
         else: 
             loss=-log_ll
         return(loss,log_ll)
-            
+
     #Two functions to save the model in a dictionary:
     #1.Create a dictionary:
     def give_dict(self):
         dictionary={
             'encoder_dict': self.encoder.give_dict(),
-            'decoder_dict': self.decoder.give_dict(),
+            'decoder_dict': self.decoder.give_model_dict(),
             'decoder_class': self.decoder_type,
             'log_l_scale_out': self.log_l_scale_out.detach().item(),
             'normalize_output': self.normalize_output,
+            'dim_context_feat': self.dim_context_feat,
             'dim_cov_est': self.dim_cov_est,
             'kernel_dict_out': self.kernel_dict_out
         }
@@ -218,17 +220,21 @@ class EquivCNP(nn.Module):
         #Load Encoder:
         Encoder=EquivDeepSets.EquivDeepSets(**dictionary['encoder_dict'])
         #Load Decoder (depending on type of decoder use different functions):
-        if dictionary['decoder_class']=="Cyclic_Decoder":
-            Decoder=Cyclic_Decoder.create_model_from_dict(dictionary['decoder_dict'])
-        elif dictionary['decoder_class']=="CNN_Decoder":
-            Decoder=CNN_Decoder.create_model_from_dict(dictionary['decoder_dict'])
+        if dictionary['decoder_class']=="EquivDecoder":
+            Decoder=Architectures.EquivDecoder.create_model_from_dict(dictionary['decoder_dict'])
+        elif dictionary['decoder_class']=="CNNDecoder":
+            Decoder=Architectures.CNNDecoder.create_model_from_dict(dictionary['decoder_dict'])
         else:
             sys.exit("Unknown decoder type.")
-    
+
         #Create model:
-        Model=EquivCNP(encoder=Encoder,decoder=Decoder,
-                        dim_cov_est=dictionary['dim_cov_est'], kernel_dict_out=dictionary['kernel_dict_out'],
-                        l_scale=math.exp(dictionary['log_l_scale_out']), normalize_output=dictionary['normalize_output'])
+        Model=EquivCNP(encoder=Encoder,
+                        decoder=Decoder,
+                        dim_cov_est=dictionary['dim_cov_est'], 
+                        kernel_dict_out=dictionary['kernel_dict_out'],
+                        dim_context_feat=dictionary['dim_context_feat'],
+                        l_scale=math.exp(dictionary['log_l_scale_out']), 
+                        normalize_output=dictionary['normalize_output'])
         return(Model)
 
     #2. Load dictionary and from dictionary load model:
@@ -239,3 +245,10 @@ class EquivCNP(nn.Module):
         '''
         dictionary=torch.load(f=filename)
         return(EquivCNP.create_model_from_dict(dictionary))
+
+DIM_COV_EST=3
+encoder=EquivDeepSets.EquivDeepSets(x_range=[-2,2],n_x_axis=30)
+decoder=models.get_CNNDecoder('little',dim_cov_est=DIM_COV_EST,dim_features_inp=2)
+equivcnp=EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
+dictionary=equivcnp.give_dict()
+rel_equivcnp=EquivCNP.create_model_from_dict(dictionary)
