@@ -92,7 +92,7 @@ class CNNDecoder(nn.Module):
 
         for it in range(self.n_layers-2):
             if self.non_linearity[it]=="ReLU":
-                layers_list.append(nn.ReLU())
+                layers_list.append(nn.ReLU(inplace=True))
             else:
                 sys.exit("Unknown non-linearity.")
             layers_list.append(nn.Conv2d(self.list_n_channels[it+1],self.list_n_channels[it+2],
@@ -194,7 +194,7 @@ class EquivDecoder(nn.Module):
         
         #Save the parameters:
         self.kernel_sizes=kernel_sizes
-        self.n_layers=len(hidden_fib_reps)+2
+        self.n_layers=len(hidden_reps_ids)+2
         self.hidden_reps_ids=hidden_reps_ids
         self.dim_cov_est=dim_cov_est
         
@@ -222,7 +222,7 @@ class EquivDecoder(nn.Module):
 
         for it in range(self.n_layers-2):
             if self.non_linearity[it]=="ReLU":
-                layers_list.append(G_CNN.ReLU(feat_types[it+1]))
+                layers_list.append(G_CNN.ReLU(feat_types[it+1],inplace=True))
             elif self.non_linearity[it]=="NormReLU":
                 layers_list.append(G_CNN.NormNonLinearity(feat_types[it+1]))
             else:
@@ -255,7 +255,7 @@ class EquivDecoder(nn.Module):
                 elif id==-1:
                     new_layer.append(self.G_act.regular_repr)
 
-                elif flip:
+                elif self.flip:
                     if len(id)!=2:
                         sys.exit('Error in give_feat_types: for group with flip the a representation must be either 0,-1 or of the form [k,l].')
                     new_layer.append(self.G_act.irrep(*id))
@@ -276,7 +276,6 @@ class EquivDecoder(nn.Module):
         #Go over all hidden fiber reps:
         for ids in self.hidden_reps_ids:
             #New layer collects the sum of individual representations to one list:
-            print(ids)
             new_layer=self.give_reps_from_ids(ids)
 
             #Append a new feature type given by the new layer:
