@@ -4,7 +4,10 @@ __pycache__/
 *$py.class
 
 #Folders:
-Trained_Models/
+/Trained_Models/**
+!/Trained_Models/**/
+!/Trained_Models/**/.gitkeep
+
 **/Data/**
 **/Old_Tasks/**
 

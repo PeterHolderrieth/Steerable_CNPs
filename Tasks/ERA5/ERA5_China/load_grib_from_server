@@ -1,0 +1,10 @@
+
+MIN=1980
+MAX=2018
+echo "Load ERA5 data for Southwestern China from server."
+for (( c=$MIN; c<=$MAX; c++ ))
+do 
+	scp peholder@ziz2:/homes/peholder/Equiv_CNPs_Dissertation_2020/Tasks/ERA5/ERA5_China/Data/"$c"_ERA5_China.grib Data/
+done
+
+echo "Process completed."

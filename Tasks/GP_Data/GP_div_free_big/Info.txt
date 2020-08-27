@@ -1,0 +1,19 @@
+This folder provides the task of predicting a dataset of GP samples. The properties of that data set are as follows:
+
+Every batch of shape [(batch_size,n,2),(batch_size,n,2)]=[X,Y] provides locations X and corresponding vectors Y.
+These are sampled from a GP with the following parameters:
+
+GP_parameters={'l_scale':1,
+'sigma_var': 2., 
+'kernel_type':"div_free",
+'obs_noise':1e-4}
+
+The X-locations were chosen as a grid where every is created by torch.linspace(-2,2,10).
+So n=100 here.
+
+The number of samples is 10 000.
+
+
+
+
+

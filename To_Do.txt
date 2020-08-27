@@ -1,7 +1,0 @@
-
-GP_DATA:
-Write script for sampling and loading div-free and curl-free GP data
-Order Tasks folder
-Write folder description for tasks and README
-Application Data:
-Get Environment Data

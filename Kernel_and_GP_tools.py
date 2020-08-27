@@ -394,7 +394,7 @@ def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pr
 #%%
 #This functions perform GP-inference on the function values at X_Target (so no noise for the target value)
 #based on context points X_Context and labels Y_Context:
-def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=1e-4,B=None,Ker_project=False):
+def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=0.1,B=None,Ker_project=False):
     '''
     Input:
         X_Context - torch.tensor - Shape (n_context_points,d)
