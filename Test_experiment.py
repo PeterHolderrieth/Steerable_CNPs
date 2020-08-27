@@ -58,9 +58,11 @@ X_RANGE=[-10,10]
 N_X_AXIS=60
 BATCH_SIZE=30
 LEARNING_RATE=float(sys.argv[4])
+N=int(sys.argv[5])
+name='regular_middle'
 
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
-decoder=models.get_CNNDecoder('little',dim_cov_est=DIM_COV_EST,dim_features_inp=2)
+decoder=models.get_EquivDecoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1],flip=False,N=N)
 
 equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
 
