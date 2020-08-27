@@ -41,7 +41,7 @@ LIST_NAMES=["regular_little",
 "regular_huge",
 "irrep_little",
 "irrep_small",
-"irrep_middle"
+"irrep_middle",
 "irrep_big",
 "irrep_huge"
 ]

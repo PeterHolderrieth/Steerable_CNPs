@@ -212,8 +212,8 @@ class EquivCNP(nn.Module):
     #1.Create model from dictionary:
     def create_model_from_dict(dictionary):
         '''
-        Input: dictionary - dict - parameters to load into Steerable_CNP class (including weights and biases for decoder and encoder)
-        Output: instance of Steerable_CNP with parameters as specified in dictionary
+        Input: dictionary - dict - parameters to load into EquivCNP class (including weights and biases for decoder and encoder)
+        Output: instance of EquivCNP with parameters as specified in dictionary
         '''
         #Load Encoder:
         Encoder=EquivDeepSets.EquivDeepSets(**dictionary['encoder_dict'])
@@ -226,7 +226,7 @@ class EquivCNP(nn.Module):
             sys.exit("Unknown decoder type.")
     
         #Create model:
-        Model=Steerable_CNP(encoder=Encoder,decoder=Decoder,
+        Model=EquivCNP(encoder=Encoder,decoder=Decoder,
                         dim_cov_est=dictionary['dim_cov_est'], kernel_dict_out=dictionary['kernel_dict_out'],
                         l_scale=math.exp(dictionary['log_l_scale_out']), normalize_output=dictionary['normalize_output'])
         return(Model)
@@ -235,7 +235,7 @@ class EquivCNP(nn.Module):
     def load_model_from_dict(filename):
         '''
         Input: filename - string -location of dictionary
-        Output: instance of Steerable_CNP with parameters as specified in dictionary at path "filename"
+        Output: instance of EquivCNP with parameters as specified in dictionary at path "filename"
         '''
         dictionary=torch.load(f=filename)
-        return(Steerable_CNP.create_model_from_dict(dictionary))
+        return(EquivCNP.create_model_from_dict(dictionary))
