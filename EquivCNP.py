@@ -30,42 +30,32 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import Kernel_and_GP_tools as GP
 import My_Tools
 import EquivDeepSets 
-
+import Architectures 
+from Cov_Converter import cov_converter
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
 
 
-
-''''
-TO DO:
-
-'''
-
-
-
-
 '''
 -------------------------------------------------------------------------
---------------------------STEERABLE CNP CLASS----------------------------
+--------------------------Equivariant CNP CLASS----------------------------
 -------------------------------------------------------------------------
 '''     
-class Steerable_CNP(nn.Module):
-    def __init__(self, encoder, decoder, dim_cov_est=3,
-                         kernel_dict_out={'kernel_type':"rbf"},l_scale=1.,normalize_output=True):
+class EquivCNP(nn.Module):
+    def __init__(self, encoder, decoder,dim_cov_est=3, dim_context_feat=2,
+                         l_scale=1.,normalize_output=True,kernel_dict_out={'kernel_type':"rbf"}):
         '''
         Inputs:
             encoder - instance of EquivDeepSets.EquivDeepSets class above
-            decoder - nn.Module - takes input (batch_size,3,height,width) and gives (batch_size,5,height,width) 
-                                  (dim_cov_est=3) or (batch_size,3,height,width) (if dim_cov_est=1) as output
-            decoder_type - string - type of decoder: possible - "Conv" (standard CNN)
-                                                              - "Cyclic" (Group-Equivariant network w.r.t. cyclic group)
-            kernel_dict_out - gives parameters for kernel smoother of output
+            decoder - nn.Module - takes input (batch_size,dim_context_feat+1,height,width) and gives (batch_size,2+dim_cov_est,height,width) 
+            dim_context_feat - int - dimension of the features of the context set (usually 2)
             l_scale - float - gives initialisation for learnable length parameter
             normalize_output  - Boolean - indicates whether kernel smoothing is performed with normalizing
+            kernel_dict_out - gives parameters for kernel smoother of output
         '''
         #-----------------------SAVING OF PARAMETERS ----------------------------------
-        super(Steerable_CNP, self).__init__()
+        super(EquivCNP, self).__init__()
         #Initialse the encoder:
         self.encoder=encoder
         #Decoder and save the type (Convolutional, Steerable and if Steerable which group)
@@ -79,23 +69,23 @@ class Steerable_CNP(nn.Module):
         self.normalize_output=normalize_output
         #Save the dimension of the covariance estimator of the last layer:
         self.dim_cov_est=dim_cov_est
+        self.dim_context_feat=dim_context_feat
         #-----------------------SAVING of PARAMETERS FINISHED---------------------------------
 
 
         #--------------------CONTROL OF PARAMETERS -------------------------
         #So far, the dimension of the covariance estimator has to be either 1 or 3 
         #(i.e. number of output channels either 3 or 5):
-        if (self.dim_cov_est!=1) and (self.dim_cov_est!=3): sys.exit("N out channels must be either 3 or 5")
+        if not any(dim_cov_est==dim for dim in [1,2,3,4]): sys.exit("Dim_cov_est must be either 1,2,3 or 4.")
         if 'l_scale' in kernel_dict_out: sys.exit("Encoder error: l scale is variable and not fixed")
         if not isinstance(self.normalize_output,bool): sys.exit("Normalize output has to be boolean.")
         if not isinstance(l_scale,float): sys.exit("l_scale initialization has to be a float.")
         if not isinstance(encoder,EquivDeepSets.EquivDeepSets): sys.exit("Enoder is not correct.")
         if not isinstance(decoder, nn.Module): sys.exit("Decoder has to be nn.Module")
-        if self.decoder_type!="CNN_Decoder" and self.decoder_type!="Cyclic_Decoder": sys.exit("Unknown decoder type.")
         #--------------------END CONTROL OF PARAMETERS----------------------
 
         #-------------------CONTROL WHETHER DECODER ACCEPTS AND RETURNS CORRECT SHAPES----
-        test_input=torch.randn([5,3,encoder.n_y_axis,encoder.n_x_axis])  
+        test_input=torch.randn([5,1+self.dim_context_feat,encoder.n_y_axis,encoder.n_x_axis])  
         test_output=decoder(test_input)
         if len(test_output.shape)!=4 or test_output.size(0)!=test_input.size(0) or test_output.size(2)!=encoder.n_y_axis or test_output.size(3)!=encoder.n_x_axis:
             sys.exit("Decoder error: shape of output is not correct.")
@@ -123,13 +113,7 @@ class Steerable_CNP(nn.Module):
         #----------END SPLIT FINAL FEATURE MAP INTO MEANS AND COVARIANCE PARAMETERS----------
 
         #-----------APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
-        #Get shape (batch_size,n_x_axis*n_y_axis,2,2):
-        if self.dim_cov_est==1:
-            #Apply softplus (add noise such that variance does not become (close to) zero):
-            Covs_grid=0.1+0.9*F.sigmoid(Pre_Activ_Covs_grid).repeat(1,1,2)
-            Covs_grid=Covs_grid.diag_embed()
-        else:
-            Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
+        Covs_grid=cov_converter(Pre_Activ_Covs_grid,dim_cov_est=self.dim_cov_est)
         #-----------END APPLY ACITVATION FUNCTION ON COVARIANCES---------------------
 
         #-----------APPLY KERNEL SMOOTHING --------------------------------------
@@ -255,17 +239,3 @@ class Steerable_CNP(nn.Module):
         '''
         dictionary=torch.load(f=filename)
         return(Steerable_CNP.create_model_from_dict(dictionary))
-
-
-def covariance_converter(Pre_Activ_Covs_grid,dim_cov_est):
-    '''
-    Pre_Activ_Covs_grid - torch.Tensor - shape (batch_size,n,dim_cov_est)
-
-    '''
-    #If it is one:
-    if self.dim_cov_est==1:
-        #Apply softplus (add noise such that variance does not become (close to) zero):
-        Covs_grid=0.1+0.9*F.sigmoid(Pre_Activ_Covs_grid).repeat(1,1,2)
-        Covs_grid=Covs_grid.diag_embed()
-    else:
-        Covs_grid=My_Tools.batch_stable_cov_activation_function(Pre_Activ_Covs_grid)
