@@ -1,5 +1,6 @@
 #LIBRARIES:
 #Tensors:
+import math
 import torch
 import numpy as np
 import torch.nn as nn
@@ -49,6 +50,6 @@ def load_GP_div_free(data_set='train',file_path=''):
     return(X,Y)
 
 #A function to load a data set:
-def give_GP_div_free_data_set(Min_n_cont,Max_n_cont,n_total,data_set='train',file_path="",transform=True):
+def give_GP_div_free_data_set(Min_n_cont,Max_n_cont,data_set='train',file_path="",n_total=None,transform=True):
     X,Y=load_GP_div_free(data_set=data_set,file_path=file_path)
-    return(MyDataset.CNPDataset(X,Y,Min_n_cont=Min_n_cont,Max_n_cont=Max_n_cont,n_total=n_total,transform=transform))
+    return(MyDataset.GPDataset(X,Y,Min_n_cont=Min_n_cont,Max_n_cont=Max_n_cont,n_total=n_total,transform=transform))

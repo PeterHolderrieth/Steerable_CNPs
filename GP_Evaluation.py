@@ -400,36 +400,4 @@ class GP_CNP_Evaluater(nn.Module):
         return(out_dict)
 
 
-BATCH_SIZE=16
-DATA_PATH="Tasks/GP_div_free_small/"
-TRAIN_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='train')
-VAL_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='valid')
-TEST_DATASET=GP_loader.give_GP_div_free_data_set(Min_n_cont=5,Max_n_cont=50,n_total=None,data_set='test')
-'''
-Encoder=My_Models.Steerable_Encoder(l_scale=0.4,x_range=[-4,4],n_x_axis=20)
-Decoder=My_Models.Cyclic_Decoder(hidden_fib_reps=[[1,-1],[1,-1]],kernel_sizes=[5,7,9],dim_cov_est=3,N=16,non_linearity=['NormReLU'])
-G_act=Decoder.G_act
-in_repr=G_act.irrep(1)
-CNP=My_Models.Steerable_CNP(encoder=Encoder,decoder=Decoder,dim_cov_est=3)
 
-if torch.cuda.is_available():
-    device = torch.device("cuda:0")  
-    print("Running on the GPU")
-else:
-    device = torch.device("cpu")
-    print("Running on the CPU")
-_,_,filename=Training.train_CNP(CNP, TRAIN_DATASET,VAL_DATASET, data_identifier="Test",device=device,
-              n_epochs=5,n_iterat_per_epoch=3,
-              filename="Test_CNP",n_val_samples=50)
-CNP_dict=torch.load('Test_CNP_2020_07_27_08_51')
-Evaluater=GP_CNP_Evaluater(CNP_dict,G_act,in_repr,TEST_DATASET)
-Evaluater.plot_loss_memory()
-GP_parameters={'l_scale':1,'sigma_var':1, 'kernel_type':"div_free",'obs_noise':1e-4,'B':None,'Ker_project':False}
-Evaluater.plot_test_random(GP_parameters=GP_parameters)
-print("Equiv. error:", Evaluater.equiv_error_model(n_samples=1,plot_stable=True))
-print("Equiv. error:", Evaluater.equiv_error_encoder(n_samples=1,plot_trans=True))
-print("Equiv. error:", Evaluater.equiv_error_target_smoother(n_samples=1))
-print("Equiv. error:", Evaluater.equiv_error_decoder(n_samples=1))
-'''
-
-# %%

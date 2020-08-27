@@ -33,6 +33,7 @@ import EquivDeepSets
 from Cov_Converter import cov_converter
 import Decoder_Models as models
 import Architectures
+import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
@@ -161,6 +162,7 @@ class EquivCNP(nn.Module):
         Means_target,Sigmas_target=self.target_smoother(X_target,Final_Feature_Map)
         #Sigmas_target=Sigmas_target.clamp(min=1e-1,max=10.)
         return(Means_target,Sigmas_target)
+        
     def plot_Context_Target(self,X_Context,Y_Context,X_Target,Y_Target=None,title=""):
         '''
             Inputs: X_Context, Y_Context, X_Target: torch.tensor - shape (batch_size,n_context/n_target,2) 
@@ -246,9 +248,16 @@ class EquivCNP(nn.Module):
         dictionary=torch.load(f=filename)
         return(EquivCNP.create_model_from_dict(dictionary))
 
+'''
 DIM_COV_EST=3
-encoder=EquivDeepSets.EquivDeepSets(x_range=[-2,2],n_x_axis=30)
+encoder=EquivDeepSets.EquivDeepSets(x_range=[-10,10],n_x_axis=50)
 decoder=models.get_CNNDecoder('little',dim_cov_est=DIM_COV_EST,dim_features_inp=2)
 equivcnp=EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
-dictionary=equivcnp.give_dict()
-rel_equivcnp=EquivCNP.create_model_from_dict(dictionary)
+
+FILEPATH="Tasks/GP_Data/GP_div_free_circle/"
+Dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)
+n_samples=3
+for i in range(n_samples):
+    X_c,Y_c,X_t,Y_t=Dataset.get_rand_batch(batch_size=10)
+    Means,Covs=equivcnp(X_c,Y_c,X_t)
+'''

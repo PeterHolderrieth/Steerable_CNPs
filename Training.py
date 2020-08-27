@@ -33,7 +33,6 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #Own files:
 import Kernel_and_GP_tools as GP
 import My_Tools
-import Steerable_CNP_Models as My_Models
 
 
 
@@ -45,13 +44,13 @@ TO DO:
 How to save identity of data loader without actually having to save it for every model
 '''
 
-def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
+def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
                  learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None):
         '''
         Input: 
-          Steerable_CNP: Steerable_CNP Module (see above)
+          CNP: Module of a CNP type accepting context and target sets
 
-          train_dataset,val_dataset - instance of Tasks.CNPDataSet - giving train and valid sets
+          train_dataset,val_dataset - datasets with the function give_rand_batch giving a random batch of context and target set
           data_identifier - string - identifier for what data set was used
           device: instance of torch.device 
           n_epochs: int -number of epochs for training
@@ -67,7 +66,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
         '''
         Input: filename - string - name of file - if given, there the model is saved
         Output:
-          self.Steerable_CNP is trained (inplace)
+          self.CNP is trained (inplace)
           log_ll_vec: torch.tensor
                       Shape (n_epochs)
                       mean log likelihood over one epoch
@@ -79,7 +78,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
           We choose a random function and random context before training and plot the development
           of the predictions (mean of the distributions) over the training
         '''
-        Steerable_CNP=Steerable_CNP.to(device)
+        CNP=CNP.to(device)
 
         #------------------Tracking training progress ----------------------
         #1.Track training loss and log-ll (if shape_reg=0, this is the same):
@@ -90,7 +89,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
         #------------------------------------------------------------------------
 
         #Define the optimizer and add a weight decay term:
-        optimizer=torch.optim.Adam(Steerable_CNP.parameters(),lr=learning_rate,weight_decay=weight_decay)        
+        optimizer=torch.optim.Adam(CNP.parameters(),lr=learning_rate,weight_decay=weight_decay)        
 
         #-------------------EPOCH LOOP ------------------------------------------
         for epoch in range(n_epochs):
@@ -116,10 +115,10 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
 
                 #DEBUG:
                 #The target set includes the context set here:
-                Means,Sigmas=Steerable_CNP(x_context,y_context,x_target) 
+                Means,Sigmas=CNP(x_context,y_context,x_target) 
                 #print("Means sample: ", Means.flatten()[:100])
                 #print("Sigmas samples: ", Sigmas.flatten()[:100])
-                loss,log_ll=Steerable_CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)
+                loss,log_ll=CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)
 
                 #Set gradients to zero:
                 optimizer.zero_grad()
@@ -137,7 +136,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
             train_log_ll_tracker.append(log_ll_epoch.avg)
 
             if n_val_samples is not None:
-              val_log_ll=test_CNP(Steerable_CNP,val_dataset,device,n_val_samples,batch_size=minibatch_size)
+              val_log_ll=test_CNP(CNP,val_dataset,device,n_val_samples,batch_size=minibatch_size)
               val_log_ll_tracker.append(val_log_ll)
               print("Epoch: %d | train loss: %.5f | train log ll:  %.5f | val log ll: %.5f"%(epoch,loss_epoch.avg,log_ll_epoch.avg,val_log_ll))
 
@@ -147,7 +146,7 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
             complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
-            Report={'CNP_dict': Steerable_CNP.give_dict(),
+            Report={'CNP_dict': CNP.give_dict(),
                     'optimizer': optimizer.state_dict(),
                     'data_identifier': data_identifier,
                     'n_iterat_per_epoch': n_iterat_per_epoch,
@@ -157,13 +156,13 @@ def train_CNP(Steerable_CNP, train_dataset,val_dataset, data_identifier,device,m
                     'Min_n_context_points': train_dataset.Min_n_cont,
                     'Max_n_context_points': train_dataset.Max_n_cont,
                     'shape_reg': shape_reg,
-                    'n_parameters:': My_Tools.count_parameters(Steerable_CNP)}#,`
+                    'n_parameters:': My_Tools.count_parameters(CNP)}#,`
                     #'final_log_ll:': val_log_ll_tracker[-1]}
             torch.save(Report,complete_filename)
         else:
           complete_filename=None
         #Return the model and the loss memory:
-        return(Steerable_CNP,train_loss_tracker,complete_filename)
+        return(CNP,train_loss_tracker,complete_filename)
 
 def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1):
         with torch.no_grad():
