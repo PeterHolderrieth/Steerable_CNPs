@@ -69,7 +69,6 @@ X_RANGE=[-10,10]
 N_X_AXIS=50
 BATCH_SIZE=30
 LEARNING_RATE=float(sys.argv[4])
-N=int(sys.argv[5])
 FILEPATH="Tasks/GP_Data/GP_div_free_circle/"                                                       
 data_identifier="GP_div_free_circle"
 train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)                 
@@ -78,9 +77,10 @@ val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH
 for name in LIST_NAMES:
     print('Model type:')
     print(name)
-    encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
-    decoder=models.get_EquivDecoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1],flip=False,N=N)
+    #encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
+    decoder=models.get_EquivDecoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1])
 
-    equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
+    My_Tools.count_parameters(decoder,print_table=True)
+    #equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
 
-    Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=None)
+    #Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=None)

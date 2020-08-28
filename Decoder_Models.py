@@ -56,7 +56,7 @@ LIST_NAMES=["regular_little",
 "irrep_huge"
 ]
 
-def get_EquivDecoder(name,dim_cov_est,context_rep_ids,N,flip,max_frequency=30):
+def get_EquivDecoder(name,dim_cov_est,context_rep_ids,flip=False,N=16,max_frequency=30):
     
     #Family of decoders using purely regular fiber representations:
     if name=="regular_little":
@@ -71,7 +71,7 @@ def get_EquivDecoder(name,dim_cov_est,context_rep_ids,N,flip,max_frequency=30):
 
     elif name=="regular_middle":
         hidden_reps_ids=6*[12*[-1]]
-        kernel_sizes=[j for j in range(3,28,4)]
+        kernel_sizes=[3,3,5,7,7,11,11]
         non_linearity=['ReLU']
 
     elif name=="regular_big":
