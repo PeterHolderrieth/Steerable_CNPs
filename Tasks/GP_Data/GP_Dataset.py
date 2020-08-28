@@ -62,7 +62,7 @@ class GPDataset(utils.IterableDataset):
         '''
         alpha=2*math.pi*np.random.uniform()
         s=np.random.choice([-1,1])
-        R=torch.tensor([[math.cos(alpha),-s*math.sin(alpha)],[math.sin(alpha),s*math.cos(alpha)]])
+        R=torch.tensor([[math.cos(alpha),-s*math.sin(alpha)],[math.sin(alpha),s*math.cos(alpha)]],dtype=torch.get_default_dtype())
         return(R)
 
     def rand_transform(self,X,Y):
@@ -71,7 +71,7 @@ class GPDataset(utils.IterableDataset):
         Output: X,Y - torch.Tensor - shape (batch_size,n,2) - randomly roto-reflected X and roto-reflected Y 
         '''
         #Sample a random rotation matrix:
-        R=self.rand_orthogonal_mat()
+        R=self.rand_orthog_mat()
         
         #Return rotated versions:
         return(torch.matmul(X,R.t()),torch.matmul(Y,R.t()))
@@ -104,3 +104,4 @@ class GPDataset(utils.IterableDataset):
         if n_context_points is None:
             n_context_points=torch.randint(low=self.Min_n_cont,high=self.Max_n_cont,size=[1])
         return(self.get_batch(inds,n_context_points,cont_in_target=cont_in_target))
+
