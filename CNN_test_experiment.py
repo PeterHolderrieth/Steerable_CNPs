@@ -67,6 +67,7 @@ N_EPOCHS=int(sys.argv[2])
 N_ITERAT_PER_EPOCH=int(sys.argv[3])
 X_RANGE=[-10,10]
 N_X_AXIS=30
+N_VAL_SAMPLES=200
 BATCH_SIZE=30
 LEARNING_RATE=float(sys.argv[4])
 FILEPATH="Tasks/GP_Data/GP_div_free_circle/"                                                       
@@ -83,4 +84,4 @@ for name in ['small','middle','big','huge']:
     My_Tools.count_parameters(decoder,print_table=True)
     equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
 
-    Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=None)
+    Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=N_VAL_SAMPLES)
