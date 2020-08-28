@@ -8,5 +8,5 @@ GP_parameters={'l_scale':5.,
 
 The mean log-likelihood on the data is:
 Minimum context | Maximum context | Value:
-5 | 50 | 
+5 | 50 | -0.4734
 
