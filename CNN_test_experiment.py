@@ -65,22 +65,30 @@ else:
 DIM_COV_EST=int(sys.argv[1])
 N_EPOCHS=int(sys.argv[2])
 N_ITERAT_PER_EPOCH=int(sys.argv[3])
+LEARNING_RATE=float(sys.argv[4])
+name=sys.argv[5]
+
 X_RANGE=[-10,10]
 N_X_AXIS=30
-N_VAL_SAMPLES=200
 BATCH_SIZE=30
-LEARNING_RATE=float(sys.argv[4])
+N_VAL_SAMPLES=None
+PRINT_PROGRESS=False
+N_EVAL_SAMPLES=10000
 FILEPATH="Tasks/GP_Data/GP_div_free_circle/"                                                       
 data_identifier="GP_div_free_circle"
 train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)                 
 val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH)
-name=str(sys.argv[5])
+
+print()
+print("CNN Decoder.")
 print('Model type:')
 print(name)
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
 decoder=models.get_CNNDecoder(name,dim_cov_est=DIM_COV_EST,dim_features_inp=2)
 
-My_Tools.count_parameters(decoder,print_table=True)
+#My_Tools.count_parameters(decoder,print_table=True)
 equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
-
-Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=N_VAL_SAMPLES)
+CNP,_,_=Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=N_VAL_SAMPLES,print_progress=PRINT_PROGRESS)
+eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=N_EVAL_SAMPLES,batch_size=BATCH_SIZE)
+print("Final log ll:", eval_log_ll)
+print()

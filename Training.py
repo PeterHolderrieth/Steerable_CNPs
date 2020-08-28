@@ -45,7 +45,7 @@ How to save identity of data loader without actually having to save it for every
 '''
 
 def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
-                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None):
+                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None,print_progress=True):
         '''
         Input: 
           CNP: Module of a CNP type accepting context and target sets
@@ -62,6 +62,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
                     if None: no plots during training
           filename: string/None - if not None, the training state is saved to a dictionary
           n_val_samples: None/int - if int, every epoch we compute the validation log likelihood
+          print_progress - Boolean - indicates whether progress is printed
         '''
         '''
         Input: filename - string - name of file - if given, there the model is saved
@@ -135,13 +136,14 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
             train_loss_tracker.append(loss_epoch.avg)
             train_log_ll_tracker.append(log_ll_epoch.avg)
 
-            if n_val_samples is not None:
-              val_log_ll=test_CNP(CNP,val_dataset,device,n_val_samples,batch_size=minibatch_size)
-              val_log_ll_tracker.append(val_log_ll)
-              print("Epoch: %d | train loss: %.5f | train log ll:  %.5f | val log ll: %.5f"%(epoch,loss_epoch.avg,log_ll_epoch.avg,val_log_ll))
+            if print_progress:
+              if n_val_samples is not None:
+                val_log_ll=test_CNP(CNP,val_dataset,device,n_val_samples,batch_size=minibatch_size)
+                val_log_ll_tracker.append(val_log_ll)
+                print("Epoch: %d | train loss: %.5f | train log ll:  %.5f | val log ll: %.5f"%(epoch,loss_epoch.avg,log_ll_epoch.avg,val_log_ll))
 
-            else:
-              print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
+              else:
+                print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
 
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
