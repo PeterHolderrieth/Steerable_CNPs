@@ -135,8 +135,7 @@ def get_C16_Decoder(name,dim_cov_est,context_rep_ids):
                             context_rep_ids=context_rep_ids,
                             N=N,
                             flip=flip,
-                            non_linearity=non_linearity,
-                            max_frequency=max_frequency))
+                            non_linearity=non_linearity))
 
 def get_D8_Decoder(name,dim_cov_est,context_rep_ids):
     N=8

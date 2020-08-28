@@ -176,7 +176,7 @@ class EquivCNP(nn.Module):
         for i in range(X_Context.size(0)):
             My_Tools.Plot_Inference_2d(X_Context[i],Y_Context[i],X_Target[i],Y_Target[i],Predict=Means[i].detach(),Cov_Mat=Covs[i].detach(),title=title)
     
-    def loss(Y_Target,Predict,Covs,shape_reg=None):
+    def loss(self,Y_Target,Predict,Covs,shape_reg=None):
         '''
             Inputs: Y_Target: torch.tensor - shape (batch_size,n,2) - Target set locations and vectors
                     Predict: torch.tensor - shape (batch_size,n,2) - Predictions of Y_Target at X_Target
