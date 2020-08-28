@@ -85,7 +85,7 @@ class EquivCNP(nn.Module):
         if not isinstance(encoder,EquivDeepSets.EquivDeepSets): sys.exit("Enoder is not correct.")
         if not isinstance(decoder, nn.Module): sys.exit("Decoder has to be nn.Module")
         #--------------------END CONTROL OF PARAMETERS----------------------
-
+        '''
         #-------------------CONTROL WHETHER DECODER ACCEPTS AND RETURNS CORRECT SHAPES----
         test_input=torch.randn([5,1+self.dim_context_feat,encoder.n_y_axis,encoder.n_x_axis])  
         test_output=decoder(test_input)
@@ -93,7 +93,7 @@ class EquivCNP(nn.Module):
             sys.exit("Decoder error: shape of output is not correct.")
         if (self.dim_cov_est+2)!=test_output.size(1):sys.exit("Number of output channels!=2+dim of cov estimation.")
         #-------------------END CONTROL WHETHER DECODER ACCEPTS AND RETURNS CORRECT SHAPES----
-
+        '''
     #Define the function which maps the output of the decoder to
     #predictions on the target set based on kernel smoothing, i.e. the predictions on 
     #the target set are obtained by kernel smoothing of these points on the grid of encoder

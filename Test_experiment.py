@@ -43,6 +43,17 @@ torch.set_default_dtype(torch.float)
 '''
 SET DEVICE:
 '''
+LIST_NAMES=["regular_little",
+        "regular_small",
+        "regular_middle",
+        "regular_big",
+        "regular_huge",
+        "irrep_little",
+        "irrep_small",
+        "irrep_middle",
+        "irrep_big",
+        "irrep_huge"
+        ]
 
 if torch.cuda.is_available():
     DEVICE = torch.device("cuda:0")  
@@ -55,20 +66,21 @@ DIM_COV_EST=int(sys.argv[1])
 N_EPOCHS=int(sys.argv[2])
 N_ITERAT_PER_EPOCH=int(sys.argv[3])
 X_RANGE=[-10,10]
-N_X_AXIS=40
-BATCH_SIZE=3
+N_X_AXIS=50
+BATCH_SIZE=30
 LEARNING_RATE=float(sys.argv[4])
 N=int(sys.argv[5])
-name='regular_little'
-
-encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
-decoder=models.get_EquivDecoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1],flip=False,N=N)
-
-equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
-
-FILEPATH="Tasks/GP_Data/GP_div_free_circle/"
-train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)
-val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH)
+FILEPATH="Tasks/GP_Data/GP_div_free_circle/"                                                       
 data_identifier="GP_div_free_circle"
+train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)                 
+val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH)
 
-Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=None)
+for name in LIST_NAMES:
+    print('Model type:')
+    print(name)
+    encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
+    decoder=models.get_EquivDecoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1],flip=False,N=N)
+
+    equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
+
+    Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=None)
