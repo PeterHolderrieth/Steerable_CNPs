@@ -56,21 +56,22 @@ class GPDataset(utils.IterableDataset):
     def __len__(self):
             return len(self.X_data)
         
-    def rand_rot_mat(self):
+    def rand_orthog_mat(self):
         '''
-        Output: torch.Tensor - shape (2,2) - a random rotation matrix
+        Output: torch.Tensor - shape (2,2) - a random orthogonal matrix
         '''
         alpha=2*math.pi*np.random.uniform()
-        R=torch.tensor([[math.cos(alpha),-math.sin(alpha)],[math.sin(alpha),math.cos(alpha)]])
+        s=np.random.choice([-1,1])
+        R=torch.tensor([[math.cos(alpha),-s*math.sin(alpha)],[math.sin(alpha),s*math.cos(alpha)]])
         return(R)
 
     def rand_transform(self,X,Y):
         '''
         Input: X,Y - torch.Tensor - shape (batch_size,n,2)
-        Output: X,Y - torch.Tensor - shape (batch_size,n,2) - randomly rotated X and rotated Y 
+        Output: X,Y - torch.Tensor - shape (batch_size,n,2) - randomly roto-reflected X and roto-reflected Y 
         '''
         #Sample a random rotation matrix:
-        R=self.rand_rot_mat()
+        R=self.rand_orthogonal_mat()
         
         #Return rotated versions:
         return(torch.matmul(X,R.t()),torch.matmul(Y,R.t()))
