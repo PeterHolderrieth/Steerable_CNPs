@@ -83,6 +83,7 @@ print()
 print("Group: D4")
 print('Model type:')
 print(name)
+print("Learning rate: ", LEARNING_RATE)
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
 decoder=models.get_D4_Decoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[[1,1]])
 
