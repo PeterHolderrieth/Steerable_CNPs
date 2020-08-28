@@ -1,9 +1,19 @@
-LEARNING_RATE=1e-5
-N_EPOCHS=30
-N_ITERAT_PER_EPOCH=100
-ARCHITECTURE="regular_middle"
+N_EPOCHS=3
+N_ITERAT_PER_EPOCH=1
 
-python C16_Test_experiments.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH $LEARNING_RATE $ARCHITECTURE 
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-5 regular_middle 
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-6 regular_middle
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-4 regular_middle
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-3 regular_middle
 
 
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-5 regular_big
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-6 regular_big                                                                                                                                                            
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-4 regular_big                                                                                                                                                            
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-3 regular_big 
+
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-5 regular_huge
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-6 regular_huge
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-4 regular_huge
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-3 regular_huge
   

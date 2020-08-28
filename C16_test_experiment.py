@@ -82,7 +82,7 @@ print("Group: C16")
 print('Model type:')
 print(name)
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
-decoder=models.get_C16_Decoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[[1,1]])
+decoder=models.get_C16_Decoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1])
 
 #My_Tools.count_parameters(decoder,print_table=True)
 equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
