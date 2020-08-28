@@ -120,6 +120,7 @@ def cov_converter(Pre_Sigma_Grid,dim_cov_est):
     Pre_Sigma_Grid - torch.Tensor - shape (batch_size,n,dim_cov_est) if dim_cov_est=2,3,4 and (batch_size,n) if dim_cov_est=1
     dim_cov_est - 1,2,3 or 4 - gives type and dimension of covariance converter
     '''
+    device=Pre_Sigma_Grid.device
     if dim_cov_est==1:
         Sigma_grid=0.1+0.9*F.sigmoid(Pre_Sigma_grid).repeat(1,1,2)
         return(Sigma_grid.diag_embed())
@@ -127,12 +128,12 @@ def cov_converter(Pre_Sigma_Grid,dim_cov_est):
         Sigma_grid=0.1+0.9*F.sigmoid(Pre_Sigma_grid)
         return(Sigma_grid.diag_embed())
     elif dim_cov_est==3:
-        return(eig_val_cov_coverter(Pre_Sigma_Grid)+torch.tensor([NOISE,NOISE]).diag_embed()[None,:])
+        return(eig_val_cov_coverter(Pre_Sigma_Grid)+torch.tensor([NOISE,NOISE],device=device).diag_embed()[None,:])
     elif dim_cov_est==4:
         #Consider a vector of size 4 as a 2x2 matrix:
         Pre_Sigma_Grid=Pre_Sigma_Grid.view((Pre_Sigma_Grid.size(0),Pre_Sigma_Grid.size(1),2,2))
         #COmpute A-> A^TA componentwise and add some noise on the diagonal to make it numerically stable:
-        return(torch.matmul(Pre_Sigma_Grid.transpose(2,3),Pre_Sigma_Grid)+torch.tensor([NOISE,NOISE]).diag_embed()[None,:])
+        return(torch.matmul(Pre_Sigma_Grid.transpose(2,3),Pre_Sigma_Grid)+torch.tensor([NOISE,NOISE],device=device).diag_embed()[None,:])
     else:
         sys.exit("Error in covariance converter: dimension must be either 1,2,3 or 4.")
 
