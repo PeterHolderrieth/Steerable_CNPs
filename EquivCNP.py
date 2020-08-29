@@ -246,6 +246,7 @@ class EquivCNP(nn.Module):
         Output: instance of EquivCNP with parameters as specified in dictionary at path "filename"
         '''
         dictionary=torch.load(f=filename)
+        print(list(dictionary.keys()))
         return(EquivCNP.create_model_from_dict(dictionary))
 
 '''
