@@ -8,6 +8,10 @@ __pycache__/
 !/Trained_Models/**/
 !/Trained_Models/**/.gitkeep
 
+**/Saved_Models/**
+!**/Saved_Models/**/
+!/Saved_Models/**/.gitkeep
+
 **/Data/**
 **/Old_Tasks/**
 
