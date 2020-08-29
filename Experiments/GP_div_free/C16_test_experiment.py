@@ -67,6 +67,7 @@ N_EPOCHS=int(sys.argv[2])
 N_ITERAT_PER_EPOCH=int(sys.argv[3])
 LEARNING_RATE=float(sys.argv[4])
 name=sys.argv[5]
+FILENAME=sys.argv[6]
 
 X_RANGE=[-10,10]
 N_X_AXIS=30
@@ -74,7 +75,7 @@ BATCH_SIZE=30
 N_VAL_SAMPLES=None
 PRINT_PROGRESS=False
 N_EVAL_SAMPLES=10000
-FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"                                                       
+FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"
 data_identifier="GP_div_free_circle"
 train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)                 
 val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH)
@@ -87,9 +88,9 @@ print("Learning rate: ", LEARNING_RATE)
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
 decoder=models.get_C16_Decoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[1])
 
-#My_Tools.count_parameters(decoder,print_table=True)
+#My_Tools.count_parameters(decoder,print_table=Trque)
 equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
-CNP,_,_=Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=N_VAL_SAMPLES,print_progress=PRINT_PROGRESS)
+CNP,_,_=Training.train_CNP(equivcnp,train_dataset,val_dataset,data_identifier,DEVICE,BATCH_SIZE,N_EPOCHS,N_ITERAT_PER_EPOCH,LEARNING_RATE,n_val_samples=N_VAL_SAMPLES,print_progress=PRINT_PROGRESS,filename=FILENAME)
 eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=N_EVAL_SAMPLES,batch_size=BATCH_SIZE)
 print("Final log ll:", eval_log_ll)
 print()
