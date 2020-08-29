@@ -92,4 +92,197 @@ regular_huge
 Learning rate:  0.001
 Final log ll: -1.3276581764221191
 
-python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-3 regular_huge
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e
+U
+
+Group: D8
+Model type:
+regular_middle
+learning rate:  1e-05
+Final log ll: -2.2119638919830322
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_middle
+learning rate:  1e-06
+Final log ll: -120.15904998779297
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_middle
+learning rate:  0.0001
+Final log ll: -1.3413447141647339
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_middle
+learning rate:  0.001
+Final log ll: -1.3276722431182861
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_big
+learning rate:  1e-05
+Final log ll: -1.617398738861084
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_big
+learning rate:  1e-06
+Final log ll: -106.15421295166016
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_big
+learning rate:  0.0001
+Final log ll: -1.3319047689437866
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_big
+learning rate:  0.001
+Final log ll: -1.337359070777893
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_huge
+learning rate:  1e-05
+Final log ll: -1.3612146377563477
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_huge
+learning rate:  1e-06
+Final log ll: -6.253869533538818
+
+Running on the GPU
+
+Group: D8
+Model type:
+regular_huge
+learning rate:  0.0001
+del type:
+regular_middle
+Learning rate:  1e-05
+Final log ll: -2.054626703262329
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_middle
+Learning rate:  1e-06
+Final log ll: -110.5549087524414
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_middle
+Learning rate:  0.0001
+Final log ll: -1.3365939855575562
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_middle
+Learning rate:  0.001
+Final log ll: -1.3276984691619873
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_big
+Learning rate:  1e-05
+Final log ll: -1.4683644771575928
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_big
+Learning rate:  1e-06
+Final log ll: -48.25273132324219
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_big
+Learning rate:  0.0001
+Final log ll: -1.3275165557861328
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_big
+Learning rate:  0.001
+Final log ll: -1.3267213106155396
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_huge
+Learning rate:  1e-05
+Final log ll: -1.3298749923706055
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_huge
+Learning rate:  1e-06
+Final log ll: -7.221801280975342
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_huge
+Learning rate:  0.0001
+del type:
+regular_huge
+Learning rate:  1e-05
+Final log ll: -1.3358498811721802
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_huge
+Learning rate:  1e-05
+Final log ll: -1.3572883605957031
+
+Running on the GPU
+
+Group: C16
+Model type:
+regular_huge
+Learning rate:  1e-05
+Final log ll: -1.331740140914917
+
+
+\\
+
