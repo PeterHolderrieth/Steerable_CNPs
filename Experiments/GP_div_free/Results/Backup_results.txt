@@ -1,0 +1,95 @@
+Group type: D4
+Model type:
+regular_middle
+Learning rate:  1e-05
+Final log ll: -2.3253018856048584
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_middle
+Learning rate:  1e-06
+Final log ll: -160.43064880371094
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_middle
+Learning rate:  0.0001
+Final log ll: -1.33942711353302
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_middle
+Learning rate:  0.001
+Final log ll: -1.3281444311141968
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_big
+Learning rate:  1e-05
+Final log ll: -1.5138839483261108
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_big
+Learning rate:  1e-06
+Final log ll: -114.29303741455078
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_big
+Learning rate:  0.0001
+Final log ll: -1.3299623727798462
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_big
+Learning rate:  0.001
+Final log ll: -1.3363357782363892
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_huge
+Learning rate:  1e-05
+Final log ll: -1.3487805128097534
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_huge
+Learning rate:  1e-06
+Final log ll: -7.8121843338012695
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_huge
+Learning rate:  0.0001
+Final log ll: -1.326500654220581
+
+Running on the GPU
+
+Group: D4
+Model type:
+regular_huge
+Learning rate:  0.001
+Final log ll: -1.3276581764221191
+
+python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-3 regular_huge
