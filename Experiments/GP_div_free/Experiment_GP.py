@@ -75,6 +75,7 @@ ap.set_defaults(
     DIM_COV_EST=4,
     N_VAL_SAMPLES=None,
     N_EVAL_SAMPLES=None,
+    LENGTH_SCALE_OUT=5.,
     LENGTH_SCALE_IN=7.,
     FILENAME=None)
 
@@ -114,7 +115,7 @@ print()
 print("Group:", ARGS['GROUP'])
 print('Model type:', ARGS['ARCHITECTURE'])
 #Define the encoder:
-encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
+encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=ARGS['LENGTH_SCALE_IN'])
 
 #Define the correct encoder:
 if ARGS['GROUP']=='C16':
@@ -132,7 +133,7 @@ elif ARGS['GROUP']=='trivial':
 else:
     sys.exit("Unknown architecture type.")
 
-equivcnp=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2)
+equivcnp=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
 print("Number of parameters: ", My_Tools.count_parameters(equivcnp,print_table=False))
 
