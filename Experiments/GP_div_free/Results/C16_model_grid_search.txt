@@ -1,0 +1,8 @@
+These are the results for a comparison of different decoder models leading to an EquivCNP which is equivariant 
+with respect to C16.
+
+Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G C16 -A $model -n_eval 100000 -n_val 400 -l 5.
+
+
+
+regular_small
