@@ -1,0 +1,4 @@
+This experiment tests different decoder architectures which are equivariant with respect to SO2.
+
+Experiment_GP.py -lr 1e-4 -epochs 30 -it 500 -track True -G SO2 -A $model -n_eval 100000 -n_val 400 -l
+irrep_middle

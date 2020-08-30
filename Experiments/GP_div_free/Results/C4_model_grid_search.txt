@@ -1,0 +1,17 @@
+This experiment compares different decoder architectures whicha are equivariant with respect to 
+C4.
+ Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G C4 -A $model -n_eval 10000 -n_val 400 -l 5.
+
+
+
+
+
+regular_small
+Running on the GPU
+
+Group: C4
+Model type: regular_small
+Number of parameters:  6729
+regular_middle
+Running on the GPU
+regular_small

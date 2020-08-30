@@ -1,0 +1,3 @@
+These are the results for a comparison of different models called with the argument:
+Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G D8 -A $model -n_eval 10000 -n_val 400 -l 5
+regular_small
