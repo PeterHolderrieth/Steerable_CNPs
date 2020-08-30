@@ -77,16 +77,16 @@ N_EVAL_SAMPLES=10000
 FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"                                                       
 data_identifier="GP_div_free_circle"
 train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)                 
-                                                      
+val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH)
 
 print()
-print("Group: D8")
+print("Group: SO(2)")
 print('Model type:')
 print(name)
 print("learning rate: ", LEARNING_RATE)
 
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS)
-decoder=models.get_D8_Decoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[[1,1]])
+decoder=models.get_SO2_Decoder(name,dim_cov_est=DIM_COV_EST,context_rep_ids=[[1,1]])
 
 #My_Tools.count_parameters(decoder,print_table=True)
 equivcnp=EquivCNP.EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
