@@ -1,0 +1,7 @@
+This experiment is a grid search on the learning for the Adam optimizer used
+to train the EquivCNP. 
+The parameters for the model we use are:
+-lr $lr -epochs 20 -it 500 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 200
+
+
+0.00001
