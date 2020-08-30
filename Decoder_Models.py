@@ -45,7 +45,7 @@ huge - ca 2M
 
 
 LIST_NAMES=["regular_little",
-"regular_small",
+"regular_small",\
 "regular_middle",
 "regular_big",
 "regular_huge",
@@ -577,5 +577,5 @@ def get_CNNDecoder(name,dim_cov_est,dim_features_inp=2):
                         dim_features_inp=dim_features_inp
                         ))
 
-cnp=get_Flip_Decoder('regular_huge',4,[0,1])
-print(My_Tools.count_parameters(cnp))
+#cnp=get_Flip_Decoder('regular_huge',4,[0,1])
+#print(My_Tools.count_parameters(cnp))
