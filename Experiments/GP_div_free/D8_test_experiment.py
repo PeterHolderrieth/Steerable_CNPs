@@ -77,7 +77,7 @@ N_EVAL_SAMPLES=10000
 FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"                                                       
 data_identifier="GP_div_free_circle"
 train_dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)                 
-val_dataset=DataLoader.give_GP_div_free_data_set(5,50,'valid',file_path=FILEPATH)
+                                                      
 
 print()
 print("Group: D8")
