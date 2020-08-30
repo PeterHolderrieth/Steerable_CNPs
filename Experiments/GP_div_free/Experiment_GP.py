@@ -154,6 +154,6 @@ CNP,_,_=Training.train_CNP(equivcnp,
 
 
 if ARGS['N_EVAL_SAMPLES'] is not None:
-    eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=N_EVAL_SAMPLES,batch_size=BATCH_SIZE)
+    eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_EVAL_SAMPLES'],batch_size=ARGS['BATCH_SIZE'])
     print("Final log ll:", eval_log_ll)
     print()
