@@ -5,3 +5,41 @@ The parameters for the model we use are:
 
 
 0.00001
+Running on the GPU
+
+Group: D4
+Model type: regular_middle
+Number of parameters:  71569
+Epoch: 0 | train loss: 2.10867 | train log ll:  -2.10867 | val log ll: -1.69659
+Epoch: 1 | train loss: 1.53906 | train log ll:  -1.53906 | val log ll: -1.44036
+Epoch: 2 | train loss: 1.38569 | train log ll:  -1.38569 | val log ll: -1.40145
+Epoch: 3 | train loss: 1.29024 | train log ll:  -1.29024 | val log ll: -1.24949
+Epoch: 4 | train loss: 1.25089 | train log ll:  -1.25089 | val log ll: -1.23774
+Epoch: 5 | train loss: 1.20688 | train log ll:  -1.20688 | val log ll: -1.19555
+Epoch: 6 | train loss: 1.17199 | train log ll:  -1.17199 | val log ll: -1.13563
+Epoch: 7 | train loss: 1.13298 | train log ll:  -1.13298 | val log ll: -1.13188
+Epoch: 8 | train loss: 1.11547 | train log ll:  -1.11547 | val log ll: -1.18495
+Epoch: 9 | train loss: 1.09931 | train log ll:  -1.09931 | val log ll: -1.03255
+Epoch: 10 | train loss: 1.06702 | train log ll:  -1.06702 | val log ll: -1.12803
+Epoch: 11 | train loss: 1.05502 | train log ll:  -1.05502 | val log ll: -1.03675
+Epoch: 12 | train loss: 1.02542 | train log ll:  -1.02542 | val log ll: -1.08854
+Epoch: 13 | train loss: 1.02191 | train log ll:  -1.02191 | val log ll: -1.04622
+Epoch: 14 | train loss: 1.00514 | train log ll:  -1.00514 | val log ll: -1.02739
+Epoch: 15 | train loss: 1.00029 | train log ll:  -1.00029 | val log ll: -1.01318
+Epoch: 16 | train loss: 1.01273 | train log ll:  -1.01273 | val log ll: -1.02009
+Epoch: 17 | train loss: 0.98612 | train log ll:  -0.98612 | val log ll: -0.96329
+Epoch: 18 | train loss: 0.98649 | train log ll:  -0.98649 | val log ll: -1.12719
+Epoch: 19 | train loss: 0.97241 | train log ll:  -0.97241 | val log ll: -0.97058
+Epoch: 20 | train loss: 0.97157 | train log ll:  -0.97157 | val log ll: -1.01687
+Epoch: 21 | train loss: 0.95550 | train log ll:  -0.95550 | val log ll: -0.97968
+Epoch: 22 | train loss: 0.96110 | train log ll:  -0.96110 | val log ll: -1.01593
+Epoch: 23 | train loss: 0.96136 | train log ll:  -0.96136 | val log ll: -0.97088
+Epoch: 24 | train loss: 0.96062 | train log ll:  -0.96062 | val log ll: -0.95924
+Epoch: 25 | train loss: 0.93502 | train log ll:  -0.93502 | val log ll: -1.08922
+Epoch: 26 | train loss: 0.92728 | train log ll:  -0.92728 | val log ll: -0.97931
+Epoch: 27 | train loss: 0.89950 | train log ll:  -0.89950 | val log ll: -0.98184
+Epoch: 28 | train loss: 0.89714 | train log ll:  -0.89714 | val log ll: -0.99903
+Epoch: 29 | train loss: 0.93411 | train log ll:  -0.93411 | val log ll: -0.91686
+Final log ll: -0.9454513192176819
+
+0.00005
