@@ -3,7 +3,8 @@ C4.
  Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G C4 -A $model -n_eval 10000 -n_val 400 -l 5.
 
 
-
+Best model: regular huge
+with final log ll: -0.5974346995353699
 
 
 regular_small
