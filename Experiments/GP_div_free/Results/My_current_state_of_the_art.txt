@@ -11,6 +11,18 @@ Batch size:	30
 l scale for the encoder: 4.
 dimension of covariance estimation:
 
+Group: D4
+Architecture: regular_middle
+Batch size: 5
+Learning rate:
+Log-ll: -0.51
+Called with: 
+epochs=30
+batch=5
+it=1500
+python Experiment_GP.py -lr 1e-4 -epochs $epochs -it $it -track True -G D4 -A regular_middle -n_eval 10000 -n_val 400 -l 4. -batch $batch
+
+
 Groups D4
 Architecture: regular_big 
 Log-ll:-0.55
@@ -22,3 +34,11 @@ Log-ll: -0.56
 Group: C16
 Architecture: regular big
 Log-ll: -0.59
+
+Group: C4 
+Architecture: regular huge
+Log-ll: -0.59
+
+Group: trivial (CNN)
+Architecture: big
+Log-ll:-0.59

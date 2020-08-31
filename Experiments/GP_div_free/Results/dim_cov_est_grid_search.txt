@@ -3,7 +3,7 @@ It was called by:
 for cov_est in 1 2 3 4
 do
         echo $dim_cov_est
-        python Experiment_GP.py -lr 1e-4 -epochs 3 -it 2 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 200 -l 4. -cov $cov_est -file model_compare_cov_est_${cov_est}
+        python Experiment_GP.py -lr 1e-4 -epochs 30 -it 250 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 200 -l 4. -cov $cov_est -file model_compare_cov_est_${cov_est}
 done
 
 #for cov_est in 1 2 3 4
