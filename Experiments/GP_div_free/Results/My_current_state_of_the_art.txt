@@ -1,0 +1,9 @@
+This should give the current best model parameters used the EquivCNP and should
+be updated over the time of the experiments:
+
+
+
+Learning rate: 0.0005 5e-4 (1e-4)
+Batch size:	30 
+l scale for the encoder: 4.
+dimension of covariance estimation:
