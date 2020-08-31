@@ -89,7 +89,4 @@ Epoch: 18 | train loss: 0.56296 | train log ll:  -0.56296 | val log ll: -0.71227
 Epoch: 19 | train loss: 0.55129 | train log ll:  -0.55129 | val log ll: -0.47596
 Final log ll: -0.5953012704849243
 
-regular_huge
-regular_small
-Running on the GPU
-regular_huge
+
