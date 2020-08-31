@@ -1,6 +1,6 @@
-for l_scale in 3. 4. 5. 6. 7. 8. 9. 10. 2. 1.
+for l_scale in 3. 4. 5. 2. 8. 10. 1.
 do
 	echo $l_scale
-	python Experiment_GP.py -lr 1e-4 -epochs 30 -it 250 -track True -G C16 -A regular_big -n_eval 10000 -n_val 200 -l $l_scale 
+	python Experiment_GP.py -lr 5e-4 -batch 15 -epochs 30 -it 500 -track True -G C16 -A regular_big -n_eval 10000 -n_val 200 -l $l_scale 
 done
 
