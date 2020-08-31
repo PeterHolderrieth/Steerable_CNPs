@@ -10,37 +10,8 @@ done
 #do                                                                                                                                                                                                                                                   echo $dim_cov_est                                                                                                                                                                                                                            python Experiment_GP.py -lr 1e-4 -epochs 30 -it 250 -track True -G D4 -A regular_huge -n_eval 10000 -n_val 200 -l 4. -cov $cov_est                                                                                                   done
 #The results are:
 
+
+
 1
 Running on the GPU
-
-Group: D4
-Model type: regular_middle
-Number of parameters:  69914
-Epoch: 0 | train loss: 2.08430 | train log ll:  -2.08430 | val log ll: -2.03879
-Epoch: 1 | train loss: 1.99301 | train log ll:  -1.99301 | val log ll: -1.96991
-Epoch: 2 | train loss: 2.04436 | train log ll:  -2.04436 | val log ll: -1.99946
-Final log ll: -2.0046534538269043
-
-2
-Running on the GPU
-
-Group: D4
-Model type: regular_middle
-Number of parameters:  70467
-Epoch: 0 | train loss: 5.33029 | train log ll:  -5.33029 | val log ll: -2.83473
-Epoch: 1 | train loss: 3.68553 | train log ll:  -3.68553 | val log ll: -2.42315
-Epoch: 2 | train loss: 2.30914 | train log ll:  -2.30914 | val log ll: -1.87649
-Final log ll: -1.972852110862732
-
-3
-Running on the GPU
-
-Group: D4
-Model type: regular_middle
-Number of parameters:  70466
-Epoch: 0 | train loss: 2.03465 | train log ll:  -2.03465 | val log ll: -1.80879
-Epoch: 1 | train loss: 1.75261 | train log ll:  -1.75261 | val log ll: -1.72590
-Epoch: 2 | train loss: 1.71495 | train log ll:  -1.71495 | val log ll: -1.64923
-Final log ll: -1.6552940607070923
-
-4
+1
