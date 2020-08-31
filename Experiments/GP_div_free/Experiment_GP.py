@@ -68,7 +68,7 @@ else:
 ap = argparse.ArgumentParser()
 ap.set_defaults(
     BATCH_SIZE=30,
-    N_EPOCHS=3,
+    iN_EPOCHS=3,
     PRINT_PROGRESS=True,
     N_ITERAT_PER_EPOCH=1,
     LEARNING_RATE=1e-4, 
@@ -77,6 +77,8 @@ ap.set_defaults(
     N_EVAL_SAMPLES=None,
     LENGTH_SCALE_OUT=5.,
     LENGTH_SCALE_IN=7.,
+    TESTING_GROUP=None,
+    N_EQUIV_SAMPLES=None,
     FILENAME=None)
 
 #Arguments for architecture:
@@ -96,7 +98,8 @@ ap.add_argument("-l", "--LENGTH_SCALE_IN", type=float, required=False,help="Leng
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
 ap.add_argument("-n_eval", "--N_EVAL_SAMPLES", type=int, required=False,help="Number of evaluation samples after training.")
-
+ap.add_argument("-n_equiv_val", "--N_EQUIV_SAMPLES", type=int, required=False,help="Number of samples to evaluate equivariance error.")
+ap.add_argument("-test_G", "--TESTING_GROUP", type=str, required=False, help="Group with respect to which equivariance is tested.")
 #Pass the arguments:
 ARGS = vars(ap.parse_args())
 
@@ -133,6 +136,14 @@ elif ARGS['GROUP']=='CNN':
 else:
     sys.exit("Unknown architecture type.")
 
+#If equivariance is wanted, create the group and the fieldtype for the equivariance:
+if ARGS['TESTING_GROUP']=='D4':
+    G_act=gspaces.FlipRot2dOnR2(N=4)
+    feature_in=G_CNN.FieldType(G_act,[G_act.irrep([1,1])])
+else:
+    G_act=None
+    feature_in=None
+
 equivcnp=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
 print("Number of parameters: ", My_Tools.count_parameters(equivcnp,print_table=False))
@@ -149,7 +160,11 @@ CNP,_,_=Training.train_CNP(equivcnp,
                            learning_rate=ARGS['LEARNING_RATE'],
                            n_val_samples=ARGS['N_VAL_SAMPLES'],
                            print_progress=ARGS['PRINT_PROGRESS'],
-                           filename=ARGS['FILENAME'])
+                           filename=ARGS['FILENAME'],
+                           n_equiv_samples=ARGS['N_EQUIV_SAMPLES'],
+                           G_act=G_act,
+                           feature_in=feature_in
+                           )
 
 
 
