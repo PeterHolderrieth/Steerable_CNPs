@@ -169,3 +169,5 @@ Epoch: 19 | train loss: 1.18350 | train log ll:  -1.18350 | val log ll: -0.97096
 Final log ll: -1.015647530555725
 
 irrep_huge
+Running on the GPU
+irrep_huge

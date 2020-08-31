@@ -91,3 +91,6 @@ Final log ll: -0.5953012704849243
 
 
 regular_huge
+irrep_middle
+Running on the GPU
+regular_huge

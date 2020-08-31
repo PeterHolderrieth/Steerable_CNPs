@@ -77,4 +77,18 @@ Epoch: 28 | train loss: 0.82123 | train log ll:  -0.82123 | val log ll: -0.85119
 Epoch: 29 | train loss: 0.83155 | train log ll:  -0.83155 | val log ll: -0.79657
 Final log ll: -0.8350808620452881
 
+
+irrep_huge
+Running on the GPU
+
+Time:  2020-08-31 22:19:17.405044
+Group: SO2
+Model type: irrep_huge
+Number of parameters:  1765121
+irrep_big
+Running on the GPU
+
+Time:  2020-08-31 22:19:46.197317
+Group: SO2
+Model type: irrep_big
 irrep_huge
