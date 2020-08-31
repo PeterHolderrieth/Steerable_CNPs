@@ -1,3 +1,7 @@
+These are the results of an experiment comparing different D4-decoder models. Called with:
+
+python Experiment_GP.py -lr 1e-4 -epochs 20 -it 500 -track True -G D4 -A $model -n_eval 10000 -n_val 400 -l 5
+
 regular_small
 Running on the GPU
 

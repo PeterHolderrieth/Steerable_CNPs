@@ -113,3 +113,31 @@ Epoch: 19 | train loss: 0.50592 | train log ll:  -0.50592 | val log ll: -0.68189
 Final log ll: -0.5645453333854675
 
 irrep_middle
+Running on the GPU
+
+Group: D8
+Model type: irrep_middle
+Number of parameters:  56881
+Epoch: 0 | train loss: 87.66552 | train log ll:  -87.66552 | val log ll: -35.10207
+Epoch: 1 | train loss: 30.05958 | train log ll:  -30.05958 | val log ll: -24.79414
+Epoch: 2 | train loss: 20.13507 | train log ll:  -20.13507 | val log ll: -12.55329
+Epoch: 3 | train loss: 15.44721 | train log ll:  -15.44721 | val log ll: -11.21222
+Epoch: 4 | train loss: 14.74755 | train log ll:  -14.74755 | val log ll: -18.29684
+Epoch: 5 | train loss: 12.78415 | train log ll:  -12.78415 | val log ll: -10.55125
+Epoch: 6 | train loss: 8.82143 | train log ll:  -8.82143 | val log ll: -12.71267
+Epoch: 7 | train loss: 7.91009 | train log ll:  -7.91009 | val log ll: -9.95340
+Epoch: 8 | train loss: 6.95512 | train log ll:  -6.95512 | val log ll: -6.15192
+Epoch: 9 | train loss: 6.18544 | train log ll:  -6.18544 | val log ll: -6.00241
+Epoch: 10 | train loss: 5.21723 | train log ll:  -5.21723 | val log ll: -5.13209
+Epoch: 11 | train loss: 5.22024 | train log ll:  -5.22024 | val log ll: -2.78515
+Epoch: 12 | train loss: 4.54589 | train log ll:  -4.54589 | val log ll: -4.67065
+Epoch: 13 | train loss: 3.76159 | train log ll:  -3.76159 | val log ll: -4.91792
+Epoch: 14 | train loss: 3.72711 | train log ll:  -3.72711 | val log ll: -2.22864
+Epoch: 15 | train loss: 2.84462 | train log ll:  -2.84462 | val log ll: -2.39600
+Epoch: 16 | train loss: 2.91836 | train log ll:  -2.91836 | val log ll: -3.67755
+Epoch: 17 | train loss: 2.98455 | train log ll:  -2.98455 | val log ll: -2.79042
+Epoch: 18 | train loss: 2.64493 | train log ll:  -2.64493 | val log ll: -2.22922
+Epoch: 19 | train loss: 2.17214 | train log ll:  -2.17214 | val log ll: -3.17213
+Final log ll: -3.4617486000061035
+
+irrep_big
