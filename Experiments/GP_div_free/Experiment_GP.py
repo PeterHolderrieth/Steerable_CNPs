@@ -115,6 +115,7 @@ train_dataset=DataLoader.give_GP_div_free_data_set(MIN_N_CONT,MAX_N_CONT,'train'
 val_dataset=DataLoader.give_GP_div_free_data_set(MIN_N_CONT,MAX_N_CONT,'valid',file_path=FILEPATH)
 
 print()
+print("Time: ", datetime.datetime.today())
 print("Group:", ARGS['GROUP'])
 print('Model type:', ARGS['ARCHITECTURE'])
 #Define the encoder:
