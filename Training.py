@@ -33,7 +33,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #Own files:
 import Kernel_and_GP_tools as GP
 import My_Tools
-
+from Equivariance_Tester import equiv_error_model as equiv_error
 
 
 #HYPERPARAMETERS:
@@ -45,7 +45,7 @@ How to save identity of data loader without actually having to save it for every
 '''
 
 def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
-                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None,print_progress=True):
+                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None,print_progress=True,G_act=None,feature_in=None):
         '''
         Input: 
           CNP: Module of a CNP type accepting context and target sets
@@ -63,6 +63,8 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
           filename: string/None - if not None, the training state is saved to a dictionary
           n_val_samples: None/int - if int, every epoch we compute the validation log likelihood
           print_progress - Boolean - indicates whether progress is printed
+          G_act - gspaces.gspaces - gspace to track equivariance loss 
+          feature_in - G_CNN.FieldType - feature type of input to track equivariance loss 
         '''
         '''
         Input: filename - string - name of file - if given, there the model is saved
@@ -87,6 +89,15 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         train_log_ll_tracker=[]
         #2.Track validation loss:
         val_log_ll_tracker=[]
+        if G_act is not None and feature_in is not None:
+          equiv_loss_mean_tr=[]
+          equiv_loss_mean_norm_tr=[]
+          equiv_loss_cov_tr=[]
+          equiv_loss_cov_norm_tr=[]
+          equiv_loss_mean_val=[]
+          equiv_loss_mean_norm_val=[]
+          equiv_loss_cov_val=[]
+          equiv_loss_cov_norm_val=[]
         #------------------------------------------------------------------------
 
         #Define the optimizer and add a weight decay term:
@@ -145,6 +156,17 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
               else:
                 print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
 
+            if G_act is not None and feature_in is not None:
+              train_equiv_loss_it=equiv_error(CNP,train_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=batch_size)
+              val_equiv_loss_it=equiv_error(CNP,val_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=batch_size)
+              equiv_loss_mean_tr.append(train_equiv_loss_it['loss_mean'])
+              equiv_loss_mean_norm_tr.append(train_equiv_loss_it['loss_mean_normalized'])
+              equiv_loss_cov_tr.append(train_equiv_loss_it['loss_sigma'])
+              equiv_loss_cov_norm_tr.append(train_equiv_loss_it['loss_sigma_normalized'])
+              equiv_loss_mean_val.append(val_equiv_loss_it['loss_mean'])
+              equiv_loss_mean_norm_val.append(val_equiv_loss_it['loss_mean_normalized'])
+              equiv_loss_cov_val.append(val_equiv_loss_it['loss_sigma'])
+              equiv_loss_cov_norm_val.append(val_equiv_loss_it['loss_sigma_normalized'])
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
             complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
@@ -155,6 +177,8 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
                     'train_loss_history':   train_loss_tracker,
                     'train_log_ll_history': train_log_ll_tracker,
                     'val_log ll_history': val_log_ll_tracker,
+                    'equiv_loss_train': equiv_loss_train,
+                    'equiv_loss_val': equiv_loss_val,
                     'Min_n_context_points': train_dataset.Min_n_cont,
                     'Max_n_context_points': train_dataset.Max_n_cont,
                     'shape_reg': shape_reg,
