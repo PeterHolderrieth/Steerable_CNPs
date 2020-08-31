@@ -1,0 +1,3 @@
+python Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G CNN -A big -n_eval 10000 -n_val 400 -n_equiv_val 2000 -l 4.
+python Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G D4 -A big -n_eval regular_big -n_val 400 -n_equiv_val 2000 -l 4.
+

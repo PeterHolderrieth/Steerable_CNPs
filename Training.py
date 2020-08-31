@@ -69,13 +69,13 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         '''
         Input: filename - string - name of file - if given, there the model is saved
         Output:
-          self.CNP is trained (inplace)
+          CNP is trained (inplace)
           log_ll_vec: torch.tensor
                       Shape (n_epochs)
                       mean log likelihood over one epoch
 
         Prints:
-          Prints self.n_prints-times the mean loss (per minibatch) of the last epoch
+          Prints n_prints-times the mean loss (per minibatch) of the last epoch
         
         Plots (if n_plots is not None):
           We choose a random function and random context before training and plot the development
@@ -157,8 +157,8 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
                 print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
 
             if G_act is not None and feature_in is not None:
-              train_equiv_loss_it=equiv_error(CNP,train_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=batch_size)
-              val_equiv_loss_it=equiv_error(CNP,val_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=batch_size)
+              train_equiv_loss_it=equiv_error(CNP,train_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=minibatch_size)
+              val_equiv_loss_it=equiv_error(CNP,val_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=minibatch_size)
               equiv_loss_mean_tr.append(train_equiv_loss_it['loss_mean'])
               equiv_loss_mean_norm_tr.append(train_equiv_loss_it['loss_mean_normalized'])
               equiv_loss_cov_tr.append(train_equiv_loss_it['loss_sigma'])
@@ -167,8 +167,15 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
               equiv_loss_mean_norm_val.append(val_equiv_loss_it['loss_mean_normalized'])
               equiv_loss_cov_val.append(val_equiv_loss_it['loss_sigma'])
               equiv_loss_cov_norm_val.append(val_equiv_loss_it['loss_sigma_normalized'])
+        
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
+            if G_act is not None and feature_in is not None:
+              equiv_loss_train={'loss_mean': equiv_loss_train, 'loss_mean_norm': equiv_loss_mean_norm_tr,'loss_sigma': equiv_loss_cov_tr,'loss_sigma_norm': equiv_loss_cov_norm_tr}
+              equiv_loss_val={'loss_mean': equiv_loss_val, 'loss_mean_norm': equiv_loss_mean_norm_val,'loss_sigma': equiv_loss_cov_val,'loss_sigma_norm': equiv_loss_cov_norm_val}
+            else:
+              equiv_loss_train=None
+              equiv_loss_val=None
             complete_filename=filename+'_'+datetime.datetime.today().strftime('%Y_%m_%d_%H_%M')
             Report={'CNP_dict': CNP.give_dict(),
                     'optimizer': optimizer.state_dict(),
@@ -182,8 +189,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
                     'Min_n_context_points': train_dataset.Min_n_cont,
                     'Max_n_context_points': train_dataset.Max_n_cont,
                     'shape_reg': shape_reg,
-                    'n_parameters:': My_Tools.count_parameters(CNP)}#,`
-                    #'final_log_ll:': val_log_ll_tracker[-1]}
+                    'n_parameters:': My_Tools.count_parameters(CNP)}
             torch.save(Report,complete_filename)
         else:
           complete_filename=None
