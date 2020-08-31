@@ -114,3 +114,4 @@ Epoch: 28 | train loss: 0.55477 | train log ll:  -0.55477 | val log ll: -0.58180
 Epoch: 29 | train loss: 0.53845 | train log ll:  -0.53845 | val log ll: -0.60784
 Final log ll: -0.5969310998916626
 .
+2.
