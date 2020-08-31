@@ -45,7 +45,7 @@ How to save identity of data loader without actually having to save it for every
 '''
 
 def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
-                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None,print_progress=True,G_act=None,feature_in=None):
+                 learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None,print_progress=True,G_act=None,feature_in=None,n_equiv_samples=None):
         '''
         Input: 
           CNP: Module of a CNP type accepting context and target sets
@@ -89,7 +89,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         train_log_ll_tracker=[]
         #2.Track validation loss:
         val_log_ll_tracker=[]
-        if G_act is not None and feature_in is not None:
+        if G_act is not None and feature_in is not None and n_eval_samples is not None:
           equiv_loss_mean_tr=[]
           equiv_loss_mean_norm_tr=[]
           equiv_loss_cov_tr=[]
@@ -156,7 +156,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
               else:
                 print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
 
-            if G_act is not None and feature_in is not None:
+            if G_act is not None and feature_in is not None and n_equiv_samples is not None:
               train_equiv_loss_it=equiv_error(CNP,train_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=minibatch_size)
               val_equiv_loss_it=equiv_error(CNP,val_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=minibatch_size)
               equiv_loss_mean_tr.append(train_equiv_loss_it['loss_mean'])
@@ -170,7 +170,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
-            if G_act is not None and feature_in is not None:
+            if G_act is not None and feature_in is not None and n_equiv_samples is not None:
               equiv_loss_train={'loss_mean': equiv_loss_train, 'loss_mean_norm': equiv_loss_mean_norm_tr,'loss_sigma': equiv_loss_cov_tr,'loss_sigma_norm': equiv_loss_cov_norm_tr}
               equiv_loss_val={'loss_mean': equiv_loss_val, 'loss_mean_norm': equiv_loss_mean_norm_val,'loss_sigma': equiv_loss_cov_val,'loss_sigma_norm': equiv_loss_cov_norm_val}
             else:
