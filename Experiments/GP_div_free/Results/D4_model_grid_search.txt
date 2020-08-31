@@ -142,4 +142,6 @@ Epoch: 18 | train loss: 1.76811 | train log ll:  -1.76811 | val log ll: -1.86574
 Epoch: 19 | train loss: 1.60523 | train log ll:  -1.60523 | val log ll: -1.40260
 Final log ll: -1.6179354190826416
 
+
+irrep_big
 irrep_big
