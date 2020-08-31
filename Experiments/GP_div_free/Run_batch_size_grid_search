@@ -1,9 +1,5 @@
 epochs=30
 
-batch=5
-it=1500
-python Experiment_GP.py -lr 1e-4 -epochs $epochs -it $it -track True -G D4 -A regular_middle -n_eval 10000 -n_val 400 -l 4. -batch $batch 
-
 batch=15
 it=500
 python Experiment_GP.py -lr 1e-4 -epochs $epochs -it $it -track True -G D4 -A regular_middle -n_eval 10000 -n_val 400 -l 4. -batch $batch

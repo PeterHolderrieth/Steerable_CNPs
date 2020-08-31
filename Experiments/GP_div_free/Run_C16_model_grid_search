@@ -1,4 +1,4 @@
-for model in regular_small regular_middle regular_big regular_huge irrep_middle irrep_big irrep_huge
+for model in regular_huge irrep_middle irrep_big irrep_huge
 do
 	echo $model
 	python Experiment_GP.py -lr 1e-4 -epochs 20 -it 400 -track True -G C16 -A $model -n_eval 100000 -n_val 400 -l 5. 
