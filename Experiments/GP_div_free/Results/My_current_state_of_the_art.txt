@@ -29,8 +29,8 @@ python Experiment_GP.py -lr 1e-4 -epochs $epochs -it $it -track True -G D4 -A re
 General state of the art model parameters:
 Learning rate: 0.0005 5e-4 (1e-4)
 Batch size:	5 (still to do) extensive search)
-l scale for the encoder: 3. (exact search needed)
-dimension of covariance estimation: 3. (possibly 4.)
+l scale for the encoder: 3. (optimize around 3. again)
+dimension of covariance estimation: 4. (or 3., 3. seems to work slightly worse)
 
 
 Groups D4
