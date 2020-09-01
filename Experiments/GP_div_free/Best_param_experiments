@@ -1,0 +1,23 @@
+#Train best C16 models:
+python Experiment_GP.py -lr 5e-4 -batch 15 -epochs 30 -it 500 -track True -G C16 -A regular_big -n_eval 10000 -n_val 200 -l 3. -file Saved_Models/C16_choice_first -cov 3
+python Experiment_GP.py -lr 5e-4 -batch 15 -epochs 30 -it 500 -track True -G C16 -A regular_big -n_eval 10000 -n_val 200 -l 3. -file Saved_Models/C16_choice_second -cov 4
+
+
+
+#Train best D4 models:
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 200 -l 4. -batch 5 -cov 3 -file D4_choice_first
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_big -n_eval 10000 -n_val 200 -l 4. -batch 5 -cov 3 -file D4_choice_second
+
+
+#Train best D8 models:
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D8 -A regular_huge -n_eval 10000 -n_val 200 -l 3. -cov 3 -file D8_choice_first
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D8 -A regular_huge -n_eval 10000 -n_val 200 -l 3. -cov 4 -file D8_choice_second
+
+
+#Train best C4 models:
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G C4 -A regular_huge -n_eval 10000 -n_val 200 -l 3. -cov 3
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G C4 -A regular_huge -n_eval 10000 -n_val 200 -l 3. -cov 4
+
+#Train best ConvCNP model:
+python Experiment_GP.py -lr 1e-4 -epochs 30 -it 1500 -track True -G CNN -A big -n_eval 10000 -n_val 200 -l 3. -cov 2 -batch 5 -file CNN_choice_first
+python Experiment_GP.py -lr 1e-4 -epochs 30 -it 1500 -track True -G CNN -A big -n_eval 10000 -n_val 200 -l 3. -cov 2 -batch 5 -file CNN_choice_second
