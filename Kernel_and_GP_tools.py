@@ -394,7 +394,7 @@ def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pr
 #%%
 #This functions perform GP-inference on the function values at X_Target (so no noise for the target value)
 #based on context points X_Context and labels Y_Context:
-def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=0.1,B=None,Ker_project=False):
+def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type="rbf",obs_noise=0.1,B=None,Ker_project=False,chol_noise=1e-4):
     '''
     Input:
         X_Context - torch.tensor - Shape (n_context_points,d)
@@ -412,13 +412,17 @@ def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type
     #Get matrix K(X_Context,X_Context) and add on the diagonal the observation noise:
     Gram_context=Gram_matrix(X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
 
-    Noise_matrix=obs_noise*torch.eye(n_context_points*D).to(X_Context.device)
+    Noise_matrix_context=(obs_noise+chol_noise)*torch.eye(n_context_points*D).to(X_Context.device)
     
-    Gram_context=Gram_context+Noise_matrix
+    Gram_context=Gram_context+Noise_matrix_context
 
     #Get Gram-matrix K(X_Target,X_Target):
     Gram_target=Gram_matrix(X_Target,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
     
+    Noise_matrix_target=(obs_noise+chol_noise)*torch.eye(n_target_points*D).to(X_Context.device)
+    
+    Gram_target=Gram_target+Noise_matrix_target
+
     #Get matrix K(X_Target,X_Context):
     Gram_target_context=Gram_matrix(X=X_Target,Y=X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
     
