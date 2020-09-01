@@ -22,7 +22,7 @@ class GPDataset(utils.IterableDataset):
         self.X_data=X
         self.Y_data=Y
 
-        self.dim_0,self.dim_1,self.dim_2_X=X.size()
+        self.n_obs,self.dim_1,self.dim_2_X=X.size()
         self.dim_2_Y=Y.size(2)
 
         self.init_shuffle()
@@ -76,7 +76,7 @@ class GPDataset(utils.IterableDataset):
         #Return rotated versions:
         return(torch.matmul(X,R.t()),torch.matmul(Y,R.t()))
     
-    def get_batch(self,inds,n_context_points,cont_in_target=False):
+    def get_batch(self,inds,n_context_points=None,cont_in_target=False):
         '''
         Input: inds - list of ints - gives indices of which observations to choose for minibatch
                n_context_points - int - gives number of context points
@@ -84,6 +84,8 @@ class GPDataset(utils.IterableDataset):
         Ouput: X_context,Y_context - torch.Tensor - shape (len(inds),n_context_points,self.dim_2_X/self.dim_2_Y)
                X_target, Y_target - torch.Tensor - shape (len(inds),n_total-n_context_points,self.dim_2_X/self.dim_2_Y)
         '''
+        if n_context_points is None:
+            n_context_points=torch.randint(low=self.Min_n_cont,high=self.Max_n_cont,size=[1])
         shuffle=torch.randperm(self.dim_1)
         X=self.X_data[inds][:,shuffle[:self.n_total]]
         Y=self.Y_data[inds][:,shuffle[:self.n_total]]
@@ -100,8 +102,6 @@ class GPDataset(utils.IterableDataset):
         in range [self.Min_n_cont,high=self.Max_n_cont]
         If n_context_points is None, it is randomly sampled.
         '''
-        inds=torch.randperm(self.dim_0)[:batch_size]
-        if n_context_points is None:
-            n_context_points=torch.randint(low=self.Min_n_cont,high=self.Max_n_cont,size=[1])
+        inds=torch.randperm(self.n_obs)[:batch_size]
         return(self.get_batch(inds,n_context_points,cont_in_target=cont_in_target))
 

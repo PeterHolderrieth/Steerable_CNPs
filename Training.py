@@ -196,13 +196,20 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         #Return the model and the loss memory:
         return(CNP,train_loss_tracker,complete_filename)
 
-def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1):
+def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1,n_data_passes=1):
         with torch.no_grad():
-            n_iterat=n_samples//batch_size
+            n_obs=val_dataset.n_obs
+            n_samples_max=min(n_samples,n_obs)
+            n_iterat=max(n_samples_max//batch_size,1)
             log_ll=torch.tensor(0.0, device=device)
-            for i in range(n_iterat):
+
+            for j in range(n_data_passes):
+                ind_list=torch.randperm(n_obs)[:n_samples_max]
+                batch_ind_list=[ind_list[j*batch_size:(j+1)*batch_size] for j in range(n_iterat)]
+
+                for it in range(n_iterat):
                     #Get random minibatch:
-                    x_context,y_context,x_target,y_target=val_dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
+                    x_context,y_context,x_target,y_target=val_dataset.get_batch(inds=batch_ind_list[it],cont_in_target=False)
                     
                     #Load data to device:
                     x_context=x_context.to(device)
@@ -214,5 +221,5 @@ def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1):
                     Means,Sigmas=CNP(x_context,y_context,x_target) 
                     _, log_ll_it=CNP.loss(y_target,Means,Sigmas,shape_reg=None)
                     log_ll+=log_ll_it/n_iterat
-        return(log_ll.item())
-
+                    
+        return(log_ll.item()/n_data_passes)
