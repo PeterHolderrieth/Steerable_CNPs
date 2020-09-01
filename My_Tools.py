@@ -297,7 +297,7 @@ def Get_Block_Diagonal(X,size=1):
     Output: torch.tensor - shape (n/size,size*size) - block diagonals of X
     '''
     m=X.size(0)//size
-    Sigma=torch.empty((m,size,size))
+    Sigma=torch.empty((m,size,size)).to(X.device)
     for i in range(m):
         Sigma[i]=X[(i*size):(i+1)*size,(i*size):(i+1)*size]
     return Sigma

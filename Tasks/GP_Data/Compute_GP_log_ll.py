@@ -55,9 +55,9 @@ def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=
         return(log_ll.item()/n_data_passes)
 
 DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='train',file_path='GP_div_free_circle/')
-N_SAMPLES=100
-BATCH_SIZE=10
-N_DATA_PASSES=1
+N_SAMPLES=10000
+BATCH_SIZE=30
+N_DATA_PASSES=10
 GP_PARAMETERS={'l_scale':5.,
 'sigma_var': 10., 
 'kernel_type':"div_free",
@@ -67,3 +67,5 @@ log_ll=Compute_GP_log_ll(GP_PARAMETERS,DATASET,DEVICE,N_SAMPLES,BATCH_SIZE,N_DAT
 
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
+print("Number of samples per data pass:", N_SAMPLES)
+print("Number of data passes: ", N_DATA_PASSES)
