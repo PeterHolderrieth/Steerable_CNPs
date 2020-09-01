@@ -4,6 +4,6 @@ eval=10000
 val=200
 n_equiv_val=400
 python Experiment_GP.py -batch 15 -lr 5e-4 -epochs $epochs -it $it -track True -G CNN -A big -n_eval $eval -n_val $val -n_equiv_val $n_equiv_val -l 4. -test_G D4 -file Saved_Models/Equiv_error_CNN
-python Experiment_GP.py -batch 15 -lr 5e-4 -epochs $epochs -it $it -track True -G D4 -A regular_big -n_eval $eval -n_val $val -n_equiv_val $n_equiv_val -l 4. -test_G D4 -file Saved_Models/Equiv_error
+python Experiment_GP.py -batch 15 -lr 5e-4 -epochs $epochs -it $it -track True -G D4 -A regular_big -n_eval $eval -n_val $val -n_equiv_val $n_equiv_val -l 4. -test_G D4 -file Saved_Models/Equiv_error_D4
 
 
