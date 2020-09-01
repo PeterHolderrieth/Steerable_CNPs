@@ -141,6 +141,9 @@ else:
 if ARGS['TESTING_GROUP']=='D4':
     G_act=gspaces.FlipRot2dOnR2(N=4)
     feature_in=G_CNN.FieldType(G_act,[G_act.irrep(1,1)])
+elif ARGS['TESTING_GROUP']=='C16':
+    G_act=gspaces.Rot2dOnR2(N=16)
+    feature_in=G_CNN.FieldType(G_act,[G_act.irrep(1)])
 else:
     G_act=None
     feature_in=None
