@@ -57,7 +57,7 @@ def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=
 DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='train',file_path='GP_div_free_circle/')
 N_SAMPLES=10000
 BATCH_SIZE=30
-N_DATA_PASSES=10
+N_DATA_PASSES=1
 GP_PARAMETERS={'l_scale':5.,
 'sigma_var': 10., 
 'kernel_type':"div_free",
