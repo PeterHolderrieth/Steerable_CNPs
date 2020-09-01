@@ -18,7 +18,7 @@ import datetime
 import sys
 
 #!!!!!!!!THIS FUNCTION ASSUMES THAT THE INPUT AND OUTPUT FEATURES TYPES ARE THE SAME!!:
-def equiv_error_model(CNP,dataset,G_act,feature_in,n_samples=10,batch_size=1):
+def equiv_error_model(CNP,dataset,G_act,feature_in,device,n_samples=10,batch_size=1):
         '''
         Input:  CNP - a CNP-like which takes context sets and target sets
                 dataset - a dataset giving random batches of context and target sets
@@ -47,6 +47,11 @@ def equiv_error_model(CNP,dataset,G_act,feature_in,n_samples=10,batch_size=1):
         for i in range(n_batches):
             #Get random mini batch:
             x_context,y_context,x_target,y_target=dataset.get_rand_batch(batch_size=batch_size,cont_in_target=False)
+            x_context=x_context.to(device)
+            y_context=y_context.to(device)
+            x_target=x_target.to(device)
+            y_target=y_target.to(device)
+            
             #Get means and variances:
             Means,Sigmas=CNP.forward(x_context,y_context,x_target)
             #Get squared norm per batch element as a normalizer:
@@ -56,7 +61,7 @@ def equiv_error_model(CNP,dataset,G_act,feature_in,n_samples=10,batch_size=1):
             #Go over all group (testing) elements:
             for g in G_act.testing_elements:
                 #Get input representation of g and transform context:
-                M=torch.tensor(feature_in.representation(g),dtype=torch.get_default_dtype())
+                M=torch.tensor(feature_in.representation(g),dtype=torch.get_default_dtype(),device=device)
                 trans_x_context=torch.matmul(x_context,M.t())
                 trans_y_context=torch.matmul(y_context,M.t())
                 trans_x_target=torch.matmul(x_target,M.t())

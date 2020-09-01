@@ -140,7 +140,7 @@ else:
 #If equivariance is wanted, create the group and the fieldtype for the equivariance:
 if ARGS['TESTING_GROUP']=='D4':
     G_act=gspaces.FlipRot2dOnR2(N=4)
-    feature_in=G_CNN.FieldType(G_act,[G_act.irrep([1,1])])
+    feature_in=G_CNN.FieldType(G_act,[G_act.irrep(1,1)])
 else:
     G_act=None
     feature_in=None

@@ -89,7 +89,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         train_log_ll_tracker=[]
         #2.Track validation loss:
         val_log_ll_tracker=[]
-        if G_act is not None and feature_in is not None and n_eval_samples is not None:
+        if G_act is not None and feature_in is not None and n_equiv_samples is not None:
           equiv_loss_mean_tr=[]
           equiv_loss_mean_norm_tr=[]
           equiv_loss_cov_tr=[]
@@ -157,8 +157,8 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
                 print("Epoch: %d | train loss: %.5f | train log ll:  %.5f "%(epoch,loss_epoch.avg,log_ll_epoch.avg))
 
             if G_act is not None and feature_in is not None and n_equiv_samples is not None:
-              train_equiv_loss_it=equiv_error(CNP,train_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=minibatch_size)
-              val_equiv_loss_it=equiv_error(CNP,val_dataset,G_act,feature_in,n_samples=n_equiv_samples,batch_size=minibatch_size)
+              train_equiv_loss_it=equiv_error(CNP,train_dataset,G_act,feature_in,device=device,n_samples=n_equiv_samples,batch_size=minibatch_size)
+              val_equiv_loss_it=equiv_error(CNP,val_dataset,G_act,feature_in,device=device,n_samples=n_equiv_samples,batch_size=minibatch_size)
               equiv_loss_mean_tr.append(train_equiv_loss_it['loss_mean'])
               equiv_loss_mean_norm_tr.append(train_equiv_loss_it['loss_mean_normalized'])
               equiv_loss_cov_tr.append(train_equiv_loss_it['loss_sigma'])
