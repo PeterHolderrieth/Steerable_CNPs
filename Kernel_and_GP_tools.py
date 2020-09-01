@@ -126,7 +126,7 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
         #Get matrix of outer product --> shape (n,m,d,d)
         Outer_Prod_Mat=torch.matmul(Diff.unsqueeze(3),Diff.unsqueeze(2))
         #Get n*m copies of identity matrices in Rd--> shape (n,m,d,d)
-        Ids=torch.eye(d)
+        Ids=torch.eye(d).to(X.device)
         Ids=Ids.view(1,1,d,d)
         Ids=Ids.expand(n,m,d,d)
         #First matrix component for divergence-free kernel-->shape (n,m,d,d)
