@@ -171,8 +171,8 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         #If a filename is given: save the model and add the date and time to the filename:
         if filename is not None:
             if G_act is not None and feature_in is not None and n_equiv_samples is not None:
-              equiv_loss_train={'loss_mean': equiv_loss_train, 'loss_mean_norm': equiv_loss_mean_norm_tr,'loss_sigma': equiv_loss_cov_tr,'loss_sigma_norm': equiv_loss_cov_norm_tr}
-              equiv_loss_val={'loss_mean': equiv_loss_val, 'loss_mean_norm': equiv_loss_mean_norm_val,'loss_sigma': equiv_loss_cov_val,'loss_sigma_norm': equiv_loss_cov_norm_val}
+              equiv_loss_train={'loss_mean': equiv_loss_mean_tr, 'loss_mean_norm': equiv_loss_mean_norm_tr,'loss_sigma': equiv_loss_cov_tr,'loss_sigma_norm': equiv_loss_cov_norm_tr}
+              equiv_loss_val={'loss_mean': equiv_loss_mean_val, 'loss_mean_norm': equiv_loss_mean_norm_val,'loss_sigma': equiv_loss_cov_val,'loss_sigma_norm': equiv_loss_cov_norm_val}
             else:
               equiv_loss_train=None
               equiv_loss_val=None
