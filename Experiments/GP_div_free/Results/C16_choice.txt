@@ -1,5 +1,5 @@
 Running on the GPU
-
+Batch size 15:
 Time:  2020-09-01 12:13:04.413893
 Group: C16
 Model type: regular_big
@@ -73,4 +73,6 @@ Epoch: 27 | train loss: 0.44192 | train log ll:  -0.44192 | val log ll: -0.60201
 Epoch: 28 | train loss: 0.44897 | train log ll:  -0.44897 | val log ll: -0.57096
 Epoch: 29 | train loss: 0.40407 | train log ll:  -0.40407 | val log ll: -0.48353
 Final log ll: -0.4845524728298187
+
+With batch size 5 instead of 15:
 
