@@ -3,13 +3,15 @@ be updated over the time of the experiments:
 
 
 1. Current state of the art model:
+Current GP baseline: -0.46218
 A. 
 python Experiment_GP.py -lr 5e-4 -batch 15 -epochs 30 -it 500 -track True -G C16 -A regular_big -n_eval 10000 -n_val 200 -l 3. 
 Log-LL: -0.46572503447532654
 B.
 python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_big -n_eval 10000 -n_val 200 -l 3. -batch 5 -cov 4 -file Saved_Models/D4_choice_second_modified
 Final log ll: -0.46711185574531555
-
+C.
+python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 200 -l 3. -batch 5 -cov 4 -file Saved_Models/D4_choice_first                                                                   Final log ll: -0.46142980456352234 
 
 2. Current state of the art model: python Experiment_GP.py -lr 1e-4 -epochs $epochs -it $it -track True -G D4 -A regular_middle -n_eval 10000 -n_val 400 -l 4. -batch $batch
 
