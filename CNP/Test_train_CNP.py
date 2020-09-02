@@ -22,16 +22,23 @@ else:
     DEVICE = torch.device("cpu")
     print("Running on the CPU")
 
+N_EPOCHS=int(sys.argv[1])
+N_ITERAT_PER_EPOCH=int(sys.argv[2])
+LEARNING_RATE=float(sys.argv[3])
+
 MIN_N_CONT=2
 MAX_N_CONT=50
 BATCH_SIZE=64
 FILEPATH="../Tasks/GP_Data/GP_div_free_circle/"
 train_dataset=DataLoader.give_GP_div_free_data_set(MIN_N_CONT,MAX_N_CONT,'train',file_path=FILEPATH)    
+
 dim_X=2 
 dim_Y=2
 dim_R=128 
 hidden_layers_encoder=[128,128,128] 
 hidden_layers_decoder=[128,128]
+
 CNP=CNP_Model.ConditionalNeuralProcess(dim_X,dim_Y,dim_Y,dim_R,hidden_layers_encoder,hidden_layers_decoder)
-print(My_Tools.count_parameters(CNP,print_table=True))
-Training.train_CNP(CNP,train_dataset,train_dataset,data_identifier="GP_circle",device=DEVICE,n_epochs=60,n_iterat_per_epoch=10000)
+#print(My_Tools.count_parameters(CNP,print_table=True))
+
+Training.train_CNP(CNP,train_dataset,train_dataset,data_identifier="GP_circle",device=DEVICE,n_epochs=N_EPOCHS,n_iterat_per_epoch=N_ITERAT_PER_EPOCH)
