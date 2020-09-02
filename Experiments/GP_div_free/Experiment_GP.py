@@ -38,6 +38,7 @@ from Cov_Converter import cov_converter
 import Decoder_Models as models
 import Architectures
 import EquivCNP
+import CNP.CNP_Model as CNP_Model
 import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
 
 #HYPERPARAMETERS and set seed:
@@ -122,20 +123,29 @@ print('Model type:', ARGS['ARCHITECTURE'])
 encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=ARGS['LENGTH_SCALE_IN'])
 
 #Define the correct encoder:
-if ARGS['GROUP']=='C16':
-    decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
-elif ARGS['GROUP']=='D4':
-    decoder=models.get_D4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[[1,1]])
-elif ARGS['GROUP']=='D8':
-    decoder=models.get_D8_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[[1,1]])
-elif ARGS['GROUP']=='SO2':
-    decoder=models.get_SO2_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
-elif ARGS['GROUP']=='C4':
-    decoder=models.get_C4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
-elif ARGS['GROUP']=='CNN':
-    decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=2) 
+if ARGS['GROUP']=='CNP':
+    dim_X=2 
+    dim_Y=2
+    dim_R=128 
+    hidden_layers_encoder=[128,128,128] 
+    hidden_layers_decoder=[128,128]
+    CNP=CNP_Model.ConditionalNeuralProcess(dim_X,dim_Y,dim_Y,dim_R,hidden_layers_encoder,hidden_layers_decoder)
 else:
-    sys.exit("Unknown architecture type.")
+    if ARGS['GROUP']=='C16':
+        decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+    elif ARGS['GROUP']=='D4':
+        decoder=models.get_D4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[[1,1]])
+    elif ARGS['GROUP']=='D8':
+        decoder=models.get_D8_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[[1,1]])
+    elif ARGS['GROUP']=='SO2':
+        decoder=models.get_SO2_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+    elif ARGS['GROUP']=='C4':
+        decoder=models.get_C4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+    elif ARGS['GROUP']=='CNN':
+        decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=2) 
+    else:
+        sys.exit("Unknown architecture type.")
+    CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
 #If equivariance is wanted, create the group and the fieldtype for the equivariance:
 if ARGS['TESTING_GROUP']=='D4':
@@ -148,12 +158,11 @@ else:
     G_act=None
     feature_in=None
 
-equivcnp=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
-print("Number of parameters: ", My_Tools.count_parameters(equivcnp,print_table=False))
+print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
 
 
-CNP,_,_=Training.train_CNP(equivcnp,
+CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,
                            data_identifier=DATA_IDENTIFIER,
