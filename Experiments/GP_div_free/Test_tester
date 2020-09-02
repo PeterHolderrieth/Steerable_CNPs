@@ -1,0 +1,11 @@
+passes=5
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
+python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes

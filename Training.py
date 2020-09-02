@@ -213,7 +213,7 @@ def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1,n_data_passes=1):
 
                     #The target set includes the context set here:
                     Means,Sigmas=CNP(x_context,y_context,x_target) 
-                    _, log_ll_it=CNP.loss(y_target,Means,Sigmas,shape_reg=None)
+                    _, log_ll_it=CNP.loss(y_target,Means,Sigmas)
                     log_ll+=log_ll_it/n_iterat
                     
         return(log_ll.item()/n_data_passes)

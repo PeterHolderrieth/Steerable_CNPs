@@ -1,0 +1,6 @@
+Running on the GPU
+
+Time:  2020-09-02 14:25:33.145263
+Group: CNP
+Model type: None
+Number of parameters:  83972
