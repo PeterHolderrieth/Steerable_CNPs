@@ -8,7 +8,7 @@ from numpy import loadtxt
 from numpy import savetxt
 
 #Import own files:
-import Enc_Dec_Models as models
+import CNP.Enc_Dec_Models as models
 sys.path.append('../')
 import My_Tools
 import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
