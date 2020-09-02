@@ -1,0 +1,7 @@
+epochs=30
+it=50000
+eval=10000
+n_equiv_val=2000
+python Experiment_GP.py -batch 15 -lr 5e-4 -epochs $epochs -it $it -track True -G CNP -A None -n_eval $eval -n_val $val -n_equiv_val $n_equiv_val -l 3. -test_G C16 -file Saved_Models/Equiv_error_CNP_2
+
+
