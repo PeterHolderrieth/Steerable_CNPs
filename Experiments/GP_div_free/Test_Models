@@ -2,4 +2,5 @@ passes=50
 python Tester.py -file Saved_Models/D4_choice_first_2020_09_01_15_40 -p $passes
 python Tester.py -file Saved_Models/D4_choice_second_modified_2020_09_02_07_14 -p $passes
 python Tester.py -file Saved_Models/C16_choice_modified_first_2020_09_02_05_21 -p $passes
+python Tester.py -file Saved_Models/D8_choice_first_2020_09_02_18_07 -p $passes
 
