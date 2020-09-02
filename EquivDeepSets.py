@@ -77,7 +77,7 @@ class EquivDeepSets(nn.Module):
         '''
         self.grid=nn.Parameter(My_Tools.Give_2d_Grid(min_x=self.x_range[0],max_x=self.x_range[1],
                                min_y=self.y_range[1],max_y=self.y_range[0],
-                               n_x_axis=self.n_x_axis,n_y_axis=self.n_y_axis,flatten=True),requires_grad=False)
+                               n_x_axis=self.n_x_axis,n_y_axis=self.n_y_axis,flatten=True),requires_grad=True)
             
         #-------------------------SET PARAMETERS FINISHED-----------------
         

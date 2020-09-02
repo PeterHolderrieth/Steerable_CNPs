@@ -27,7 +27,7 @@ ap.set_defaults(
 #Arguments for architecture:
 ap.add_argument("-file", "--FILE", required=True, type=str)
 ap.add_argument("-batch", "--BATCH", required=False,type=int)
-ap.add_argument("-it", "--N_ITERAT_PER_EPOCH", required=False,type=int)
+ap.add_argument("-p", "--N_DATA_PASSES", required=False,type=int)
 ap.add_argument("-type", "--TYPE", required=False,type=str)
 
 #Pass arguments:
@@ -40,13 +40,16 @@ if ARGS['TYPE']=="EquivCNP":
 else:
     CNP=CNP_Model.ConditionalNeuralProcess.create_model_from_dict(train_dict['CNP_dict'])
 
+CNP=CNP.to(DEVICE)
+
+
 MIN_N_CONT=2
 MAX_N_CONT=50
 FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"
 test_dataset=DataLoader.give_GP_div_free_data_set(MIN_N_CONT,MAX_N_CONT,'test',file_path=FILEPATH)
 
 log_ll=Training.test_CNP(CNP,test_dataset,DEVICE,n_samples=test_dataset.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
-print("Filename: ")
+print("Filename: ", ARGS['FILE'])
 print("Time: ", datetime.datetime.today())
 print("Test log-likelihood: ", log_ll)
 print("Number of samples: ", ARGS['N_DATA_PASSES'])
