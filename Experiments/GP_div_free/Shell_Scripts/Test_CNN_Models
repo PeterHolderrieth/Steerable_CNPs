@@ -1,0 +1,6 @@
+passes=50
+python Tester.py -file Saved_Models/CNN_choice_first_2020_09_01_20_23 -p $passes
+python Tester.py -file Saved_Models/CNN_choice_second_2020_09_01_22_47 -p $passes
+python Tester.py -file Saved_Models/CNN_choice_modified_first_2020_09_02_03_12 -p $passes
+python Tester.py -file Saved_Models/CNN_choice_modified_second_2020_09_02_06_23 -p $passes
+

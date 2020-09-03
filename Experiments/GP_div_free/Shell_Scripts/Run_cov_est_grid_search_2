@@ -1,0 +1,10 @@
+for cov_est in 1 2 3 4
+do
+	echo $cov_est
+	python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 400 -l 4. -cov $cov_est -file Saved_Models/2nd_run_model_cov_est_${cov_est} -batch 5
+done
+for cov_est in 1 2 3 4
+do
+        echo $cov_est
+        python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_huge -n_eval 10000 -n_val 400 -l 4. -cov $cov_est -batch 5
+done

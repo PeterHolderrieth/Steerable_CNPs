@@ -1,0 +1,6 @@
+for l_scale in 2. 3. 4. 5. 8. 10. 
+do
+	echo $l_scale
+	python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -batch 5 -track True -G D4 -A regular_middle -n_eval 10000 -n_val 200 -l $l_scale 
+done
+

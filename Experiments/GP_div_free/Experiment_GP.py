@@ -80,6 +80,8 @@ ap.set_defaults(
     LENGTH_SCALE_IN=7.,
     TESTING_GROUP=None,
     N_EQUIV_SAMPLES=None,
+    N_DATA_PASSES=1,
+    SEED=1997,
     FILENAME=None)
 
 #Arguments for architecture:
@@ -94,15 +96,20 @@ ap.add_argument("-epochs", "--N_EPOCHS", type=int, required=False,help="Number o
 ap.add_argument("-it", "--N_ITERAT_PER_EPOCH", type=int, required=False,help="Number of iterations per epoch.")
 ap.add_argument("-file", "--FILENAME", type=str, required=False,help="Number of iterations per epoch.")
 ap.add_argument("-l", "--LENGTH_SCALE_IN", type=float, required=False,help="Length scale for encoder.")
-
+ap.add_argument("-seed","--SEED", type=int, required=False, help="Seed for randomness.")
 #Arguments for tracking:
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
 ap.add_argument("-n_eval", "--N_EVAL_SAMPLES", type=int, required=False,help="Number of evaluation samples after training.")
 ap.add_argument("-n_equiv_val", "--N_EQUIV_SAMPLES", type=int, required=False,help="Number of samples to evaluate equivariance error.")
 ap.add_argument("-test_G", "--TESTING_GROUP", type=str, required=False, help="Group with respect to which equivariance is tested.")
+ap.add_argument("-passes", "--N_DATA_PASSES", type=int, required=False, help="Passes through data used for evaluation.") 
 #Pass the arguments:
 ARGS = vars(ap.parse_args())
+
+#Set the seed:
+torch.set_seed(ARGS['SEED'])
+np.random.seed(ARGS['SEED'])
 
 #Fixed hyperparameters:
 X_RANGE=[-10,10]
@@ -126,9 +133,9 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 if ARGS['GROUP']=='CNP':
     dim_X=2 
     dim_Y=2
-    dim_R=128 
-    hidden_layers_encoder=[128,128,128] 
-    hidden_layers_decoder=[128,128]
+    dim_R=2*128 
+    hidden_layers_encoder=[2*128,2*128,2*128] 
+    hidden_layers_decoder=[2*128,2*128]
     CNP=CNP_Model.ConditionalNeuralProcess(dim_X,dim_Y,dim_Y,dim_R,hidden_layers_encoder,hidden_layers_decoder)
 else:
     if ARGS['GROUP']=='C16':
@@ -182,6 +189,6 @@ CNP,_,_=Training.train_CNP(CNP,
 
 
 if ARGS['N_EVAL_SAMPLES'] is not None:
-    eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_EVAL_SAMPLES'],batch_size=ARGS['BATCH_SIZE'])
+    eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_EVAL_SAMPLES'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
     print("Final log ll:", eval_log_ll)
     print()

@@ -1,0 +1,6 @@
+for model in irrep_big irrep_huge
+do
+	echo $model
+	python Experiment_GP.py -lr 1e-4 -epochs 20 -it 500 -track True -G D4 -A $model -n_eval 10000 -n_val 400 -l 5. 
+done
+
