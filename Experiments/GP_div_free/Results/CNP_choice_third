@@ -4,3 +4,25 @@ Time:  2020-09-02 14:28:27.962230
 Group: CNP
 Model type: None
 Number of parameters:  83972
+Running on the GPU
+
+Time:  2020-09-02 17:04:02.677946
+Group: CNP
+Model type: None
+Number of parameters:  83972
+Epoch: 0 | train loss: 1.17471 | train log ll:  -1.17471 | val log ll: -1.01420
+Epoch: 1 | train loss: 1.02072 | train log ll:  -1.02072 | val log ll: -1.07249
+Epoch: 2 | train loss: 0.96734 | train log ll:  -0.96734 | val log ll: -1.07049
+Epoch: 3 | train loss: 0.93485 | train log ll:  -0.93485 | val log ll: -0.85148
+Epoch: 4 | train loss: 0.91745 | train log ll:  -0.91745 | val log ll: -1.04557
+Epoch: 5 | train loss: 0.90360 | train log ll:  -0.90360 | val log ll: -0.92744
+Epoch: 6 | train loss: 0.89105 | train log ll:  -0.89105 | val log ll: -0.88962
+Epoch: 7 | train loss: 0.88220 | train log ll:  -0.88220 | val log ll: -0.91398
+Epoch: 8 | train loss: 0.87261 | train log ll:  -0.87261 | val log ll: -0.94450
+Epoch: 9 | train loss: 0.86902 | train log ll:  -0.86902 | val log ll: -0.89161
+Epoch: 10 | train loss: 0.86286 | train log ll:  -0.86286 | val log ll: -0.80627
+Epoch: 11 | train loss: 0.85895 | train log ll:  -0.85895 | val log ll: -0.95094
+Epoch: 12 | train loss: 0.85535 | train log ll:  -0.85535 | val log ll: -0.84259
+Epoch: 13 | train loss: 0.85199 | train log ll:  -0.85199 | val log ll: -0.93568
+Epoch: 14 | train loss: 0.84849 | train log ll:  -0.84849 | val log ll: -0.74670
+Epoch: 15 | train loss: 0.84798 | train log ll:  -0.84798 | val log ll: -0.86952
