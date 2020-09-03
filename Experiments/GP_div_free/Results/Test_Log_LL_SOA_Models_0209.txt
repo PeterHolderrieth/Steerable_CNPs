@@ -1,0 +1,15 @@
+Running on the GPU
+Filename:  Saved_Models/D4_choice_first_2020_09_01_15_40
+Time:  2020-09-02 21:06:27.574147
+Test log-likelihood:  -0.531888198852539
+Number of samples:  50
+Running on the GPU
+Filename:  Saved_Models/D4_choice_second_modified_2020_09_02_07_14
+Time:  2020-09-02 22:37:18.138679
+Test log-likelihood:  -0.5287728118896484
+Number of samples:  50
+Running on the GPU
+Filename:  Saved_Models/C16_choice_modified_first_2020_09_02_05_21
+Time:  2020-09-03 02:38:30.436976
+Test log-likelihood:  -0.5209439468383789
+Number of samples:  50

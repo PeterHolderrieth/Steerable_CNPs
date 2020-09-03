@@ -1,2 +1,22 @@
 Running on the GPU
 Running on the GPU
+Running on the GPU
+Filename:  Saved_Models/CNN_choice_first_2020_09_01_20_23
+Time:  2020-09-02 21:08:19.016522
+Test log-likelihood:  -0.5784034347534179
+Number of samples:  50
+Running on the GPU
+Filename:  Saved_Models/CNN_choice_second_2020_09_01_22_47
+Time:  2020-09-02 22:18:59.968172
+Test log-likelihood:  -0.6370497131347657
+Number of samples:  50
+Running on the GPU
+Filename:  Saved_Models/CNN_choice_modified_first_2020_09_02_03_12
+Time:  2020-09-02 23:31:13.785392
+Test log-likelihood:  -0.6249495315551757
+Number of samples:  50
+Running on the GPU
+Filename:  Saved_Models/CNN_choice_modified_second_2020_09_02_06_23
+Time:  2020-09-03 00:34:17.478359
+Test log-likelihood:  -0.6714546966552735
+Number of samples:  50
