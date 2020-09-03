@@ -108,7 +108,7 @@ ap.add_argument("-passes", "--N_DATA_PASSES", type=int, required=False, help="Pa
 ARGS = vars(ap.parse_args())
 
 #Set the seed:
-torch.set_seed(ARGS['SEED'])
+torch.manual_seed(ARGS['SEED'])
 np.random.seed(ARGS['SEED'])
 
 #Fixed hyperparameters:
@@ -167,7 +167,7 @@ else:
 
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
-
+torch.autograd.set_detect_anomaly(True)
 
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
