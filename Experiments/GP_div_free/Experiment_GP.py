@@ -126,9 +126,9 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 if ARGS['GROUP']=='CNP':
     dim_X=2 
     dim_Y=2
-    dim_R=128 
-    hidden_layers_encoder=[128,128,128] 
-    hidden_layers_decoder=[128,128]
+    dim_R=2*128 
+    hidden_layers_encoder=[2*128,2*128,2*128] 
+    hidden_layers_decoder=[2*128,2*128]
     CNP=CNP_Model.ConditionalNeuralProcess(dim_X,dim_Y,dim_Y,dim_R,hidden_layers_encoder,hidden_layers_decoder)
 else:
     if ARGS['GROUP']=='C16':
