@@ -54,7 +54,12 @@ def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=
                                         
         return(log_ll.item()/n_data_passes)
 
-DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='train',file_path='GP_div_free_circle/')
+dataset_type=str(sys.argv[1])
+if dataset_type=='valid':
+    DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='valid',file_path='GP_div_free_circle/')
+elif dataset_type=='test':
+    DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='test',file_path='GP_div_free_circle/')
+
 N_SAMPLES=10000
 BATCH_SIZE=30
 N_DATA_PASSES=30
