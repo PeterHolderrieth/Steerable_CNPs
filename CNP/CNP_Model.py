@@ -78,8 +78,8 @@ class ConditionalNeuralProcess(nn.Module):
         log_ll=log_ll_vec.mean()
         if shape_reg is None:
             loss=-log_ll
-        else: 
-            loss=-log_ll+shape_reg*My_Tools.shape_regularizer(Y_Target,Predict)
+        else:
+            loss=-log_ll+shape_reg*My_Tools.shape_regularizer(Y_Target,Predict).mean()
         return(loss,log_ll)
 
     def give_dict(self):

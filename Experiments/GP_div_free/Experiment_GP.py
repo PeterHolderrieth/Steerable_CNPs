@@ -98,7 +98,7 @@ ap.add_argument("-it", "--N_ITERAT_PER_EPOCH", type=int, required=False,help="Nu
 ap.add_argument("-file", "--FILENAME", type=str, required=False,help="Number of iterations per epoch.")
 ap.add_argument("-l", "--LENGTH_SCALE_IN", type=float, required=False,help="Length scale for encoder.")
 ap.add_argument("-seed","--SEED", type=int, required=False, help="Seed for randomness.")
-ap.add_argument("-shape" "--SHAPE_REG", type=float, required=False, help="Shape Regularizer")
+ap.add_argument("-shape","--SHAPE_REG", type=float, required=False, help="Shape Regularizer")
 #Arguments for tracking:
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
@@ -170,7 +170,6 @@ else:
 
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
-
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,
