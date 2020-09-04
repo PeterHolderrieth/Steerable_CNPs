@@ -124,7 +124,7 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
                 Means,Sigmas=CNP(x_context,y_context,x_target) 
                 #print("Means sample: ", Means.flatten()[:100])
                 #print("Sigmas samples: ", Sigmas.flatten()[:100])
-                loss,log_ll=CNP.loss(y_target,Means,Sigmas)
+                loss,log_ll=CNP.loss(y_target,Means,Sigmas,shape_reg=shape_reg)
 
                 #Set gradients to zero:
                 optimizer.zero_grad()
