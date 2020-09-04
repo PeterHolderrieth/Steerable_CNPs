@@ -100,7 +100,7 @@ def plot_Covs(ax,X_Target,Cov_Mat,scale=20,x1_lim=[-10,10],x2_lim=[-10,10],alpha
             ax.add_patch(E)
     return(ax)
 
-def compare_predict_vs_truth(ax,X_Context=None,X_Target=None,Predict_1=None,Predict_2=None,Cov_Mat=None,scale=20,x1_lim=[-10,10],x2_lim=[-10,10]):
+def compare_predict_vs_truth(ax,X_Context=None,X_Target=None,Predict_1=None,Predict_2=None,Cov_Mat=None,scale=20,x1_lim=[-10,10],x2_lim=[-10,10],color='orange',diff_color='black'):
     '''
     Inputs: ax - matplotlib.axes._subplots.AxesSubplot - axis to plot on
             X_Context,X_Target,  Predict_1, Predict_2 - torch.Tensor - shape (n_c,2)/ (n_t,2) context and target points, 2 predictions to compare
@@ -115,19 +115,19 @@ def compare_predict_vs_truth(ax,X_Context=None,X_Target=None,Predict_1=None,Pred
     width=ax.get_xlim()[1]-ax.get_xlim()[0]
     #Plot target set and covariance ellipses:
     if X_Target is not None and Cov_Mat is not None:
-        ax=plot_Covs(ax,X_Target,Cov_Mat,alpha=.6,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='orange',edgecolor='black')
+        ax=plot_Covs(ax,X_Target,Cov_Mat,alpha=.6,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor=color,edgecolor='black')
     #Plot the difference between the two given vector fields Predict_1, Predict_2 on the target set:
     if X_Target is not None and Predict_1 is not None and Predict_2 is not None:
         Diff=Predict_1-Predict_2
         #ax.tricontourf(X_Target[:,0],X_Target[:,1],Diff.norm(dim=1),alpha=0.8,method='cubic',cmap=cm.get_cmap(colormap))
         ax.quiver(X_Target[:,0],X_Target[:,1],Diff[:,0],Diff[:,1], 
-            color='black',pivot='tail',label='Predict',scale_units='width',scale=scale*width,width=0.005)
+            color=diff_color,pivot='tail',label='Predict',scale_units='width',scale=scale*width,width=0.005,headwidth=1.5,headlength=3)
     #Plot the locations of the context points:
     if X_Context is not None:
         ax.scatter(X_Context[:,0],X_Context[:,1],color='red',marker='x')
     return(ax)
 
-def compare_VF(ax,X_Context=None,X_Target=None,Predict_1=None,Predict_2=None,scale=20,x1_lim=[-10,10],x2_lim=[-10,10]):
+def compare_VF(ax,X_Context=None,X_Target=None,Predict_1=None,Predict_2=None,scale=20,x1_lim=[-10,10],x2_lim=[-10,10],color_1=cm.get_cmap('viridis')(0.9),color_2='magenta'):
     '''
     Inputs: ax - matplotlib.axes._subplots.AxesSubplot - axis to plot on
             X_Context,X_Target,  Predict_1, Predict_2 - torch.Tensor - shape (n_c,2)/ (n_t,2) context and target points, 2 predictions to compare
@@ -136,7 +136,7 @@ def compare_VF(ax,X_Context=None,X_Target=None,Predict_1=None,Predict_2=None,sca
     Output: plots predict_1 and predict_2 on top of each other
     '''
     #Set background color and window, get width:
-    ax.set_facecolor('black')
+    #ax.set_facecolor('black')
     ax.set_xlim(x1_lim)
     ax.set_ylim(x2_lim)
     width=ax.get_xlim()[1]-ax.get_xlim()[0]
@@ -144,11 +144,11 @@ def compare_VF(ax,X_Context=None,X_Target=None,Predict_1=None,Predict_2=None,sca
     #Plot the first vector field:
     if Predict_1 is not None:
         ax.quiver(X_Target[:,0],X_Target[:,1],Predict_1[:,0],Predict_1[:,1],
-            color=cm.get_cmap('viridis')(0.9),pivot='mid',label='Predict',scale_units='width',scale=width*scale,headlength=4, headwidth = 4,width=0.005) 
+            color=color_1,pivot='mid',label='Predict',scale_units='width',scale=width*scale,headlength=6, headwidth = 6,width=0.01) 
     #Plot the second vector field:
     if Predict_2 is not None:
         ax.quiver(X_Target[:,0],X_Target[:,1],Predict_2[:,0],Predict_2[:,1],alpha=1.,
-            color='magenta',pivot='mid',label='Predict',scale_units='width',scale=width*scale,headlength=4, headwidth = 4,width=0.005) 
+            color=color_2,pivot='mid',label='Predict',scale_units='width',scale=width*scale,headlength=6, headwidth = 6,width=0.01) 
     #Plot the context set:
     if X_Context is not None:
         ax.scatter(X_Context[:,0],X_Context[:,1],color='red',marker='x')
@@ -193,10 +193,10 @@ def diff_covs(ax,X_Context=None,X_Target=None,Cov_Mat_1=None,Cov_Mat_2=None,scal
     ax.set_ylim(x2_lim)
     #Plot the first set of covariance ellipses:
     if X_Target is not None and Cov_Mat_1 is not None:
-        ax=plot_Covs(ax,X_Target,Cov_Mat_1,alpha=1.,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='darkturquoise',edgecolor=None)
+        ax=plot_Covs(ax,X_Target,Cov_Mat_1,alpha=0.5,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='firebrick',edgecolor=None)
     #Plot the second set of covariance ellipses:
     if X_Target is not None and Cov_Mat_2 is not None:
-        ax=plot_Covs(ax,X_Target=X_Target,Cov_Mat=Cov_Mat_2,alpha=0.5,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='firebrick',edgecolor=None)#'black')
+        ax=plot_Covs(ax,X_Target=X_Target,Cov_Mat=Cov_Mat_2,alpha=1,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='darkturquoise',edgecolor=None)#'black')
     #Plot context set:
     if X_Context is not None:
         ax=ax.scatter(X_Context[:,0],X_Context[:,1],color='red',marker='x')
