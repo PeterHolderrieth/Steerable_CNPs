@@ -67,7 +67,7 @@ class ConditionalNeuralProcess(nn.Module):
         Covs=scale_vec.diag_embed()
         return mean_vec,Covs
 
-    def loss(self,Y_Target,Predict,Covs,shape_reg):
+    def loss(self,Y_Target,Predict,Covs,shape_reg=None):
         '''
             Inputs: Y_Target: torch.tensor - shape (batch_size,n,2) - Target set locations and vectors
                     Predict: torch.tensor - shape (batch_size,n,2) - Predictions of Y_Target at X_Target
