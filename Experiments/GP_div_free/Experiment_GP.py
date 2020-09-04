@@ -170,7 +170,6 @@ else:
 
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
-torch.autograd.set_detect_anomaly(True)
 
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
