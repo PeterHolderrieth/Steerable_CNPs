@@ -193,10 +193,10 @@ def diff_covs(ax,X_Context=None,X_Target=None,Cov_Mat_1=None,Cov_Mat_2=None,scal
     ax.set_ylim(x2_lim)
     #Plot the first set of covariance ellipses:
     if X_Target is not None and Cov_Mat_1 is not None:
-        ax=plot_Covs(ax,X_Target,Cov_Mat_1,alpha=0.5,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='firebrick',edgecolor=None)
+        ax=plot_Covs(ax,X_Target,Cov_Mat_1,alpha=1,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='darkturquoise',edgecolor=None)
     #Plot the second set of covariance ellipses:
     if X_Target is not None and Cov_Mat_2 is not None:
-        ax=plot_Covs(ax,X_Target=X_Target,Cov_Mat=Cov_Mat_2,alpha=1,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='darkturquoise',edgecolor=None)#'black')
+        ax=plot_Covs(ax,X_Target=X_Target,Cov_Mat=Cov_Mat_2,alpha=0.5,scale=scale,x1_lim=x1_lim,x2_lim=x2_lim,facecolor='firebrick',edgecolor=None)#'black')
     #Plot context set:
     if X_Context is not None:
         ax=ax.scatter(X_Context[:,0],X_Context[:,1],color='red',marker='x')
