@@ -80,6 +80,7 @@ ap.set_defaults(
     LENGTH_SCALE_IN=7.,
     TESTING_GROUP=None,
     N_EQUIV_SAMPLES=None,
+    SHAPE_REG=None,
     N_DATA_PASSES=1,
     SEED=1997,
     FILENAME=None)
@@ -97,6 +98,7 @@ ap.add_argument("-it", "--N_ITERAT_PER_EPOCH", type=int, required=False,help="Nu
 ap.add_argument("-file", "--FILENAME", type=str, required=False,help="Number of iterations per epoch.")
 ap.add_argument("-l", "--LENGTH_SCALE_IN", type=float, required=False,help="Length scale for encoder.")
 ap.add_argument("-seed","--SEED", type=int, required=False, help="Seed for randomness.")
+ap.add_argument("-shape","--SHAPE_REG", type=float, required=False, help="Shape Regularizer")
 #Arguments for tracking:
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
@@ -104,6 +106,7 @@ ap.add_argument("-n_eval", "--N_EVAL_SAMPLES", type=int, required=False,help="Nu
 ap.add_argument("-n_equiv_val", "--N_EQUIV_SAMPLES", type=int, required=False,help="Number of samples to evaluate equivariance error.")
 ap.add_argument("-test_G", "--TESTING_GROUP", type=str, required=False, help="Group with respect to which equivariance is tested.")
 ap.add_argument("-passes", "--N_DATA_PASSES", type=int, required=False, help="Passes through data used for evaluation.") 
+
 #Pass the arguments:
 ARGS = vars(ap.parse_args())
 
@@ -167,8 +170,6 @@ else:
 
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
-torch.autograd.set_detect_anomaly(True)
-
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,
@@ -178,6 +179,7 @@ CNP,_,_=Training.train_CNP(CNP,
                            n_epochs=ARGS['N_EPOCHS'],
                            n_iterat_per_epoch=ARGS['N_ITERAT_PER_EPOCH'],
                            learning_rate=ARGS['LEARNING_RATE'],
+                           shape_reg=ARGS['SHAPE_REG'],
                            n_val_samples=ARGS['N_VAL_SAMPLES'],
                            print_progress=ARGS['PRINT_PROGRESS'],
                            filename=ARGS['FILENAME'],
