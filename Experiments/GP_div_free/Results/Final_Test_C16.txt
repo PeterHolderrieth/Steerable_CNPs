@@ -14,3 +14,8 @@ Time:  2020-09-05 16:38:18.755281
 Test log-likelihood:  -0.529455041885376
 Number of samples:  20
 Running on the GPU
+Running on the GPU
+Filename:  Saved_Models/C16_final_2_2020_09_04_21_12
+Time:  2020-09-05 19:22:20.789943
+Test log-likelihood:  -0.5242165088653564
+Number of samples:  20
