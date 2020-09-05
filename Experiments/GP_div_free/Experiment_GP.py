@@ -39,6 +39,7 @@ import Decoder_Models as models
 import Architectures
 import EquivCNP
 import CNP.CNP_Model as CNP_Model
+import CNP.CNP_Architectures as CNP_Architectures
 import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
 
 #HYPERPARAMETERS and set seed:
@@ -134,12 +135,7 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 
 #Define the correct encoder:
 if ARGS['GROUP']=='CNP':
-    dim_X=2 
-    dim_Y=2
-    dim_R=2*128 
-    hidden_layers_encoder=[2*128,2*128,2*128] 
-    hidden_layers_decoder=[2*128,2*128]
-    CNP=CNP_Model.ConditionalNeuralProcess(dim_X,dim_Y,dim_Y,dim_R,hidden_layers_encoder,hidden_layers_decoder)
+    CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'])
 else:
     if ARGS['GROUP']=='C16':
         decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])

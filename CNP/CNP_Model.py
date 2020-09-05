@@ -11,7 +11,6 @@ from numpy import savetxt
 import CNP.Enc_Dec_Models as models
 sys.path.append('../')
 import My_Tools
-import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
 
 class ConditionalNeuralProcess(nn.Module):
     def __init__(self, dim_X, dim_Y_in,dim_Y_out, dim_R, hidden_layers_encoder, 
