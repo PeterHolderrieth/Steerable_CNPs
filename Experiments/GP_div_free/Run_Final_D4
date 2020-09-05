@@ -1,5 +1,5 @@
 for seed in 1 2 3
 do 
-python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_big -n_eval 10000 -n_val 200 -l 3. -batch 5 -cov 4 -file Saved_Models/D4_final_${seed} -seed $seed
+	python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D4 -A regular_big -n_eval 10000 -n_val 200 -l 3. -batch 5 -cov 4 -file Saved_Models/D4_final_${seed} -seed $seed
 done
 
