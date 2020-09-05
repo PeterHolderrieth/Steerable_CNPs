@@ -155,6 +155,7 @@ else:
         sys.exit("Unknown architecture type.")
     
     if ARGS['DIV_FREE']:
+        print("Used div free kernel in the output")
         CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'],
                             kernel_dict_out={'kernel_type':"div_free"},normalize_output=False)
     else:
