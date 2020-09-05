@@ -1,4 +1,4 @@
-passes=20
+passes=1
 batch=60
 for i in 1 2 3 
 do 
