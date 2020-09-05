@@ -1,0 +1,5 @@
+for seed in 1 2 3
+do 
+	python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G SO2 -A irrep_big -n_eval 10000 -n_val 200 -l 3. -cov 4 -file Saved_Models/SO2_final_${seed} -seed $seed
+done
+

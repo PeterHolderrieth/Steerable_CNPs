@@ -84,12 +84,14 @@ ap.set_defaults(
     SHAPE_REG=None,
     N_DATA_PASSES=1,
     SEED=1997,
-    FILENAME=None)
+    FILENAME=None,
+    DIV_FREE=False)
 
 #Arguments for architecture:
 ap.add_argument("-G", "--GROUP", type=str, required=True,help="Group")
 ap.add_argument("-A", "--ARCHITECTURE", type=str, required=True,help="Decoder architecture.")
 ap.add_argument("-cov", "--DIM_COV_EST", type=int, required=False,help="Dimension of covariance estimation.")
+ap.add_argument("-div", "--DIV_FREE", type=bool, required=False,help="Indicates whether to use divergence-free kernel at the output.")
 
 #Arguments for training:
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
@@ -151,7 +153,13 @@ else:
         decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=2) 
     else:
         sys.exit("Unknown architecture type.")
-    CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
+    
+    if ARGS['DIV_FREE']:
+        print("Used div free kernel in the output")
+        CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'],
+                            kernel_dict_out={'kernel_type':"div_free"},normalize_output=False)
+    else:
+        CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
 #If equivariance is wanted, create the group and the fieldtype for the equivariance:
 if ARGS['TESTING_GROUP']=='D4':
