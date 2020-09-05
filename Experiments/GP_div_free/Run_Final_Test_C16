@@ -1,0 +1,5 @@
+passes=2
+batch=7
+python Tester.py -batch $batch -p $passes -file Saved_Models/C16_final_1_2020_09_04_16_09
+python Tester.py -batch $batch -p $passes -file Saved_Models/C16_final_2_2020_09_04_21_12
+python Tester.py -batch $batch -p $passes -file Saved_Models/C16_final_3_2020_09_05_01_47
