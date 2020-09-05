@@ -120,14 +120,16 @@ def get_SO2_Decoder(name,dim_cov_est,context_rep_ids):
         non_linearity=['NormReLU']
 
     elif name=="irrep_huge":
-            hidden_reps_ids=16*[80*[1]]
+        hidden_reps_ids=16*[80*[1]]
         kernel_sizes=[5,5,5,5,7,7,7,7,11,11,11,11,13,15,17,19,21]
         non_linearity=['NormReLU'] 
 
     elif name=="irrep_big_gated":
-        hidden_reps_ids=10*[64*[0]+32*[1]]
+        hidden_reps_ids=10*[32*[0]+32*[1]]
+        print(hidden_reps_ids)
         kernel_sizes=[5,5,5,7,7,11,11,13,15,17,19]
         non_linearity=['Gated']
+
     else:
         sys.exit("Unkown architecture name.")
 
