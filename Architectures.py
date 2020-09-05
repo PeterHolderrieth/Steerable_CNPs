@@ -219,7 +219,6 @@ class EquivDecoder(nn.Module):
         self.feature_out=feat_types[-1]
         #Create layers list and append it:
         layers_list=[G_CNN.R2Conv(feat_types[0],feat_types[1],kernel_size=kernel_sizes[0],padding=(kernel_sizes[0]-1)//2)]
-
         for it in range(self.n_layers-2):
             if self.non_linearity[it]=="ReLU":
                 layers_list.append(G_CNN.ReLU(feat_types[it+1],inplace=True))
