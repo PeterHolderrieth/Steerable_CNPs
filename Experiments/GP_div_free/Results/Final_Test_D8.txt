@@ -14,3 +14,8 @@ Filename:  Saved_Models/D8_final_2_2020_09_05_00_36
 Time:  2020-09-05 20:28:17.916524
 Test log-likelihood:  -0.5146083354949951
 Number of samples:  20
+Running on the GPU
+Filename:  Saved_Models/D8_final_3_2020_09_05_07_14
+Time:  2020-09-05 23:11:54.224100
+Test log-likelihood:  -0.5192484855651855
+Number of samples:  20
