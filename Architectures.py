@@ -225,6 +225,8 @@ class EquivDecoder(nn.Module):
                 layers_list.append(G_CNN.ReLU(feat_types[it+1],inplace=True))
             elif self.non_linearity[it]=="NormReLU":
                 layers_list.append(G_CNN.NormNonLinearity(feat_types[it+1]))
+            elif self.non_linearity[it]=='Gated':
+                layers_list.append(G_CNN.GatedNonLinearity1(feat_types[it+1]))
             else:
                 sys.exit("Unknown non-linearity.")
             layers_list.append(G_CNN.R2Conv(feat_types[it+1],feat_types[it+2],kernel_size=kernel_sizes[it],padding=(kernel_sizes[it]-1)//2))
