@@ -12,30 +12,34 @@ import sys
 from datetime import datetime
 from datetime import timedelta
 
+sys.path.append("../../")
+
+import My_Tools
+
 #Set default as double:
 torch.set_default_dtype(torch.float)
 
+'''
+TO DO:
+- Write a fixed "interpreter" class -> switching tensors between normalized 
+scale and non-normalized scale
+Normalize to [-10,10] grid, interpreter then takes either "China or US" as type
+- Split the datasets in training, validation and test set!
+'''
+
 class ERA5Dataset(utils.IterableDataset):
-    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,n_total=None,var_names=None, normalize=False):
+    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,
+                    circular=True, normalize=False):
         '''
         path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
                                    having index "datetime","Longitude","Latitude" and the data variables
-                                   ['height_in_m','sp_in_kPa','t_in_Cels','wind_10m_east','wind_10m_north',
-                                    'wind_100m_east', 'wind_100m_north']
+                                   ['sp_in_kPa','t_in_Cels','wind_10m_east','wind_10m_north']
         Min_n_cont,Max_n_cont,n_total - int - minimum and maximum number of context points and the number of total points per sample
         var_names - list of strings - gives names of variables which are supposed to be in the dataset, if None then all variables are used
         '''
         #Load the data as an xarray:
         self.Y_data=xarray.open_dataset(path_to_nc_file).to_array()
-        #If only certain variable names are wanted, extract them:
-        if var_names is not None:
-            #Save list of current variables:
-            self.variables=list(self.Y_data.coords['variable'].values)
-            #Get index of new variables in old variable array:
-            ind=self.give_index_for_var(var_names)
-            #Extract:
-            self.Y_data=self.Y_data[ind]
-        
+
         #Save variables list:
         self.variables=list(self.Y_data.coords['variable'].values)
         #Save the number of variables:
@@ -45,10 +49,6 @@ class ERA5Dataset(utils.IterableDataset):
             self.ind_wind_10=self.give_index_for_var(['wind_10m_east','wind_10m_north'])
         except ValueError:
             self.ind_wind_10=None
-        try:
-            self.ind_wind_100=self.give_index_for_var(['wind_100m_east','wind_100m_north'])
-        except ValueError:
-            self.ind_wind_100=None
 
         #Transpose the data and get the number of observations:
         self.Y_data=self.Y_data.transpose("datetime","Longitude","Latitude","variable")
@@ -56,6 +56,7 @@ class ERA5Dataset(utils.IterableDataset):
 
         self.Longitude=torch.tensor(self.Y_data.coords['Longitude'].values,dtype=torch.get_default_dtype())
         self.Latitude=torch.tensor(self.Y_data.coords['Latitude'].values,dtype=torch.get_default_dtype())
+
         if self.Latitude.size(0)!=self.Longitude.size(0):
             sys.exit("The number of grid values are not the same for Longitude and Latitude.")
         else:
@@ -66,32 +67,29 @@ class ERA5Dataset(utils.IterableDataset):
 
         self.variables=list(self.Y_data.coords['variable'].values)
 
-        self.n_total=self.n_points_per_obs if n_total is None else n_total
         self.Min_n_cont=Min_n_cont
         self.Max_n_cont=Max_n_cont
         self.normalize=normalize
+        self.circular=circular
+        if self.circular:
+            self.circular_indices=My_Tools.get_inner_circle_indices(self.n_per_axis)
 
-        #Compute the mean and the standard deviation for X
-        #self.X_std=self.X_tensor.std(dim=0,unbiased=False)
+        #Compute the mean for X:
         self.X_mean=self.X_tensor.mean(dim=0)
 
         #Compute the mean for the various components (not correct for wind components):
         self.Y_mean=torch.tensor(self.Y_data.mean(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
+
         #Compute the standard deviation for the data (not correct for wind components!):
         self.Y_std=torch.tensor(self.Y_data.std(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
-        #Correct normalizing for the wind components:
-        if self.ind_wind_10 is not None:
-            self.Y_mean[self.ind_wind_10]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
-            mean_norm_10m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_10m_east','wind_10m_north']].values,axis=3).mean()
-            self.Y_std[self.ind_wind_10]=torch.tensor(mean_norm_10m,dtype=torch.get_default_dtype())
         
-        if self.ind_wind_100 is not None:
-            self.Y_mean[self.ind_wind_100]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
-            mean_norm_100m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_100m_east','wind_100m_north']].values,axis=3).mean()
-            self.Y_std[self.ind_wind_100]=torch.tensor(mean_norm_100m,dtype=torch.get_default_dtype())
+        #Correct normalizing for the wind components:
+        self.Y_mean[self.ind_wind_10]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
+        mean_norm_10m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_10m_east','wind_10m_north']].values,axis=3).mean()
+        self.Y_std[self.ind_wind_10]=torch.tensor(mean_norm_10m,dtype=torch.get_default_dtype())
 
         if not isinstance(self.Min_n_cont,int) or not isinstance(self.Max_n_cont,int) or self.Min_n_cont>self.Max_n_cont\
-            or self.Min_n_cont<2 or self.Max_n_cont>self.n_total or self.n_total>self.n_points_per_obs:
+            or self.Min_n_cont<2:
             print("Error: Combination of minimum and maximum number of context points and number of total points not compatible.")
 
         if self.n_obs!=len(self.Y_data.coords['datetime'].values):
@@ -187,9 +185,11 @@ class ERA5Dataset(utils.IterableDataset):
         Y=Y[shuffle_ind]
         if transform:
             X,Y=self.rand_transform(X,Y)
+        if self.circular:
+            X=X[self.circular_indices]
         return(X,Y)
     #Function which returns random batches for training:
-    def get_rand_batch(self,batch_size,transform=False,n_context_points=None,cont_in_target=False):
+    def get_rand_batch(self,batch_size,transform=False,n_context_points=None):
         '''
         Input: transform - Boolean - indicates whether a random transformation is performed
         Output: X_c,Y_c - torch.Tensor - shape (batch_size,n_context_points,2/self.n_variables)

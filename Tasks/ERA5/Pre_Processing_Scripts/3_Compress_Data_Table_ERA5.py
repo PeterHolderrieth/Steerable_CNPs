@@ -76,24 +76,17 @@ if any_inequal:
 #---------------------------------------------
 
 #----------FORMAT VARIABLES-----------------------
-#Divide z by geopotential:
-g=9.80665
-data.z=data.z/g
-data.rename(columns={'z': "height_in_m" },inplace=True)
-
 #Get temperature in Celsius:
 data[["2t"]]=data[["2t"]]-273.15
 data.rename(columns={'2t': "t_in_Cels" },inplace=True)
 
-#Get pressure in hPa:
+#Get pressure in kPa:
 data.sp=data.sp/1000
 data.rename(columns={'sp': "sp_in_kPa" },inplace=True)
 
 #Rename the wind components:
 data.rename(columns={'10u': 'wind_10m_north', 
-                    '10v':'wind_10m_east',
-                    '100u':'wind_100m_north',
-                    '100v': 'wind_100m_east'},inplace=True)
+                    '10v':'wind_10m_east'},inplace=True)
 #------------------------------------------------------------
 
 
