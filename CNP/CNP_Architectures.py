@@ -18,22 +18,22 @@ def give_CNP_architecture(name,dim_X=2,dim_Y=2):
         hidden_layers_encoder=[128,128,128] 
         hidden_layers_decoder=[128,128]
     
-    elif name=='double'
+    elif name=='double':
         dim_R=2*128 
         hidden_layers_encoder=[2*128,2*128,2*128] 
         hidden_layers_decoder=[2*128,2*128]
     
-    elif name=='small'
+    elif name=='small':
         dim_R=128 
         hidden_layers_encoder=[128,128] 
         hidden_layers_decoder=[128,128]
 
-    elif name=='big'
+    elif name=='big':
         dim_R=2*128 
         hidden_layers_encoder=[2*128,2*128,2*128,2*128] 
         hidden_layers_decoder=[2*128,2*128]
     
-    elif name=='thin'
+    elif name=='thin':
         dim_R=2*128 
         hidden_layers_encoder=[4*128,4*128]
         hidden_layers_decoder=[4*128,4*128]
