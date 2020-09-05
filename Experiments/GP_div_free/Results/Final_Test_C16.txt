@@ -8,3 +8,8 @@ Filename:  Saved_Models/C16_final_1_2020_09_04_16_09
 Time:  2020-09-05 15:00:12.605516
 Test log-likelihood:  -0.5265660285949707
 Number of samples:  20
+Running on the GPU
+Filename:  Saved_Models/C16_final_1_2020_09_04_16_09
+Time:  2020-09-05 16:38:18.755281
+Test log-likelihood:  -0.529455041885376
+Number of samples:  20
