@@ -68,3 +68,13 @@ Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
 Time:  2020-09-05 15:28:12.986083
 Test log-likelihood:  -0.5587189793586731
 Number of samples:  1
+Running on the GPU
+Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
+Time:  2020-09-05 18:11:43.930686
+Test log-likelihood:  -0.579081392288208
+Number of samples:  20
+Running on the GPU
+Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
+Time:  2020-09-05 18:39:53.658951
+Test log-likelihood:  -0.5776134014129639
+Number of samples:  20
