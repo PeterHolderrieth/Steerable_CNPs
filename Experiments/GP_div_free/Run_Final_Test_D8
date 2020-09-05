@@ -1,0 +1,13 @@
+passes=20
+batch=60
+for i in 1 2 3 
+do 
+	python Tester.py -batch $batch -p $passes -file Saved_Models/D8_final_1_2020_09_04_17_41
+done
+for i in 1 2 3 
+do 
+	python Tester.py -batch $batch -p $passes -file Saved_Models/D8_final_2_2020_09_05_00_36
+done
+for i in 1 2 3 
+	python Tester.py -batch $batch -p $passes -file Saved_Models/D8_final_3_2020_09_05_07_14
+done
