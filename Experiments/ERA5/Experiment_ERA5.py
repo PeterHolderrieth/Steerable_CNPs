@@ -161,7 +161,7 @@ else:
     feature_in=None
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
-'''
+
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,
@@ -186,4 +186,4 @@ if ARGS['N_EVAL_SAMPLES'] is not None:
     eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_EVAL_SAMPLES'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
     print("Final log ll:", eval_log_ll)
     print()
-'''
+
