@@ -1,7 +1,7 @@
 #Bash command file to process GRIB file data:
 
 
-MIN=2017
+MIN=2014
 MAX=2018
 FILEnoYEAR="_ERA5_US"
 
