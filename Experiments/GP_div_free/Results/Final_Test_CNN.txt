@@ -29,46 +29,6 @@ Time:  2020-09-05 14:40:25.890445
 Test log-likelihood:  -0.579375171661377
 Number of samples:  20
 Running on the GPU
-Filename:  Saved_Models/CNN_final_1_2020_09_04_14_03
-Time:  2020-09-05 15:15:42.705292
-Test log-likelihood:  -0.5683804154396057
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_1_2020_09_04_14_03
-Time:  2020-09-05 15:17:08.646532
-Test log-likelihood:  -0.6126851439476013
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_1_2020_09_04_14_03
-Time:  2020-09-05 15:18:34.301742
-Test log-likelihood:  -0.5964378714561462
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_2_2020_09_04_16_47
-Time:  2020-09-05 15:20:01.392451
-Test log-likelihood:  -0.5956376791000366
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_2_2020_09_04_16_47
-Time:  2020-09-05 15:21:27.559315
-Test log-likelihood:  -0.5782588124275208
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
-Time:  2020-09-05 15:25:20.725995
-Test log-likelihood:  -0.5968419313430786
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
-Time:  2020-09-05 15:26:47.163781
-Test log-likelihood:  -0.5824036002159119
-Number of samples:  1
-Running on the GPU
-Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
-Time:  2020-09-05 15:28:12.986083
-Test log-likelihood:  -0.5587189793586731
-Number of samples:  1
-Running on the GPU
 Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
 Time:  2020-09-05 18:11:43.930686
 Test log-likelihood:  -0.579081392288208
@@ -83,3 +43,6 @@ Filename:  Saved_Models/CNN_final_3_2020_09_04_19_11
 Time:  2020-09-05 19:07:58.491626
 Test log-likelihood:  -0.5795608043670655
 Number of samples:  20
+
+Compute mean:
+(-0.5968198299407959-0.5871198654174805-0.5881349563598632-0.588662576675415-0.5756449699401855-0.579375171661377-0.579081392288208-0.5776134014129639-0.5795608043670655)/9=-0.583557

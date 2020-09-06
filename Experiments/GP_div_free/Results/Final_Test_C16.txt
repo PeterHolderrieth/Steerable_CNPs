@@ -1,15 +1,5 @@
 Running on the GPU
 Filename:  Saved_Models/C16_final_1_2020_09_04_16_09
-Time:  2020-09-05 13:20:09.636971
-Test log-likelihood:  -0.5190008163452149
-Number of samples:  20
-Running on the GPU
-Filename:  Saved_Models/C16_final_1_2020_09_04_16_09
-Time:  2020-09-05 15:00:12.605516
-Test log-likelihood:  -0.5265660285949707
-Number of samples:  20
-Running on the GPU
-Filename:  Saved_Models/C16_final_1_2020_09_04_16_09
 Time:  2020-09-05 16:38:18.755281
 Test log-likelihood:  -0.529455041885376
 Number of samples:  20
@@ -24,3 +14,4 @@ Filename:  Saved_Models/C16_final_3_2020_09_05_01_47
 Time:  2020-09-05 21:01:10.395408
 Test log-likelihood:  -0.5317139625549316
 Number of samples:  20
+(-0.529455041885376-0.5242165088653564-0.5317139625549316)/3=-0.5284618
