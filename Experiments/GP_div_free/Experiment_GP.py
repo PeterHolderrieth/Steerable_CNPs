@@ -102,6 +102,7 @@ ap.add_argument("-file", "--FILENAME", type=str, required=False,help="Number of 
 ap.add_argument("-l", "--LENGTH_SCALE_IN", type=float, required=False,help="Length scale for encoder.")
 ap.add_argument("-seed","--SEED", type=int, required=False, help="Seed for randomness.")
 ap.add_argument("-shape","--SHAPE_REG", type=float, required=False, help="Shape Regularizer")
+ap.add_argument("-continue","--CONTINUE",type=str,required=False,help="File to continue training")
 #Arguments for tracking:
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
@@ -137,7 +138,13 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 
 #Define the correct encoder:
 if ARGS['GROUP']=='CNP':
-    CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'])
+    if ARGS['CONTINUE'] is not None:
+        train_dict=torch.load(ARGS['CONTINUE'])
+        CNP_dict=train_dict['CNP_dict']
+        CNP=CNP_Model.ConditionalNeuralProcess.create_model_from_dict(CNP_dict)
+        print("Reloaded CNP model from training dict.")
+    else:
+        CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'])
 else:
     if ARGS['GROUP']=='C16':
         decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
