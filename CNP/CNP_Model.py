@@ -8,13 +8,13 @@ from numpy import loadtxt
 from numpy import savetxt
 
 #Import own files:
-import CNP.Enc_Dec_Models as models
 sys.path.append('../')
+import CNP.Enc_Dec_Models as models
 import My_Tools
 
 class ConditionalNeuralProcess(nn.Module):
     def __init__(self, dim_X, dim_Y_in,dim_Y_out, dim_R, hidden_layers_encoder, 
-               hidden_layers_decoder):
+               hidden_layers_decoder,state_dict=None):
         super(ConditionalNeuralProcess, self).__init__()
         '''
         Inputs:
@@ -42,7 +42,9 @@ class ConditionalNeuralProcess(nn.Module):
 
         #Intialize the decoder:
         self.decoder=models.CNPDecoder(dim_X=dim_X, dim_Y=dim_Y_out, dim_R=dim_R, hidden_layers=hidden_layers_decoder)
-
+        
+        if state_dict is not None:
+            self.load_state_dict(state_dict)
 
     def forward(self,x_context,y_context,x_target):
         '''
@@ -89,9 +91,8 @@ class ConditionalNeuralProcess(nn.Module):
              'dim_R': self.dim_R,
              'hidden_layers_encoder': self.encoder.hidden_layers,
              'hidden_layers_decoder': self.decoder.hidden_layers, 
+             'state_dict':self.state_dict()
         }
         return(dictionary)
     def create_model_from_dict(dictionary):
         return(ConditionalNeuralProcess(**dictionary))
-
-
