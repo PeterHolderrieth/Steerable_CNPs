@@ -14,7 +14,6 @@ data=pd.read_csv(filename_old,delimiter=",")
 
 #Permute columns such that shortname is at last:
 cols=data.columns.to_list()
-print(cols)
 cols_perm=cols[:2]+cols[3:]+[cols[2]]
 data=data[cols_perm]
 
