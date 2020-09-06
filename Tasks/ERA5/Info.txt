@@ -67,3 +67,11 @@ Difference between unformatted and unprocessed:
 #The number of deleted rows is for 1983: 25431840-25416721=15119 (difference to 1980: 168) 15119/168=81
 
 It seems to be consist! --> Format_CSV_ERA5.py seems to be correct (at least consistent throughout files.)
+
+
+There are two types of files:
+1. Small - test,valid,train - train consists of years 2014,2015,2016
+			      valid consists of years 2017
+			      test consists of years 2018
+2. Big - test,valid,train - train consists of years ...
+

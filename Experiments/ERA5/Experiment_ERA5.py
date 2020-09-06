@@ -40,7 +40,7 @@ import Architectures
 import EquivCNP
 import CNP.CNP_Model as CNP_Model
 import CNP.CNP_Architectures as CNP_Architectures
-DATASET?
+import Tasks.ERA5.ERA5_Dataset as Dataset
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
@@ -60,7 +60,7 @@ else:
 ap = argparse.ArgumentParser()
 ap.set_defaults(
     BATCH_SIZE=30,
-    iN_EPOCHS=3,
+    N_EPOCHS=3,
     PRINT_PROGRESS=True,
     N_ITERAT_PER_EPOCH=1,
     LEARNING_RATE=1e-4, 
@@ -77,7 +77,10 @@ ap.set_defaults(
     FILENAME=None)
 
 #Arguments for architecture:
-ap.add_argument("-M", "--MODEL", type=str, required=True,help="MODEL")
+ap.add_argument("-G", "--GROUP", type=str, required=True,help="Group")
+ap.add_argument("-A", "--ARCHITECTURE", type=str, required=True,help="Decoder architecture.")
+ap.add_argument("-cov", "--DIM_COV_EST", type=int, required=False,help="Dimension of covariance estimation.")
+ap.add_argument("-div", "--DIV_FREE", type=bool, required=False,help="Indicates whether to use divergence-free kernel at the output.")
 
 #Arguments for training:
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
@@ -106,15 +109,17 @@ if ARGS['SEED'] is not None:
     np.random.seed(ARGS['SEED'])
 
 #Fixed hyperparameters:
-X_RANGE=
-N_X_AXIS=
-MIN_N_CONT=
-MAX_N_CONT=
-FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"
+X_RANGE=[-10,10]
+N_X_AXIS=30
+MIN_N_CONT=2
+MAX_N_CONT=50
 DATA_IDENTIFIER="ERA5_DATA"
 
-train_dataset=DataLoader.give_GP_div_free_data_set(MIN_N_CONT,MAX_N_CONT,'train',file_path=FILEPATH)                 
-val_dataset=DataLoader.give_GP_div_free_data_set(MIN_N_CONT,MAX_N_CONT,'valid',file_path=FILEPATH)
+PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Small_ERA5.nc"
+PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Small_ERA5.nc"
+
+train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+val_dataset=Dataset.ERA5Dataset(PATH_TO_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
 
 print()
 print("Time: ", datetime.datetime.today())
@@ -125,25 +130,26 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 
 #Define the correct encoder:
 if ARGS['GROUP']=='CNP':
-    CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'])
+    CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'],dim_Y_in=2,dim_Y_out=4)
 else:
     if ARGS['GROUP']=='C16':
-        decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+        decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
     elif ARGS['GROUP']=='D4':
-        decoder=models.get_D4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[[1,1]])
+        decoder=models.get_D4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,[1,1]])
     elif ARGS['GROUP']=='D8':
-        decoder=models.get_D8_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[[1,1]])
+        decoder=models.get_D8_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,[1,1]])
     elif ARGS['GROUP']=='SO2':
-        decoder=models.get_SO2_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+        decoder=models.get_SO2_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
     elif ARGS['GROUP']=='C4':
-        decoder=models.get_C4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+        decoder=models.get_C4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
     elif ARGS['GROUP']=='CNN':
-        decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=2) 
+        decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=4) 
     else:
         sys.exit("Unknown architecture type.")
-    CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=2,l_scale=ARGS['LENGTH_SCALE_OUT'])
+    CNP=EquivCNP.EquivCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=4,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
 #If equivariance is wanted, create the group and the fieldtype for the equivariance:
+
 if ARGS['TESTING_GROUP']=='D4':
     G_act=gspaces.FlipRot2dOnR2(N=4)
     feature_in=G_CNN.FieldType(G_act,[G_act.irrep(1,1)])
@@ -154,8 +160,8 @@ else:
     G_act=None
     feature_in=None
 
-
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
+'''
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,
@@ -180,3 +186,4 @@ if ARGS['N_EVAL_SAMPLES'] is not None:
     eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_EVAL_SAMPLES'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
     print("Final log ll:", eval_log_ll)
     print()
+'''

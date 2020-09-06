@@ -49,7 +49,7 @@ else:
 '''
 DATA
 '''
-PATH_TO_FILE="ERA5_US/Data/17_18_ERA5_US.nc"
+PATH_TO_FILE="ERA5_US/Data/Test_Small_ERA5.nc"
 MIN_N_CONT=2
 MAX_N_CONT=50
 N_TOTAL=None
@@ -57,4 +57,3 @@ BATCH_SIZE=60
 VAR_NAMES=['sp_in_kPa','t_in_Cels','wind_10m_east', 'wind_10m_north']
 
 ERA5_DATA=Dataset.ERA5Dataset(PATH_TO_FILE,MIN_N_CONT,MAX_N_CONT)
-#torch.set_printoptions(threshold=1e6)

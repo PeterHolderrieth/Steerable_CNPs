@@ -16,7 +16,7 @@ for i in range(2014,2018,5):
     YEARS_VALID.append(i+3)
     YEARS_TEST.append(i+4)
 
-def merge_df(YEARS_LIST,filename):
+def merge_df(YEARS_LIST,filename_merged_complete):
     df_list=[]
     for year in YEARS_LIST:
         #Get filename:
@@ -48,7 +48,7 @@ def merge_df(YEARS_LIST,filename):
 
     #Save the file:
     print("Convert to netCDF:")
-    X.to_netcdf(location+filename_merged+".nc")
+    X.to_netcdf(location+filename_merged_complete+".nc")
 
 merge_df(YEARS_TRAIN,"Train_"+filename_merged)
 merge_df(YEARS_VALID,"Valid_"+filename_merged)
