@@ -1,0 +1,5 @@
+Running on the GPU
+Filename:  Saved_Models/SO2_final_1_2020_09_06_09_00
+Time:  2020-09-06 18:39:34.396893
+Test log-likelihood:  -0.6259209156036377
+Number of samples:  20
