@@ -144,12 +144,12 @@ class ERA5Dataset(utils.Dataset):
         return(X,Y)
 
     #This is the basis function returning maps to plotting and purposes which do not include training the pytorch model:
-    def get_rand_map(self,transform=False):
+    def get_map(self,ind,transform=False):
         '''
-        Input: transform - Boolean - indicates whether a random transformation is performed
+        Input:  ind - int - index to get
+                transform - Boolean - indicates whether a random transformation is performed
         Output: X,Y - torch.Tensor - shape (n,2),(n,self.n_variables)
         '''
-        ind=torch.randint(low=0,high=self.n_obs,size=[1]).item()
         Y=torch.tensor(self.Y_data[ind].values,dtype=torch.get_default_dtype())
         Y=Y.view(-1,self.n_variables)
         if self.circular:
@@ -162,16 +162,22 @@ class ERA5Dataset(utils.Dataset):
             X,Y=self.rand_transform(X,Y)
         return(X,Y)
 
+    def get_rand_map(self,transform=False):
+        ind=torch.randint(low=0,high=self.n_obs,size=[1]).item()
+        return(self.get_map(ind,transform=transform))
+
+    
     #Function which returns random batches for training:
-    def get_rand_batch(self,batch_size,transform=False,n_context_points=None,cont_in_target=False):
+    def get_batch(self,inds,batch_size,transform=False,n_context_points=None,cont_in_target=False):
         '''
-        Input: transform - Boolean - indicates whether a random transformation is performed
+        Input: `inds - torch.Tensor of ints - indices to choose batch from
+                transform - Boolean - indicates whether a random transformation is performed
         Output: X_c,Y_c - torch.Tensor - shape (batch_size,n_context_points,2/self.n_variables)
                 X_t,Y_t - torch.Tensor - shape (batch_size,n_target_points,2/self.n_variables) if cont_in_target is False
                                                (batch_size,n_target_points+n_context_points,2/self.n_variables) if cont_in_target is True
 
         '''
-        X_list,Y_list=zip(*[self.get_rand_map(transform=transform) for i in range(batch_size)])
+        X_list,Y_list=zip(*[self.get_map(ind=ind,transform=transform) for ind in inds])
         X=torch.stack(X_list,dim=0)
         Y=torch.stack(Y_list,dim=0)
         if self.normalize:
@@ -182,7 +188,15 @@ class ERA5Dataset(utils.Dataset):
             return(X[:,:n_context_points],Y[:,:n_context_points],X,Y[:,:,[2,3]])
         else:
             return(X[:,:n_context_points],Y[:,:n_context_points],X[:,n_context_points:],Y[:,n_context_points:,[2,3]])
-
+    
+    def get_rand_batch(self,batch_size,transform=False,n_context_points=None,cont_in_target=False):
+        '''
+        Returns self.get_batch with random number of indices with length=batch_size and random number of context points
+        in range [self.Min_n_cont,high=self.Max_n_cont]
+        If n_context_points is None, it is randomly sampled.
+        '''
+        inds=torch.randperm(self.n_obs)[:batch_size]
+        return(self.get_batch(inds=inds,batch_size=batch_size,transform=transform,n_context_points=n_context_points,cont_in_target=cont_in_target))
 
 '''
 We write a class which get an input X,Y and translates it normalized values
