@@ -91,7 +91,7 @@ def get_inner_circle_indices(n,flat=False):
     y_axis=torch.linspace(start=0,end=n-1,steps=n)
     X1,X2=torch.meshgrid(x_axis,y_axis)
     Ind=torch.stack((X1,X2),2)
-    Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)<=(n-1)/2].long()
+    Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)<(n-1)/2].long()
     if flat:
         Ind=n*Ind[:,0]+Ind[:,1]
     return(Ind)

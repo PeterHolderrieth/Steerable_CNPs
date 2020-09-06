@@ -50,17 +50,11 @@ else:
 DATA
 '''
 PATH_TO_FILE="ERA5_US/Data/17_18_ERA5_US.nc"
-MIN_N_CONT=50
-MAX_N_CONT=100
+MIN_N_CONT=2
+MAX_N_CONT=50
 N_TOTAL=None
-BATCH_SIZE=10
+BATCH_SIZE=60
 VAR_NAMES=['sp_in_kPa','t_in_Cels','wind_10m_east', 'wind_10m_north']
 
 ERA5_DATA=Dataset.ERA5Dataset(PATH_TO_FILE,MIN_N_CONT,MAX_N_CONT)
-torch.set_printoptions(threshold=1e6)
-X_Circle=ERA5_DATA.X_tensor[ERA5_DATA.circular_indices]
-Means=X_Circle.mean(dim=0)
-print(X_Circle)
-
-plt.plot(X_Circle[:,0],X_Circle[:,1])
-plt.savefig("Control.pdf")
+#torch.set_printoptions(threshold=1e6)

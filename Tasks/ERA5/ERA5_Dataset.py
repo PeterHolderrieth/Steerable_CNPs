@@ -21,14 +21,11 @@ torch.set_default_dtype(torch.float)
 
 '''
 TO DO:
-- Write a fixed "interpreter" class -> switching tensors between normalized 
-scale and non-normalized scale
-Normalize to [-10,10] grid, interpreter then takes either "China or US" as type
 - Split the datasets in training, validation and test set!
 '''
 
 class ERA5Dataset(utils.Dataset):
-    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,circular=True, normalize=False,place='US'):
+    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,circular=True, normalize=True,place='US'):
         '''
         path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
                                    having index "datetime","Longitude","Latitude" and the data variables
@@ -64,13 +61,17 @@ class ERA5Dataset(utils.Dataset):
 
         self.variables=list(self.Y_data.coords['variable'].values)
 
+        self.translater=ERA5_translater(place=place)
+
         self.Min_n_cont=Min_n_cont
         self.Max_n_cont=Max_n_cont
         self.normalize=normalize
         self.circular=circular
+
         if self.circular:
-            print("circular computation")
             self.circular_indices=My_Tools.get_inner_circle_indices(self.n_per_axis,flat=True)
+        
+        
         #Control inputs:    
         if not isinstance(self.Min_n_cont,int) or not isinstance(self.Max_n_cont,int) or self.Min_n_cont>self.Max_n_cont\
             or self.Min_n_cont<2:
@@ -110,33 +111,6 @@ class ERA5Dataset(utils.Dataset):
         print("Grid points per map: ", self.n_points_per_obs)
         print("________________________")
         print()
-    def norm_X(self,X):
-        '''
-        X - torch.Tensor - shape (*,2)
-        --> returns torch.Tensor with same shape translated and scaled with mean and std for self.X_Tensor
-        '''
-        return(X.sub(self.X_mean[None,:]).div(self.X_std[None,:]))
-
-    def denorm_X(self,X):
-        '''
-        X - torch.Tensor - shape (*,2)
-        --> Inverse of self.norm_X
-        '''
-        return(X.mul(self.X_std[None,:]).add(self.X_mean[None,:]))
-    
-    def norm_Y(self,Y):
-        '''
-        Y - torch.Tensor - shape (*,2)
-        --> returns torch.Tensor with same shape translated and scaled with mean and std for self.Y_data
-        '''
-        return(Y.sub(self.Y_mean[None,:]).div(self.Y_std[None,:]))
-
-    def denorm_Y(self,Y):
-        '''
-        Y - torch.Tensor - shape (*,2)
-        --> Inverse of self.norm_Y
-        '''
-        return(Y.mul(self.Y_std[None,:]).add(self.Y_mean[None,:]))
 
     def give_index_for_var(self,var_names):
         '''
@@ -155,8 +129,8 @@ class ERA5Dataset(utils.Dataset):
 
     def rand_transform(self,X,Y):
         '''
-        Input: X,Y - torch.Tensor - shape (n,2), (n,7)
-        Output: X,Y - torch.Tensor - shape (n,2), (n,7) - randomly rotated X and rotated Y 
+        Input: X,Y - torch.Tensor - shape (n,2), (n,4)
+        Output: X,Y - torch.Tensor - shape (n,2), (n,4) - randomly rotated X and rotated Y 
         (only the wind components of Y are transformed, the scalar values )
         '''
         #Sample a random rotation matrix:
@@ -166,10 +140,7 @@ class ERA5Dataset(utils.Dataset):
         X=torch.matmul(X-self.X_mean[None,:],R.t())+self.X_mean[None,:]
 
         #Rotate wind components:
-        if self.ind_wind_10 is not None:
-            Y[:,self.ind_wind_10]=torch.matmul(Y[:,self.ind_wind_10],R.t())
-        if self.ind_wind_100 is not None:
-            Y[:,self.ind_wind_100]=torch.matmul(Y[:,self.ind_wind_100],R.t())
+        Y[:,self.ind_wind_10]=torch.matmul(Y[:,self.ind_wind_10],R.t())
         return(X,Y)
 
     #This is the basis function returning maps to plotting and purposes which do not include training the pytorch model:
@@ -181,16 +152,18 @@ class ERA5Dataset(utils.Dataset):
         ind=torch.randint(low=0,high=self.n_obs,size=[1]).item()
         Y=torch.tensor(self.Y_data[ind].values,dtype=torch.get_default_dtype())
         Y=Y.view(-1,self.n_variables)
-        shuffle_ind=torch.randperm(n=self.n_points_per_obs)
-        X=self.X_tensor[shuffle_ind]
+        if self.circular:
+            X=self.X_tensor[self.circular_indices]
+            Y=Y[self.circular_indices]
+        shuffle_ind=torch.randperm(n=X.size(0))
+        X=X[shuffle_ind]
         Y=Y[shuffle_ind]
         if transform:
             X,Y=self.rand_transform(X,Y)
-        if self.circular:
-            X=X[self.circular_indices]
         return(X,Y)
+
     #Function which returns random batches for training:
-    def get_rand_batch(self,batch_size,transform=False,n_context_points=None):
+    def get_rand_batch(self,batch_size,transform=False,n_context_points=None,cont_in_target=False):
         '''
         Input: transform - Boolean - indicates whether a random transformation is performed
         Output: X_c,Y_c - torch.Tensor - shape (batch_size,n_context_points,2/self.n_variables)
@@ -202,13 +175,13 @@ class ERA5Dataset(utils.Dataset):
         X=torch.stack(X_list,dim=0)
         Y=torch.stack(Y_list,dim=0)
         if self.normalize:
-            Y=self.norm_Y(Y)
+            X,Y=self.translater.translate_to_normalized_scale(X,Y)
         if n_context_points is None:
             n_context_points=np.random.randint(low=self.Min_n_cont,high=self.Max_n_cont)    
         if cont_in_target:
-            return(X[:,:n_context_points],Y[:,:n_context_points],X,Y)
+            return(X[:,:n_context_points],Y[:,:n_context_points],X,Y[:,:,[2,3]])
         else:
-            return(X[:,:n_context_points],Y[:,:n_context_points],X[:,n_context_points:],Y[:,n_context_points:])
+            return(X[:,:n_context_points],Y[:,:n_context_points],X[:,n_context_points:],Y[:,n_context_points:,[2,3]])
 
 
 '''
@@ -229,5 +202,49 @@ class ERA5_translater(object):
         else:
             sys.exit("Unknown place.")
         
-        self.Y_mean=torch.tensor([1,1,0.,0.],dtype=torch.get_default_dtype())
-        self.Y_std=torch.tensor([1,1,1,1],dtype=torch.get_default_dtype())
+        self.Y_mean=torch.tensor([100.1209,   7.4628,   0.0000,   0.0000],dtype=torch.get_default_dtype())
+        self.Y_std=torch.tensor([1.4738, 8.5286, 3.4162, 3.4162],dtype=torch.get_default_dtype())
+    
+    def norm_X(self,X):
+        '''
+        X - torch.Tensor - shape (*,2)
+        --> returns torch.Tensor with same shape translated and scaled with mean and std for self.X_Tensor
+        '''
+        return(2*X.sub(self.X_mean[None,:]))
+
+    def denorm_X(self,X):
+        '''
+        X - torch.Tensor - shape (*,2)
+        --> Inverse of self.norm_X
+        '''
+        return(X.div(2).add(self.X_mean[None,:]))
+    
+    def norm_Y(self,Y):
+        '''
+        Y - torch.Tensor - shape (*,4)
+        --> returns torch.Tensor with same shape translated and scaled with mean and std for self.Y_data
+        '''
+        return(Y.sub(self.Y_mean[None,:]).div(self.Y_std[None,:]))
+
+    def denorm_Y(self,Y):
+        '''
+        Y - torch.Tensor - shape (*,4)
+        --> Inverse of self.norm_Y
+        '''
+        return(Y.mul(self.Y_std[None,:]).add(self.Y_mean[None,:]))
+    
+    def translate_to_normalized_scale(self,X,Y):
+        '''
+        X - torch.Tensor - shape (*,2)
+        Y - torch.Tensor - shape (*,4)
+        --> returns torch.Tensor with same shape translated and scaled with mean and std
+        '''
+        return(self.norm_X(X),self.norm_Y(Y))
+    
+    def translate_to_original_scale(self,X,Y):
+        '''
+        X - torch.Tensor - shape (*,2)
+        Y - torch.Tensor - shape (*,4)
+        --> returns torch.Tensor with same shape translated and scaled with mean and std
+        '''
+        return(self.denorm_X(X),self.denorm_Y(Y))
