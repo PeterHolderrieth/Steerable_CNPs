@@ -72,6 +72,7 @@ ap.set_defaults(
     TESTING_GROUP=None,
     N_EQUIV_SAMPLES=None,
     SHAPE_REG=None,
+    N_X_AXIS=20,
     N_DATA_PASSES=1,
     SEED=None,
     FILENAME=None)
@@ -81,6 +82,7 @@ ap.add_argument("-G", "--GROUP", type=str, required=True,help="Group")
 ap.add_argument("-A", "--ARCHITECTURE", type=str, required=True,help="Decoder architecture.")
 ap.add_argument("-cov", "--DIM_COV_EST", type=int, required=False,help="Dimension of covariance estimation.")
 ap.add_argument("-div", "--DIV_FREE", type=bool, required=False,help="Indicates whether to use divergence-free kernel at the output.")
+ap.add_argument("-axis","--N_X_AXIS", type=int, required=False,help="Number of grid points per axis")
 
 #Arguments for training:
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
@@ -110,7 +112,7 @@ if ARGS['SEED'] is not None:
 
 #Fixed hyperparameters:
 X_RANGE=[-10,10]
-N_X_AXIS=20
+N_X_AXIS=ARGS['N_X_AXIS']
 MIN_N_CONT=2
 MAX_N_CONT=50
 DATA_IDENTIFIER="ERA5_DATA"
@@ -123,6 +125,7 @@ val_dataset=Dataset.ERA5Dataset(PATH_TO_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US
 
 print()
 print("Time: ", datetime.datetime.today())
+print("Number of grid points per axis: ", N_X_AXIS)
 print("Group:", ARGS['GROUP'])
 print('Model type:', ARGS['ARCHITECTURE'])
 #Define the encoder:

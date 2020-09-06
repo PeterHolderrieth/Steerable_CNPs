@@ -168,7 +168,7 @@ class ERA5Dataset(utils.Dataset):
 
     
     #Function which returns random batches for training:
-    def get_batch(self,inds,batch_size,transform=False,n_context_points=None,cont_in_target=False):
+    def get_batch(self,inds,transform=False,n_context_points=None,cont_in_target=False):
         '''
         Input: `inds - torch.Tensor of ints - indices to choose batch from
                 transform - Boolean - indicates whether a random transformation is performed
@@ -196,7 +196,7 @@ class ERA5Dataset(utils.Dataset):
         If n_context_points is None, it is randomly sampled.
         '''
         inds=torch.randperm(self.n_obs)[:batch_size]
-        return(self.get_batch(inds=inds,batch_size=batch_size,transform=transform,n_context_points=n_context_points,cont_in_target=cont_in_target))
+        return(self.get_batch(inds=inds,transform=transform,n_context_points=n_context_points,cont_in_target=cont_in_target))
 
 '''
 We write a class which get an input X,Y and translates it normalized values
