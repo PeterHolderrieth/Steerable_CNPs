@@ -82,7 +82,7 @@ def get_outer_circle_indices(n):
     Ind=torch.stack((X1,X2),2)
     Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)>(n-1)/2].long()
     return(Ind)
-def get_inner_circle_indices(n):
+def get_inner_circle_indices(n,flat=False):
     '''
     Input: n - int - size of square
     Ouput: Ind - torch.tensor
@@ -92,6 +92,8 @@ def get_inner_circle_indices(n):
     X1,X2=torch.meshgrid(x_axis,y_axis)
     Ind=torch.stack((X1,X2),2)
     Ind=Ind[torch.norm(Ind-(n-1)/2,dim=2)<=(n-1)/2].long()
+    if flat:
+        Ind=n*Ind[:,0]+Ind[:,1]
     return(Ind)
 
 def bool_inner_circle_indices(n):

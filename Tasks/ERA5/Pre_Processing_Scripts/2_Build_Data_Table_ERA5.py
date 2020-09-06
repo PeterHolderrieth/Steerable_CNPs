@@ -40,7 +40,7 @@ for i in range(1,len(SHORTNAMES)):
 #Control that merged data has the correct number of rows-----
 n_rows_merged_data=len(merged_data.index)
 n_rows_data=len(data.index)
-n_control=int(n_rows_data/len(SHORTNAMES))
+n_control=int(n_rows_data/7)
 
 if n_control!=n_rows_merged_data:
     print(n_control)

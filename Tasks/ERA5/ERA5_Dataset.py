@@ -27,9 +27,8 @@ Normalize to [-10,10] grid, interpreter then takes either "China or US" as type
 - Split the datasets in training, validation and test set!
 '''
 
-class ERA5Dataset(utils.IterableDataset):
-    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,
-                    circular=True, normalize=False):
+class ERA5Dataset(utils.Dataset):
+    def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,circular=True, normalize=False,place='US'):
         '''
         path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
                                    having index "datetime","Longitude","Latitude" and the data variables
@@ -37,6 +36,7 @@ class ERA5Dataset(utils.IterableDataset):
         Min_n_cont,Max_n_cont,n_total - int - minimum and maximum number of context points and the number of total points per sample
         var_names - list of strings - gives names of variables which are supposed to be in the dataset, if None then all variables are used
         '''
+        super(ERA5Dataset, self).__init__()
         #Load the data as an xarray:
         self.Y_data=xarray.open_dataset(path_to_nc_file).to_array()
 
@@ -45,10 +45,7 @@ class ERA5Dataset(utils.IterableDataset):
         #Save the number of variables:
         self.n_variables=len(self.variables)
         #Save the indices for the wind variables if they are in the list of variables:
-        try:
-            self.ind_wind_10=self.give_index_for_var(['wind_10m_east','wind_10m_north'])
-        except ValueError:
-            self.ind_wind_10=None
+        self.ind_wind_10=self.give_index_for_var(['wind_10m_east','wind_10m_north'])
 
         #Transpose the data and get the number of observations:
         self.Y_data=self.Y_data.transpose("datetime","Longitude","Latitude","variable")
@@ -63,7 +60,7 @@ class ERA5Dataset(utils.IterableDataset):
             self.n_per_axis=self.Longitude.size(0)
             self.n_points_per_obs=self.n_per_axis**2
         
-        self.X_tensor=torch.stack([self.Longitude.repeat_interleave(self.n_per_axis),self.Latitude.repeat(self.n_per_axis)],dim=1)
+        self.X_tensor=torch.stack([self.Longitude.repeat_interleave(self.n_per_axis),self.Latitude.repeat(self.n_per_axis)],dim=1)#.view(self.n_per_axis,self.n_per_axis,2)
 
         self.variables=list(self.Y_data.coords['variable'].values)
 
@@ -72,22 +69,9 @@ class ERA5Dataset(utils.IterableDataset):
         self.normalize=normalize
         self.circular=circular
         if self.circular:
-            self.circular_indices=My_Tools.get_inner_circle_indices(self.n_per_axis)
-
-        #Compute the mean for X:
-        self.X_mean=self.X_tensor.mean(dim=0)
-
-        #Compute the mean for the various components (not correct for wind components):
-        self.Y_mean=torch.tensor(self.Y_data.mean(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
-
-        #Compute the standard deviation for the data (not correct for wind components!):
-        self.Y_std=torch.tensor(self.Y_data.std(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
-        
-        #Correct normalizing for the wind components:
-        self.Y_mean[self.ind_wind_10]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
-        mean_norm_10m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_10m_east','wind_10m_north']].values,axis=3).mean()
-        self.Y_std[self.ind_wind_10]=torch.tensor(mean_norm_10m,dtype=torch.get_default_dtype())
-
+            print("circular computation")
+            self.circular_indices=My_Tools.get_inner_circle_indices(self.n_per_axis,flat=True)
+        #Control inputs:    
         if not isinstance(self.Min_n_cont,int) or not isinstance(self.Max_n_cont,int) or self.Min_n_cont>self.Max_n_cont\
             or self.Min_n_cont<2:
             print("Error: Combination of minimum and maximum number of context points and number of total points not compatible.")
@@ -96,6 +80,23 @@ class ERA5Dataset(utils.IterableDataset):
             sys.exit("Error: Coordinates of datetime do not match.")
         
         self.print_report()
+
+    def compute_normalization(self):
+        #Compute the mean for X:
+        X_mean=self.X_tensor.mean(dim=0)
+
+        #Compute the mean for the various components (not correct for wind components):
+        Y_mean=torch.tensor(self.Y_data.mean(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
+
+        #Compute the standard deviation for the data (not correct for wind components!):
+        Y_std=torch.tensor(self.Y_data.std(dim=['datetime','Longitude','Latitude']).values,dtype=torch.get_default_dtype())
+        
+        #Correct normalizing for the wind components:
+        Y_mean[self.ind_wind_10]=torch.tensor([0.,0.],dtype=torch.get_default_dtype())
+        mean_norm_10m=np.linalg.norm(self.Y_data.loc[:,:,:,['wind_10m_east','wind_10m_north']].values,axis=3).mean()
+        Y_std[self.ind_wind_10]=torch.tensor(mean_norm_10m,dtype=torch.get_default_dtype())
+
+        return(X_mean,Y_mean,Y_std)
 
     def print_report(self):
         print()
@@ -208,3 +209,25 @@ class ERA5Dataset(utils.IterableDataset):
             return(X[:,:n_context_points],Y[:,:n_context_points],X,Y)
         else:
             return(X[:,:n_context_points],Y[:,:n_context_points],X[:,n_context_points:],Y[:,n_context_points:])
+
+
+'''
+We write a class which get an input X,Y and translates it normalized values
+By normalized, we mean here:
+    - the mean of X is 0 and the radius 10, there are two types to convert X, first
+    from the US grid to [-10,10] or from the China grid to [-10,10]
+    - the values of Y are also transformed (scalar values are centered and rescaled while vectors 
+    are only rescaled)
+'''
+class ERA5_translater(object):
+    def __init__(self, place='US'):
+        self.place=place
+        if self.place=='US':
+            self.X_mean=torch.tensor([-91.,35.],dtype=torch.get_default_dtype())
+        elif self.place=='China':
+            self.X_mean=torch.tensor([110.,30.],dtype=torch.get_default_dtype())
+        else:
+            sys.exit("Unknown place.")
+        
+        self.Y_mean=torch.tensor([1,1,0.,0.],dtype=torch.get_default_dtype())
+        self.Y_std=torch.tensor([1,1,1,1],dtype=torch.get_default_dtype())

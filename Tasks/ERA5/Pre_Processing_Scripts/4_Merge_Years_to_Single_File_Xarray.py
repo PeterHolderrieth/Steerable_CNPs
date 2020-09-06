@@ -8,8 +8,8 @@ location=sys.argv[1]
 filename_without_year=sys.argv[2]
 filename_merged=sys.argv[3]
 
-MIN_YEAR=2016
-MAX_YEAR=2018
+MIN_YEAR=int(sys.argv[4])
+MAX_YEAR=int(sys.argv[5])
 
 
 df_list=[]
@@ -27,9 +27,9 @@ print("Start concatenating:")
 df=pd.concat(df_list)
 print("Finished concatenating.")
 print("Swap columns.")
-#Swap Longitude and Latitutde columns and east and north components such that x1 corresponds to longitutde and x2 to latitude:
+#Swap Longitude and Latitutde columns and east and north components of wind such that x1 corresponds to longitutde and x2 to latitude:
 col_list=list(df)
-col_list=[col_list[0]]+[col_list[2]]+[col_list[1]]+col_list[3:6]+[col_list[7]]+[col_list[6]]+[col_list[9]]+[col_list[8]]
+col_list=[col_list[0]]+[col_list[2]]+[col_list[1]]+col_list[3:5]+[col_list[6]]+[col_list[5]]
 df=df.reindex(columns=col_list).reset_index(drop=True)
 print("Finished swap columns.")
 print("Start sort:")
@@ -43,7 +43,7 @@ X=X.astype(np.float32,casting='same_kind')
 print("Finished cast to dtype.")
 
 #Save the file:
-print("Convert to xarray:")
+print("Convert to netCDF:")
 X.to_netcdf(location+filename_merged+".nc")
 
 print("Process finished.")
