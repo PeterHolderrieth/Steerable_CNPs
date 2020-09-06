@@ -110,7 +110,7 @@ if ARGS['SEED'] is not None:
 
 #Fixed hyperparameters:
 X_RANGE=[-10,10]
-N_X_AXIS=30
+N_X_AXIS=20
 MIN_N_CONT=2
 MAX_N_CONT=50
 DATA_IDENTIFIER="ERA5_DATA"
