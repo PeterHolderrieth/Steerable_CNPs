@@ -1,0 +1,5 @@
+passes=20
+batch=60
+ 
+python Tester.py -batch $batch -p $passes -type CNP -file Saved_Models/CNP_final_1_continued_2020_09_07_05_56
+python Tester.py -batch $batch -p $passes -type CNP -file Saved_Models/CNP_final_2_continued_2020_09_07_06_10
