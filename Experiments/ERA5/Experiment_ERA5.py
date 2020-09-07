@@ -59,6 +59,7 @@ else:
 # Construct the argument parser
 ap = argparse.ArgumentParser()
 ap.set_defaults(
+    DATA_SET='small'
     BATCH_SIZE=30,
     N_EPOCHS=3,
     PRINT_PROGRESS=True,
@@ -93,6 +94,7 @@ ap.add_argument("-file", "--FILENAME", type=str, required=False,help="Number of 
 ap.add_argument("-l", "--LENGTH_SCALE_IN", type=float, required=False,help="Length scale for encoder.")
 ap.add_argument("-seed","--SEED", type=int, required=False, help="Seed for randomness.")
 ap.add_argument("-shape","--SHAPE_REG", type=float, required=False, help="Shape Regularizer")
+ap.add_argument("-data","--DATA_SET", type=str, required=False, help="Data set to use - big or small.")
 
 #Arguments for tracking:
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
@@ -117,8 +119,14 @@ MIN_N_CONT=2
 MAX_N_CONT=50
 DATA_IDENTIFIER="ERA5_DATA"
 
-PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Small_ERA5.nc"
-PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Small_ERA5.nc"
+if ARGS['DATA_SET']=='small':
+        PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Small_ERA5_US.nc"
+        PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Small_ERA5_US.nc"
+elif ARGS['DATA_SET']=='big':
+        PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Big_ERA5_US.nc"
+        PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Big_ERA5_US.nc"
+else:
+    sys.exit("Unknown data set.")
 
 train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
 val_dataset=Dataset.ERA5Dataset(PATH_TO_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)

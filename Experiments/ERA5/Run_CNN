@@ -1,5 +1,5 @@
 for seed in 1 2 3
 do 
-	python Experiment_ERA5.py -lr 1e-4 -epochs 30 -it 1500 -track True -G CNN -A big -n_eval 10000 -n_val 200 -l 3. -cov 4 -batch 5 -seed $seed
+	python Experiment_ERA5.py -lr 1e-4 -epochs 30 -it 1500 -track True -G CNN -A big -n_eval 10000 -n_val 200 -l 3. -cov 4 -batch 5 -seed $seed -data big -file Saved_Models/CNN_ERA5_big 
 done
 
