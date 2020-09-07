@@ -73,5 +73,5 @@ There are two types of files:
 1. Small - test,valid,train - train consists of years 2014,2015,2016
 			      valid consists of years 2017
 			      test consists of years 2018
-2. Big - test,valid,train - train consists of years ...
+2. Big - test,valid,train - consists of years 1994 - 2018
 

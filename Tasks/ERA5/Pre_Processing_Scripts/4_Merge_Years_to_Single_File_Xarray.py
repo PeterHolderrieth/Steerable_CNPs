@@ -11,7 +11,7 @@ filename_merged=sys.argv[3]
 YEARS_TRAIN=[]
 YEARS_VALID=[]
 YEARS_TEST=[]
-for i in range(2014,2018,5):
+for i in range(1994,2018,5):
     YEARS_TRAIN=YEARS_TRAIN+[i,i+1,i+2]
     YEARS_VALID.append(i+3)
     YEARS_TEST.append(i+4)
