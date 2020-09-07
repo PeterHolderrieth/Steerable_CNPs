@@ -1,0 +1,5 @@
+for seed in 1 2 3
+do 
+	python Experiment_GP.py -lr 5e-4 -epochs 30 -it 1500 -track True -G D8 -A regular_middle -passes 3 -n_eval 10000 -l 3. -cov 4 -batch 5 -file Saved_Models/D8_ERA5_US_big_${seed} -seed $seed
+done
+

@@ -59,7 +59,7 @@ else:
 # Construct the argument parser
 ap = argparse.ArgumentParser()
 ap.set_defaults(
-    DATA_SET='small'
+    DATA_SET='small',
     BATCH_SIZE=30,
     N_EPOCHS=3,
     PRINT_PROGRESS=True,
