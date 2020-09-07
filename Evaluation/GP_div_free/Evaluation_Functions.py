@@ -33,7 +33,7 @@ import My_Tools
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
 
-def plot_context_and_VF(ax,X_Context=None,Y_Context=None,X_Target=None,Y_Target=None,scale=20,colormap='viridis',x1_lim=[-10,10],x2_lim=[-10,10]):
+def plot_context_and_VF(ax,X_Context=None,Y_Context=None,X_Target=None,Y_Target=None,scale=20,colormap='viridis',facecolor='black',color=None,x1_lim=[-10,10],x2_lim=[-10,10]):
     '''
     Inputs: ax - matplotlib.axes._subplots.AxesSubplot - axis to plot on
             X_Context, Y_Context, X_Target, Y_Target - torch.Tensor - shape (n_c,2)/ (n_t,2) context and target set to plot
@@ -45,12 +45,17 @@ def plot_context_and_VF(ax,X_Context=None,Y_Context=None,X_Target=None,Y_Target=
     #Set limits of axis and background color, get the width:
     ax.set_xlim(x1_lim)
     ax.set_ylim(x2_lim)
-    ax.set_facecolor('black')
+    if facecolor is not None:
+        ax.set_facecolor('black')
     width=ax.get_xlim()[1]-ax.get_xlim()[0]
     #Plot target vector field
     if X_Target is not None and Y_Target is not None:
-        ax.quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],Y_Target.norm(dim=1),
-        cmap=cm.get_cmap(colormap),pivot='mid',scale_units='width',scale=width*scale,headlength=4, headwidth = 2,width=0.005,alpha=1)
+        if color is not None:
+            ax.quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],color=color,
+            pivot='mid',scale_units='width',scale=width*scale,headlength=4, headwidth = 2,width=0.005,alpha=1)
+        else:
+            ax.quiver(X_Target[:,0],X_Target[:,1],Y_Target[:,0],Y_Target[:,1],Y_Target.norm(dim=1),
+            cmap=cm.get_cmap(colormap),pivot='mid',scale_units='width',scale=width*scale,headlength=4, headwidth = 2,width=0.005,alpha=1)
     #Plot context set:
     if X_Context is not None and Y_Context is not None:
         ax.quiver(X_Context[:,0],X_Context[:,1],Y_Context[:,0],Y_Context[:,1],
