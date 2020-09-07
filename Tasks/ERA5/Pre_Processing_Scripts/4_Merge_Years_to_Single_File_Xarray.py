@@ -11,10 +11,10 @@ filename_merged=sys.argv[3]
 YEARS_TRAIN=[]
 YEARS_VALID=[]
 YEARS_TEST=[]
-for i in range(1994,2018,5):
-    YEARS_TRAIN=YEARS_TRAIN+[i,i+1,i+2]
-    YEARS_VALID.append(i+3)
-    YEARS_TEST.append(i+4)
+for i in range(1986,2018,4):
+    YEARS_TRAIN=YEARS_TRAIN+[i,i+1]
+    YEARS_VALID.append(i+2)
+    YEARS_TEST.append(i+3)
 
 def merge_df(YEARS_LIST,filename_merged_complete):
     df_list=[]
@@ -50,8 +50,8 @@ def merge_df(YEARS_LIST,filename_merged_complete):
     print("Convert to netCDF:")
     X.to_netcdf(location+filename_merged_complete+".nc")
 
-merge_df(YEARS_TRAIN,"Train_"+filename_merged)
-merge_df(YEARS_VALID,"Valid_"+filename_merged)
-merge_df(YEARS_TEST,"Test_"+filename_merged)
+merge_df(YEARS_TRAIN,"Test_"+filename_merged)
+#merge_df(YEARS_VALID,"Valid_"+filename_merged)
+#merge_df(YEARS_TEST,"Test_"+filename_merged)
 
 print("Process finished.")
