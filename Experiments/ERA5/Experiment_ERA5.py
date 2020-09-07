@@ -141,7 +141,7 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 
 #Define the correct encoder:
 if ARGS['GROUP']=='CNP':
-    CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'],dim_Y_in=2,dim_Y_out=4)
+    CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'],dim_Y_in=4,dim_Y_out=2)
 else:
     if ARGS['GROUP']=='C16':
         decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
