@@ -8,8 +8,7 @@ sys.path.append("../../")
 import Training
 import EquivCNP
 import CNP.CNP_Model as CNP_Model
-import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
-
+import Tasks.ERA5.ERA5_Dataset as Dataset
 
 if torch.cuda.is_available():
     DEVICE = torch.device("cuda:0")  

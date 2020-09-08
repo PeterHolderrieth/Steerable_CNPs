@@ -1,0 +1,8 @@
+passes=1
+batch=60 
+for place in US China
+do 
+    python Tester.py -batch $batch -p $passes -file Saved_Models/CNN_ERA5_US_big_1_2020_09_08_04_08 -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/CNN_ERA5_US_big_2_2020_09_08_07_51 -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/CNN_ERA5_US_big_3_2020_09_08_11_30 -place $place
+done
