@@ -2,7 +2,7 @@ passes=20
 batch=60 
 for place in US China
 do 
-    python Tester.py -batch $batch -p $passes -file Saved_Models/? -place $place
-    python Tester.py -batch $batch -p $passes -file Saved_Models/? -place $place
-    python Tester.py -batch $batch -p $passes -file Saved_Models/? -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/D8_ERA5_US_big_1_2020_09_08_05_02 -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/D8_ERA5_US_big_2_2020_09_08_09_10 -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/D8_ERA5_US_big_3_2020_09_08_13_07 -place $place
 done

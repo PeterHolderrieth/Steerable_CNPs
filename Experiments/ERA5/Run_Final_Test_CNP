@@ -1,0 +1,8 @@
+passes=20
+batch=60 
+for place in US China
+do 
+    python Tester.py -batch $batch -p $passes -file Saved_Models/CNP_ERA5_US_big_1_2020_09_08_06_09 -place $place -type CNP
+    python Tester.py -batch $batch -p $passes -file Saved_Models/CNP_ERA5_US_big_2_2020_09_08_11_21 -place $place -type CNP
+    python Tester.py -batch $batch -p $passes -file Saved_Models/CNP_ERA5_US_big_3_2020_09_08_14_42 -place $place -type CNP
+done
