@@ -1,0 +1,7 @@
+#Train best ConvCNP model:
+epochs=30
+it=10000
+for seed in 1 2 3
+do 
+    python Experiment_ERA5.py -lr 1e-4 -epochs 30 -A thin -it 4000 -track True -G CNP -n_eval 10000 -n_val 400 -l 3. -batch 15 -data big -file Saved_Models/CNP_ERA5_US_big_${seed} -seed $seed 
+done
