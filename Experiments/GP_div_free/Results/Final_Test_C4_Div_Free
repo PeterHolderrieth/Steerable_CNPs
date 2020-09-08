@@ -15,3 +15,24 @@ Test log-likelihood:  -0.5227399826049804
 Number of samples:  20
 
  -0.508901834487915-0.5408788681030273-0.5227399826049804
+Running on the GPU
+False
+{'kernel_type': 'div_free'}
+Filename:  Saved_Models/C4_final_div_free_1_2020_09_06_04_18
+Time:  2020-09-08 10:31:56.864566
+Test log-likelihood:  -0.5096328735351563
+Number of samples:  20
+Running on the GPU
+False
+{'kernel_type': 'div_free'}
+Filename:  Saved_Models/C4_final_div_free_2_2020_09_06_12_26
+Time:  2020-09-08 11:02:42.035697
+Test log-likelihood:  -0.5318628311157226
+Number of samples:  20
+Running on the GPU
+False
+{'kernel_type': 'div_free'}
+Filename:  Saved_Models/C4_final_div_free_3_2020_09_06_20_18
+Time:  2020-09-08 11:33:27.211614
+Test log-likelihood:  -0.5152828693389893
+Number of samples:  20
