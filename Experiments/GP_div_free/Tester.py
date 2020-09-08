@@ -42,7 +42,8 @@ else:
 
 CNP=CNP.to(DEVICE)
 
-
+print(CNP.normalize_output)
+print(CNP.kernel_dict_out)
 MIN_N_CONT=2
 MAX_N_CONT=50
 FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"
