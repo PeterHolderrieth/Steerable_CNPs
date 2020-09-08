@@ -1,4 +1,4 @@
-passes=1
+passes=20
 batch=60 
 for place in US China
 do 
