@@ -1,0 +1,8 @@
+passes=20
+batch=60 
+for place in US China
+do 
+    python Tester.py -batch $batch -p $passes -file Saved_Models/? -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/? -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/? -place $place
+done
