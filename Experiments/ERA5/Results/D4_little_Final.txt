@@ -1,0 +1,118 @@
+D4 little:
+
+passes=20
+batch=60
+for place in US China
+do
+    python Tester.py -batch $batch -p $passes -file Saved_Models/D4_little_ERA5_US_big_1_2020_09_08_04_29 -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/D4_little_ERA5_US_big_2_2020_09_08_08_17 -place $place
+    python Tester.py -batch $batch -p $passes -file Saved_Models/D4_little_ERA5_US_big_3_2020_09_08_12_10 -place $place
+done
+Use US data.
+
+_______________________
+Loaded weather data:
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/D4_little_ERA5_US_big_1_2020_09_08_04_29
+Time:  2020-09-08 15:58:41.607327
+Place:  US
+Test log-likelihood:  0.9528731346130371
+Number of samples:  20
+Running on the GPU
+Use US data.
+
+_______________________
+Loaded weather data:
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/D4_little_ERA5_US_big_2_2020_09_08_08_17
+Time:  2020-09-08 16:46:24.354758
+Place:  US
+Test log-likelihood:  0.9718650817871094
+Number of samples:  20
+Running on the GPU
+Use US data.
+
+_______________________
+Loaded weather data:
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/D4_little_ERA5_US_big_3_2020_09_08_12_10
+Time:  2020-09-08 17:34:57.663227
+Place:  US
+Test log-likelihood:  0.9634862899780273
+Number of samples:  20
+Running on the GPU
+Use China data.
+
+_______________________
+Loaded weather data:
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  105.0 115.0
+South-North Latitude:  25.0 35.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/D4_little_ERA5_US_big_1_2020_09_08_04_29
+Time:  2020-09-08 19:12:06.896106
+Place:  China
+Test log-likelihood:  -0.5104186058044433
+Number of samples:  20
+Running on the GPU
+Use China data.
+
+_______________________
+Loaded weather data:
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  105.0 115.0
+South-North Latitude:  25.0 35.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/D4_little_ERA5_US_big_2_2020_09_08_08_17
+Time:  2020-09-08 20:47:45.997473
+Place:  China
+Test log-likelihood:  -0.5655206203460693
+Number of samples:  20
+Running on the GPU
+Use China data.
+
+_______________________
+Loaded weather data:
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  105.0 115.0
+South-North Latitude:  25.0 35.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/D4_little_ERA5_US_big_3_2020_09_08_12_10
+Time:  2020-09-08 22:27:58.500659
+Place:  China
+Test log-likelihood:  -0.4909308433532715
+Number of samples:  20
+

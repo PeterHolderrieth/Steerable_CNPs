@@ -76,6 +76,7 @@ ap.set_defaults(
     N_X_AXIS=20,
     N_DATA_PASSES=1,
     SEED=None,
+    CONTINUE=None,
     FILENAME=None)
 
 #Arguments for architecture:
@@ -84,7 +85,7 @@ ap.add_argument("-A", "--ARCHITECTURE", type=str, required=True,help="Decoder ar
 ap.add_argument("-cov", "--DIM_COV_EST", type=int, required=False,help="Dimension of covariance estimation.")
 ap.add_argument("-div", "--DIV_FREE", type=bool, required=False,help="Indicates whether to use divergence-free kernel at the output.")
 ap.add_argument("-axis","--N_X_AXIS", type=int, required=False,help="Number of grid points per axis")
-
+ap.add_argument("-continue","--CONTINUE",type=str, required=False, help="Continue model to train")
 #Arguments for training:
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
 ap.add_argument("-lr", "--LEARNING_RATE", type=float,required=False,help="Learning rate.")
@@ -142,6 +143,11 @@ encoder=EquivDeepSets.EquivDeepSets(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=AR
 #Define the correct encoder:
 if ARGS['GROUP']=='CNP':
     CNP=CNP_Architectures.give_CNP_architecture(ARGS['ARCHITECTURE'],dim_Y_in=4,dim_Y_out=2)
+    if ARGS['CONTINUE'] is not None:
+        train_dict=torch.load(ARGS['CONTINUE'])
+        CNP_dict=train_dict['CNP_dict']
+        CNP=CNP_Model.ConditionalNeuralProcess.create_model_from_dict(CNP_dict)
+        print("Reloaded CNP model from training dict.")
 else:
     if ARGS['GROUP']=='C16':
         decoder=models.get_C16_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
