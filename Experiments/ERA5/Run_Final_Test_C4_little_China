@@ -1,6 +1,6 @@
 passes=20
 batch=60 
-place=US
+place=China
 python Tester.py -batch $batch -p $passes -file Saved_Models/C4_little_ERA5_US_big_1_2020_09_08_10_50 -place $place
 python Tester.py -batch $batch -p $passes -file Saved_Models/C4_little_ERA5_US_big_2_2020_09_08_19_51 -place $place
 python Tester.py -batch $batch -p $passes -file Saved_Models/C4_little_ERA5_US_big_3_2020_09_09_05_08 -place $place
