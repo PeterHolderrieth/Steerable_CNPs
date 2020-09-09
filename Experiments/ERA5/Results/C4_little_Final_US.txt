@@ -1,0 +1,54 @@
+Running on the GPU
+Use US data.
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/C4_little_ERA5_US_big_1_2020_09_08_10_50
+Time:  2020-09-09 10:59:49.456419
+Place:  US
+Test log-likelihood:  1.2300283432006835
+Number of samples:  20
+Running on the GPU
+Use US data.
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/C4_little_ERA5_US_big_2_2020_09_08_19_51
+Time:  2020-09-09 11:49:26.853521
+Place:  US
+Test log-likelihood:  1.238182544708252
+Number of samples:  20
+Running on the GPU
+Use US data.
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Filename:  Saved_Models/C4_little_ERA5_US_big_3_2020_09_09_05_08
+Time:  2020-09-09 12:32:53.843189
+Place:  US
+Test log-likelihood:  1.2554558753967284
+Number of samples:  20
