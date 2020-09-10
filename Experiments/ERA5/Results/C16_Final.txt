@@ -37,6 +37,9 @@ Number of samples:  20
 Running on the GPU
 Use US data.
 
+
+
+
 _______________________
 Loaded weather data: 
 -----
@@ -53,7 +56,25 @@ Place:  US
 Test log-likelihood:  1.072867488861084
 Number of samples:  20
 Running on the GPU
+
+(1.0991610527038573+1.108439064025879+1.072867488861084)/3=1.093489
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Use China data.
+
+
 
 _______________________
 Loaded weather data: 
@@ -106,3 +127,5 @@ Time:  2020-09-09 13:32:08.923766
 Place:  China
 Test log-likelihood:  -0.5010853767395019
 Number of samples:  20
+
+(-0.5191458702087403-0.49518232345581054-0.5010853767395019)/3=-0.5051379

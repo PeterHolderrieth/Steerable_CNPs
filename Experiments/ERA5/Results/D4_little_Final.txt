@@ -63,6 +63,7 @@ Test log-likelihood:  0.9634862899780273
 Number of samples:  20
 Running on the GPU
 Use China data.
+(0.9528731346130371+0.9718650817871094+0.9634862899780273)/3=0.9627415
 
 _______________________
 Loaded weather data:
@@ -116,3 +117,4 @@ Place:  China
 Test log-likelihood:  -0.4909308433532715
 Number of samples:  20
 
+(-0.5104186058044433-0.5655206203460693-0.4909308433532715)/3=-0.52229
