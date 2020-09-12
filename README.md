@@ -1,11 +1,9 @@
 
 ### Equivariant Conditional Neural Processes
 
-In this repository, you can find an implementation and extensive experiment of Equivariant Conditional Neural 
-Processes, a meta-learning method which exploits the geometry of data.
-This project was part my master's dissertation supervised by Professor
-Yee Whye Teh (University of Oxford, Google DeepMind) and co-supervised by Michael Hutchinson
-(University of Oxford).
+In this repository, you can find an implementation of a model which I developped as part
+of my master's dissertation. It it called a meta-learning method which exploits the geometry of data
+called **Equivariant Conditional Neural Processes**.
 
 ## Use
 
@@ -24,6 +22,11 @@ awesome-project "Do something!"  # prints "Nah."
 ```
 
 # Structure of the repository
+
+# Acknowledgement 
+This project was part my master's dissertation supervised by Professor
+Yee Whye Teh (University of Oxford, Google DeepMind) and co-supervised by Michael Hutchinson
+(University of Oxford).
 
 # Contact
 
