@@ -32,8 +32,8 @@ for any group-related tasks.
 
 ## Structure of the repository
 The core implementation of EquivCNPs are all files in the root. The folder "Tasks" gives the two main tasks which we have given our model: GP vector field data and
-real-world weather data. The folder "Experiments" gives the main execution file per task and "Evaluation"
-gives all evaluation scripts. The folder CNP gives an implementation of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613)
+real-world weather data. The folder "Experiments" gives the main execution file per task and "Plots"
+gives all visual evaluation scripts. The folder CNP gives an implementation of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613)
 to compare our results.
 
 ## Acknowledgement 
