@@ -8,6 +8,10 @@ import torch.utils.data as utils
 from datetime import datetime
 from datetime import timedelta
 
+'''
+A data set class to deal with the GP data.
+'''
+
 class GPDataset(utils.IterableDataset):
     def __init__(self, X,Y,Min_n_cont,Max_n_cont,n_total,transform=True):
         '''

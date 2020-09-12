@@ -20,10 +20,8 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 
 '''
-TO DO:
-- Split the datasets in training, validation and test set!
+A data set class to deal with the ERA5 weather data set.
 '''
-
 class ERA5Dataset(utils.Dataset):
     def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,circular=True, normalize=True,place='US'):
         '''

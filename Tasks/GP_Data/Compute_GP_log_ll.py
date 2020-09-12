@@ -10,6 +10,7 @@ import My_Tools
 import Kernel_and_GP_tools as GP
 import Tasks.GP_Data.GP_div_free_circle.loader as GP_load_data
 
+#Set device:
 if torch.cuda.is_available():
     DEVICE = torch.device("cuda:0")  
     print("Running on the GPU")
@@ -17,7 +18,7 @@ else:
     DEVICE = torch.device("cpu")
     print("Running on the CPU")
 
-
+#Compute the log-ll of the GP posterior on the data by sampling:
 def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=1,n_data_passes=1):
         with torch.no_grad():
             n_obs=val_dataset.n_obs
@@ -54,12 +55,14 @@ def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=
                                         
         return(log_ll.item()/n_data_passes)
 
+#Get the data set:
 dataset_type=str(sys.argv[1])
 if dataset_type=='valid':
     DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='valid',file_path='GP_div_free_circle/')
 elif dataset_type=='test':
     DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='test',file_path='GP_div_free_circle/')
 
+#Set hyperparameters:
 N_SAMPLES=10000
 BATCH_SIZE=30
 N_DATA_PASSES=30
@@ -68,8 +71,10 @@ GP_PARAMETERS={'l_scale':5.,
 'kernel_type':"div_free",
 'obs_noise':0.02}
 
+#Run:
 log_ll=Compute_GP_log_ll(GP_PARAMETERS,DATASET,DEVICE,N_SAMPLES,BATCH_SIZE,N_DATA_PASSES)
 
+#Print:
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
 print("Number of samples per data pass:", N_SAMPLES)

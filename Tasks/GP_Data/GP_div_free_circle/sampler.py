@@ -69,15 +69,15 @@ N_TRAIN_SAMPLES=40000
 N_VAL_SAMPLES=10000
 N_TEST_SAMPLES=10000
 TRAIN_FILENAME='GP_Circle_Train'
-VAL_FILENAME='NO_NOISE_GP_Circle_Valid'
+VAL_FILENAME='GP_Circle_Valid'
 TEST_FILENAME='GP_Circle_Test'
 
 #Create train data:
-#Create_GP_Data_File_2d(filename=TRAIN_FILENAME,n_samples=N_TRAIN_SAMPLES,min_x=MIN_X,max_x=MAX_X,n_grid_points=N_GRID_POINTS,l_scale=L_SCALE,sigma_var=SIGMA_VAR,kernel_type=KERNEL_TYPE,
+Create_GP_Data_File_2d(filename=TRAIN_FILENAME,n_samples=N_TRAIN_SAMPLES,min_x=MIN_X,max_x=MAX_X,n_grid_points=N_GRID_POINTS,l_scale=L_SCALE,sigma_var=SIGMA_VAR,kernel_type=KERNEL_TYPE,
                        obs_noise=OBS_NOISE)
 #Create validation data:
 Create_GP_Data_File_2d(filename=VAL_FILENAME,n_samples=N_VAL_SAMPLES,min_x=MIN_X,max_x=MAX_X,n_grid_points=N_GRID_POINTS,l_scale=L_SCALE,sigma_var=SIGMA_VAR,kernel_type=KERNEL_TYPE,
                        obs_noise=OBS_NOISE)
 #Create test data:
-#Create_GP_Data_File_2d(filename=TEST_FILENAME,n_samples=N_TEST_SAMPLES,min_x=MIN_X,max_x=MAX_X,n_grid_points=N_GRID_POINTS,l_scale=L_SCALE,sigma_var=SIGMA_VAR,kernel_type=KERNEL_TYPE,
+Create_GP_Data_File_2d(filename=TEST_FILENAME,n_samples=N_TEST_SAMPLES,min_x=MIN_X,max_x=MAX_X,n_grid_points=N_GRID_POINTS,l_scale=L_SCALE,sigma_var=SIGMA_VAR,kernel_type=KERNEL_TYPE,
                        obs_noise=OBS_NOISE)

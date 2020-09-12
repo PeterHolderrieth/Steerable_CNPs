@@ -249,16 +249,3 @@ class EquivCNP(nn.Module):
         print(list(dictionary.keys()))
         return(EquivCNP.create_model_from_dict(dictionary))
 
-'''
-DIM_COV_EST=3
-encoder=EquivDeepSets.EquivDeepSets(x_range=[-10,10],n_x_axis=50)
-decoder=models.get_CNNDecoder('little',dim_cov_est=DIM_COV_EST,dim_features_inp=2)
-equivcnp=EquivCNP(encoder,decoder,DIM_COV_EST,dim_context_feat=2)
-
-FILEPATH="Tasks/GP_Data/GP_div_free_circle/"
-Dataset=DataLoader.give_GP_div_free_data_set(5,50,'train',file_path=FILEPATH)
-n_samples=3
-for i in range(n_samples):
-    X_c,Y_c,X_t,Y_t=Dataset.get_rand_batch(batch_size=10)
-    Means,Covs=equivcnp(X_c,Y_c,X_t)
-'''

@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# To do:
-# 1. Define a Ker_Project in Gram matrix - i.e. a projection on the tangent space of the sphere
-# 2. Define GP inference function for Sphere/3d
-# 3. Export various data sets in 3d
-# In[22]:
 #Add current directory to the python path:
 import os,sys
 sys.path.append(os.getcwd())
@@ -51,7 +43,7 @@ ________________________________________________________________________________
 ----------------------------KERNEL TOOLS -------------------------------------------------------------------------
 ____________________________________________________________________________________________________________________
 '''
-#%% This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
+# This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
 def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,flatten=True):
     '''
     Input:
@@ -146,7 +138,7 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
         return(K)
 
 
-#%% This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
+# This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
 def Batch_Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,flatten=True):
     '''
     Input:
@@ -325,33 +317,13 @@ def Batch_Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale
     return(Interpolate.view(batch_size,n_target_points,D))
 
 
-# Problem with the kernel smoother for div-free kernel if it is normalizing:
-'''
-X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
-Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,1.],[-1.,1.]])
-X_Target=My_Tools.Give_2d_Grid(min_x=-1,max_x=1,n_x_axis=10)
-Smoother=Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False)
-My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,None,Predict=Smoother,Cov_Mat=None)
-plt.plot(X_Context[:,0].numpy(),Y_Context[:,0].numpy())
-plt.plot(X_Target[:,0].numpy(),Smoother[:,0].numpy(),c="red")
-
-X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
-Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,-1.],[-1.,1.]])
-X_Target=My_Tools.Give_2d_Grid(min_x=-1,max_x=1,n_x_axis=10)
-Smoother=Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="div_free",B=None,Ker_project=False)
-My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,None,Predict=Smoother,Cov_Mat=None)
-plt.plot(X_Context[:,0].numpy(),Y_Context[:,0].numpy())
-plt.plot(X_Target[:,0].numpy(),Smoother[:,0].numpy(),c="red")
-
-'''
-#%%
 '''
 ____________________________________________________________________________________________________________________
 
 ----------------------------Multi-dimensional Gaussian Processes ---------------------------------------------------------------------
 ____________________________________________________________________________________________________________________
 '''
-#%%
+
 #This function samples a multi-dimensional GP with kernel of a type give by the function Gram_matrix
 #Observations are assumed to be noisy versions of the real underlying function:
 def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,chol_noise=1e-4,obs_noise=1e-4):
@@ -609,4 +581,4 @@ def Plot_Spherical_GP(l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_projec
         #Repeat function plot:
         ax2.scatter(X[:,0],X[:,1],X[:,2], color='red', s=8*size_scale)
         ax2.quiver(X[:,0], X[:,1],X[:,2], Proj_Y[:,0], Proj_Y[:,1],Proj_Y[:,2], length=0.15,color='orange',pivot='middle')
-#%%
+
