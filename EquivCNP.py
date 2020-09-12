@@ -154,10 +154,8 @@ class EquivCNP(nn.Module):
         '''
         #1.Context Set -> Embedding (via Encoder) --> shape (batch_size,3,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Embedding=self.encoder(X_context,Y_context)
-        #print('Embedding: ', Embedding[0,1:].flatten()[:100])
         #2.Embedding ->Feature Map (via CNN) --> shape (batch_size,2+self.dim_cov_est,self.encoder.n_y_axis,self.encoder.n_x_axis):
         Final_Feature_Map=self.decoder(Embedding)
-        #print('Final_Feature_Map: ', Final_Feature_Map.flatten()[:100])
         #Smooth the output:
         Means_target,Sigmas_target=self.target_smoother(X_target,Final_Feature_Map)
         #Sigmas_target=Sigmas_target.clamp(min=1e-1,max=10.)
