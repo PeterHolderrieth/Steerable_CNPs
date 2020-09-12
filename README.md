@@ -1,1 +1,2 @@
-Equivariant Conditional Neural Processes
+**Equivariant Conditional Neural Processes**
+
