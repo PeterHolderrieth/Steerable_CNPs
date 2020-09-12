@@ -1,5 +1,0 @@
-#Train best ConvCNP model:
-python Experiment_GP.py -lr 5e-4 -epochs 30 -A None -it 6000 -track True -G CNP -n_eval 10000 -n_val 200 -l 3. -batch 60 -file Saved_Models/CNP_choice_first
-python Experiment_GP.py -lr 5e-4 -epochs 30 -A None -it 6000 -track True -G CNP -n_eval 10000 -n_val 200 -l 3. -batch 15 -file Saved_Models/CNP_choice_second
-python Experiment_GP.py -lr 1e-4 -epochs 30 -A None -it 6000 -track True -G CNP -n_eval 10000 -n_val 200 -l 3. -batch 30 -file Saved_Models/CNP_choice_third
-python Experiment_GP.py -lr 1e-3 -epochs 30 -A None -it 6000 -track True -G CNP -n_eval 10000 -n_val 200 -l 3. -batch 60 -file Saved_Models/CNP_choice_fourth 

@@ -1,8 +1,0 @@
-N_EPOCHS=30
-N_ITERAT_PER_EPOCH=200
-
-python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-4 regular_huge 
-python D4_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-4 regular_huge
-python C16_test_experiment.py 4 $N_EPOCHS $N_ITERAT_PER_EPOCH 1e-4 regular_huge 
-
-  

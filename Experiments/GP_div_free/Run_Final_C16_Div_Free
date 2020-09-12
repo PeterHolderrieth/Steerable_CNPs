@@ -1,5 +1,0 @@
-for seed in 1 2 3
-do 
-	python Experiment_GP.py -lr 5e-4 -batch 5 -epochs 30 -it 1500 -track True -G C16 -A regular_big -n_eval 10000 -n_val 200 -l 3. -file Saved_Models/C16_final_div_free_${seed} -seed $seed -div True
-done
-

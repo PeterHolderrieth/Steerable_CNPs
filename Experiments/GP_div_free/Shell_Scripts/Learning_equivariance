@@ -1,4 +1,0 @@
-Group: C16, D16 (or SO(2))
-Epochs: 30 
-Iterations: 200
-Batch size: 15
