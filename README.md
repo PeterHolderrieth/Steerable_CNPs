@@ -1,11 +1,22 @@
 
-## Equivariant Conditional Neural Processes
+### Equivariant Conditional Neural Processes
 > A meta-learning method which exploits the geometry of data
 
-A brief description of your project, what it is used for and how does life get
-awesome when someone starts to use it.
 
-## Installing / Getting started
+![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.pdf?raw=true)
+
+
+## Architecture 
+
+
+## Acknowledgements
+
+This project was part my master's dissertation supervised by Professor
+Yee Whye Teh (University of Oxford, Google DeepMind) and co-supervised by Michael Hutchinson
+(University of Oxford).
+
+
+
 
 A quick introduction of the minimal setup you need to get a hello world up &
 running.
