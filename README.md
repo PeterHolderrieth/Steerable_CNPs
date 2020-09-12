@@ -5,7 +5,7 @@ In this repository, you can find an implementation of **Equivariant Conditional 
 a model which I developped as part of my master's dissertation. 
 It it a meta-learning method which exploits the geometry of data.
 
-![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.png?raw=true)
+![GP_Predictions](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.png?raw=true)
 
 ## Model 
 
@@ -19,6 +19,10 @@ of the form outlined in the work of [Weiler et al](https://arxiv.org/abs/1911.08
 ## Experiments
 
 We tested our model on two data sets: a Gaussian process regression task and real-world weather data.
+Below, the model predicts the wind in a cyclic region of 500km radius around Memphis in the South of the US.
+It gets measurements of wind, temperature and pressure from places marked in red.
+
+![ERA5Predictions](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/ERA5/ERA5_Predictions_4.png?raw=true)
 
 ## Links
 - We used [PyTorch](https://https://pytorch.org/) as a library for automatic differentation.
