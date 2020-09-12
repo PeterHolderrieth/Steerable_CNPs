@@ -15,11 +15,6 @@ Equivariant Conditional Neural Processes are an extension of Conditional Neural 
 predictions of the EquivCNP in the case of vector fields. Inputs are the red arrows and the model extract the whole
 vector field.
 
-## Architecture
-
-![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Model_Image.png?raw=true)
-
-
 # How to use this repository
 
 ```shell
