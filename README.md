@@ -3,7 +3,7 @@
 > A meta-learning method which exploits the geometry of data
 
 
-![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.pdf?raw=true)
+![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.png?raw=true)
 
 
 ## Architecture 
