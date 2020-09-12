@@ -1,8 +1,8 @@
 
 # Equivariant Conditional Neural Processes
 
-In this repository, you can find an implementation of a model which I developped as part
-of my master's dissertation called  **Equivariant Conditional Neural Processes**. 
+In this repository, you can find an implementation of **Equivariant Conditional Neural Processes**,
+a model which I developped as part of my master's dissertation called. 
 It it a meta-learning method which exploits the geometry of data.
 
 ![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.png?raw=true)
@@ -10,14 +10,16 @@ It it a meta-learning method which exploits the geometry of data.
 ## Model 
 
 Equivariant Conditional Neural Processes are an extension of Conditional Neural Processes. The image above depicts example
-predictions of the EquivCNP in the case of vector fields. Inputs are the red arrows and the model extract the whole
-vector field.]
+predictions of the EquivCNP in the case of vector fields. Inputs are the red arrows and the model extracts the whole
+vector field.
 
-The model consists of an encoder called **EquivDeepSet** and a decoder which is an equivariant neural network.
+The model consists of an encoder called **EquivDeepSet** and a decoder which is an equivariant neural network 
+of the form outlined in CITE.
 
 ## Links
 
-- We made use the library provided for any group-related objects 
+- We made use the library [E(2)-Steerable CNNs](https://github.com/QUVA-Lab/e2cnn)
+provided for any group-related objects 
 - We used PyTorch as a library for automatic differentation.
 
 ## How to use this repository
@@ -37,4 +39,4 @@ Yee Whye Teh (University of Oxford, Google DeepMind) and co-supervised by Michae
 
 ## Contact
 
-If you have any questions, feel free to contact me under peter.holderrieth@new.ox.ac.uk
+If you have any questions, feel free to contact me (peter.holderrieth@new.ox.ac.uk).
