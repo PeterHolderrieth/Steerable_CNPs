@@ -2,7 +2,7 @@
 # Equivariant Conditional Neural Processes
 
 In this repository, you can find an implementation of **Equivariant Conditional Neural Processes**,
-a model which I developped as part of my master's dissertation called. 
+a model which I developped as part of my master's dissertation. 
 It it a meta-learning method which exploits the geometry of data.
 
 ![alt text](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Evaluation/GP_div_free/Example_predictions_EquivCNP.png?raw=true)
@@ -14,12 +14,16 @@ predictions of the EquivCNP in the case of vector fields. Inputs are the red arr
 vector field.
 
 The model consists of an encoder called **EquivDeepSet** and a decoder which is an equivariant neural network 
-of the form outlined in the work of [Weiler et al.](https://arxiv.org/abs/1911.08251).
+of the form outlined in the work of [Weiler et al](https://arxiv.org/abs/1911.08251).
+
+## Experiments
+
+We tested our model on two data sets: a Gaussian process regression task and real-world weather data.
 
 ## Links
 - We used [PyTorch](https://https://pytorch.org/) as a library for automatic differentation.
-- We made use the library [E(2)-Steerable CNNs](https://github.com/QUVA-Lab/e2cnn)
-provided for any group-related objects. 
+- We made use of the library [E(2)-Steerable CNNs](https://github.com/QUVA-Lab/e2cnn)
+for any group-related tasks.
 - We used the [ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=overview) data set giving grided global weather data. 
 
 ## Structure of the repository
