@@ -39,10 +39,6 @@ from Equivariance_Tester import equiv_error_model as equiv_error
 #HYPERPARAMETERS:
 torch.set_default_dtype(torch.float)
 
-'''
-TO DO:
-How to save identity of data loader without actually having to save it for every model
-'''
 
 def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_size=1,n_epochs=3, n_iterat_per_epoch=1,
                  learning_rate=1e-3, weight_decay=0.,shape_reg=None,n_plots=None,n_val_samples=None,filename=None,print_progress=True,G_act=None,feature_in=None,n_equiv_samples=None):

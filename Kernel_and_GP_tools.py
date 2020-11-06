@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# To do:
-# 1. Define a Ker_Project in Gram matrix - i.e. a projection on the tangent space of the sphere
-# 2. Define GP inference function for Sphere/3d
-# 3. Export various data sets in 3d
-# In[22]:
 #Add current directory to the python path:
 import os,sys
 sys.path.append(os.getcwd())
@@ -51,7 +43,7 @@ ________________________________________________________________________________
 ----------------------------KERNEL TOOLS -------------------------------------------------------------------------
 ____________________________________________________________________________________________________________________
 '''
-#%% This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
+# This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
 def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,flatten=True):
     '''
     Input:
@@ -137,7 +129,36 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
         A=Mat_1+Mat_2
         #Multiply scalar and matrix part:
         K=Gram_RBF*A
-       
+    
+    elif kernel_type=="curl_free":
+        '''
+        The following computations are based on equation (25) in
+        "Kernels for Vector-Valued Functions: a Review" by Alvarez et al
+        '''
+        #Create a distance matrix:
+        X=X.unsqueeze(1).expand(n,m,d)
+        Y=Y.unsqueeze(0).expand(n,m,d)
+        #Create distance matrix from that --> shape (n,m)
+        Dist_mat=torch.sum((X-Y)**2,dim=2)
+        #Create the RBF matrix from that --> shape (n,m)
+        Gram_RBF=torch.exp(-0.5*Dist_mat/l_scale)/l_scale
+        #Reshape for later use:
+        Gram_RBF=Gram_RBF.view(n,m,1,1)
+        #Get the differences:
+        Diff=X-Y
+        #Get matrix of outer product --> shape (n,m,d,d)
+        Outer_Prod_Mat=torch.matmul(Diff.unsqueeze(3),Diff.unsqueeze(2))
+        #Get n*m copies of identity matrices in Rd--> shape (n,m,d,d)
+        Ids=torch.eye(d).to(X.device)
+        Ids=Ids.view(1,1,d,d)
+        Ids=Ids.expand(n,m,d,d)
+        #First matrix component for divergence-free kernel-->shape (n,m,d,d)
+        Mat_1=Outer_Prod_Mat/l_scale
+        #Matrix sum of the two matrices:
+        A=Ids-Mat_1
+        #Multiply scalar and matrix part:
+        K=Gram_RBF*A
+
     else:
         sys.exit("Unknown kernel type")
     if flatten:
@@ -146,7 +167,7 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
         return(K)
 
 
-#%% This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
+# This function gives the Gram/Kernel -matrix K(X,Y) of two data sets X and Y"
 def Batch_Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,flatten=True):
     '''
     Input:
@@ -325,33 +346,13 @@ def Batch_Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale
     return(Interpolate.view(batch_size,n_target_points,D))
 
 
-# Problem with the kernel smoother for div-free kernel if it is normalizing:
-'''
-X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
-Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,1.],[-1.,1.]])
-X_Target=My_Tools.Give_2d_Grid(min_x=-1,max_x=1,n_x_axis=10)
-Smoother=Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="rbf",B=None,Ker_project=False)
-My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,None,Predict=Smoother,Cov_Mat=None)
-plt.plot(X_Context[:,0].numpy(),Y_Context[:,0].numpy())
-plt.plot(X_Target[:,0].numpy(),Smoother[:,0].numpy(),c="red")
-
-X_Context=torch.tensor([[-1.,1.],[1.,1.],[-1.,-1.],[1.,-1.]])
-Y_Context=torch.tensor([[1.,-1.],[-1.,-1.],[1.,-1.],[-1.,1.]])
-X_Target=My_Tools.Give_2d_Grid(min_x=-1,max_x=1,n_x_axis=10)
-Smoother=Kernel_Smoother_2d(X_Context,Y_Context,X_Target,normalize=True,l_scale=1,sigma_var=1,kernel_type="div_free",B=None,Ker_project=False)
-My_Tools.Plot_Inference_2d(X_Context,Y_Context,X_Target,None,Predict=Smoother,Cov_Mat=None)
-plt.plot(X_Context[:,0].numpy(),Y_Context[:,0].numpy())
-plt.plot(X_Target[:,0].numpy(),Smoother[:,0].numpy(),c="red")
-
-'''
-#%%
 '''
 ____________________________________________________________________________________________________________________
 
 ----------------------------Multi-dimensional Gaussian Processes ---------------------------------------------------------------------
 ____________________________________________________________________________________________________________________
 '''
-#%%
+
 #This function samples a multi-dimensional GP with kernel of a type give by the function Gram_matrix
 #Observations are assumed to be noisy versions of the real underlying function:
 def Multidim_GP_sampler(X,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_project=False,chol_noise=1e-4,obs_noise=1e-4):
@@ -609,4 +610,4 @@ def Plot_Spherical_GP(l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_projec
         #Repeat function plot:
         ax2.scatter(X[:,0],X[:,1],X[:,2], color='red', s=8*size_scale)
         ax2.quiver(X[:,0], X[:,1],X[:,2], Proj_Y[:,0], Proj_Y[:,1],Proj_Y[:,2], length=0.15,color='orange',pivot='middle')
-#%%
+

@@ -1,6 +1,0 @@
-passes=20
-batch=60
- 
-python Tester.py -batch $batch -p $passes -file Saved_Models/D8_final_2_2020_09_05_00_36
-python Tester.py -batch $batch -p $passes -file Saved_Models/D8_final_3_2020_09_05_07_14
-

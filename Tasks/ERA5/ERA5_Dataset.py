@@ -20,10 +20,8 @@ import My_Tools
 torch.set_default_dtype(torch.float)
 
 '''
-TO DO:
-- Split the datasets in training, validation and test set!
+A data set class to deal with the ERA5 weather data set.
 '''
-
 class ERA5Dataset(utils.Dataset):
     def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,circular=True, normalize=True,place='US'):
         '''
@@ -218,7 +216,9 @@ class ERA5_translater(object):
         
         self.Y_mean=torch.tensor([100.1209,   7.4628,   0.0000,   0.0000],dtype=torch.get_default_dtype())
         self.Y_std=torch.tensor([1.4738, 8.5286, 3.4162, 3.4162],dtype=torch.get_default_dtype())
-    
+        self.Y_mean_out=torch.tensor([0.0000,   0.0000],dtype=torch.get_default_dtype())
+        self.Y_std_out=torch.tensor([3.4162, 3.4162],dtype=torch.get_default_dtype())
+        
     def norm_X(self,X):
         '''
         X - torch.Tensor - shape (*,2)
@@ -246,6 +246,13 @@ class ERA5_translater(object):
         --> Inverse of self.norm_Y
         '''
         return(Y.mul(self.Y_std[None,:]).add(self.Y_mean[None,:]))
+    
+    def denorm_Y_out(self,Y):
+        '''
+        Y - torch.Tensor - shape (*,4)
+        --> Inverse of self.norm_Y
+        '''
+        return(Y.mul(self.Y_std_out[None,:]).add(self.Y_mean_out[None,:]))
     
     def translate_to_normalized_scale(self,X,Y):
         '''

@@ -1,4 +1,0 @@
-#Train best ConvCNP model:
-epochs=30
-it=10000
-python Experiment_GP.py -lr 1e-4 -epochs 30 -A thin -it 6000 -track True -G CNP -n_eval 10000 -n_val 400 -l 3. -batch 60 -file Saved_Models/CNP_final_3 -seed 3

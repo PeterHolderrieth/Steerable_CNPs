@@ -17,7 +17,7 @@ from e2cnn import nn as G_CNN
 import datetime
 import sys
 
-#!!!!!!!!THIS FUNCTION ASSUMES THAT THE INPUT AND OUTPUT FEATURES TYPES ARE THE SAME!!:
+#THIS FUNCTION ASSUMES THAT THE INPUT AND OUTPUT FEATURES TYPES ARE THE SAME!:
 def equiv_error_model(CNP,dataset,G_act,feature_in,device,n_samples=10,batch_size=1,n_data_passes=1):
         '''
         Input:  CNP - a CNP-like which takes context sets and target sets

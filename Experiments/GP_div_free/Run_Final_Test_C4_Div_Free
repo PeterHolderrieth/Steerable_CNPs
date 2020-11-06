@@ -1,6 +1,0 @@
-passes=20
-batch=60
- 
-python Tester.py -batch $batch -p $passes -file Saved_Models/C4_final_div_free_1_2020_09_06_04_18
-python Tester.py -batch $batch -p $passes -file Saved_Models/C4_final_div_free_2_2020_09_06_12_26
-python Tester.py -batch $batch -p $passes -file Saved_Models/C4_final_div_free_3_2020_09_06_20_18
