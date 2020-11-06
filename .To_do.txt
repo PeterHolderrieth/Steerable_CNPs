@@ -1,0 +1,5 @@
+- Fix the final models you use for every fiber group
+- Write script that trains and tests in one run (so far, only option is to validate at the end)
+- find out how to save results in a file (use >> and save every model in a separate file)
+- Run experiments for GP data 
+- Run experiments for ERA5 data 
