@@ -1,0 +1,3 @@
+python Tasks/GP_Data/GP_rbf/sampler.py
+python Tasks/GP_Data/GP_div_free/sampler.py
+python Tasks/GP_Data/GP_curl_free/sampler.py

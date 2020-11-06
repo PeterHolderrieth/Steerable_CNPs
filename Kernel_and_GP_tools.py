@@ -129,7 +129,36 @@ def Gram_matrix(X,Y=None,l_scale=1,sigma_var=1, kernel_type="rbf",B=None,Ker_pro
         A=Mat_1+Mat_2
         #Multiply scalar and matrix part:
         K=Gram_RBF*A
-       
+    
+    elif kernel_type=="curl_free":
+        '''
+        The following computations are based on equation (25) in
+        "Kernels for Vector-Valued Functions: a Review" by Alvarez et al
+        '''
+        #Create a distance matrix:
+        X=X.unsqueeze(1).expand(n,m,d)
+        Y=Y.unsqueeze(0).expand(n,m,d)
+        #Create distance matrix from that --> shape (n,m)
+        Dist_mat=torch.sum((X-Y)**2,dim=2)
+        #Create the RBF matrix from that --> shape (n,m)
+        Gram_RBF=torch.exp(-0.5*Dist_mat/l_scale)/l_scale
+        #Reshape for later use:
+        Gram_RBF=Gram_RBF.view(n,m,1,1)
+        #Get the differences:
+        Diff=X-Y
+        #Get matrix of outer product --> shape (n,m,d,d)
+        Outer_Prod_Mat=torch.matmul(Diff.unsqueeze(3),Diff.unsqueeze(2))
+        #Get n*m copies of identity matrices in Rd--> shape (n,m,d,d)
+        Ids=torch.eye(d).to(X.device)
+        Ids=Ids.view(1,1,d,d)
+        Ids=Ids.expand(n,m,d,d)
+        #First matrix component for divergence-free kernel-->shape (n,m,d,d)
+        Mat_1=Outer_Prod_Mat/l_scale
+        #Matrix sum of the two matrices:
+        A=Ids-Mat_1
+        #Multiply scalar and matrix part:
+        K=Gram_RBF*A
+
     else:
         sys.exit("Unknown kernel type")
     if flatten:
