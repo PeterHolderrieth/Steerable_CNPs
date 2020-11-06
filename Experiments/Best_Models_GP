@@ -1,0 +1,39 @@
+epochs=3
+it=4
+n_test=10
+n_val=10
+track=True
+
+for seed in 1 2 3 4 5 6 7 8 
+do
+    python Experiment_GP.py -lr 1e-4 -epochs $epochs -A thin -it $it -track $track -G CNP -n_test $n_test -n_val $n_val -l 3. -batch 60  -seed $seed
+done 
+
+for seed in 1 2 3 4 5 6 7 8 
+do 
+    python Experiment_GP.py -lr 5e-4 -epochs $epochs -it $it -track True -G C4 -A regular_huge -n_test $n_test -n_val 200 -l 3. -cov 4  -seed $seed
+done 
+
+for seed in 1 2 3 4 5 6 7 8 
+do 
+    python Experiment_GP.py -lr 5e-4 -batch 5 -epochs 30 -it 1500 -track True -G C16 -A regular_big -n_test $n_test -n_val 200 -l 3.  -seed $seed
+done 
+
+for seed in 1 2 3 4 5 6 7 8 
+do 
+    python Experiment_GP.py -lr 1e-4 -epochs 30 -it $it -track True -G CNN -A big -n_test $n_test -n_val 200 -l 3. -cov 4 -batch 5  -seed $seed
+done 
+
+for seed in 1 2 3 4 5 6 7 8 
+do 
+    python Experiment_GP.py -lr 5e-4 -epochs 30 -it $it -track True -G D4 -A regular_big -n_test $n_test -n_val 200 -l 3. -batch 5 -cov 4 -seed $seed
+done 
+
+for seed in 1 2 3 4 5 6 7 8 
+do 
+    python Experiment_GP.py -lr 5e-4 -epochs 30 -it $it -track True -G D8 -A regular_huge -passes 3 -n_test $n_test -l 3. -cov 4 -batch 5 -seed $seed
+done 
+
+for seed in 1 2 3 4 5 6 7 8 
+do 
+    python Experiment_GP.py -lr 5e-4 -epochs 30 -it $it -track True -G SO2 -A irrep_big -n_test $n_test -n_val 200 -l 3. -cov 4  -seed $seed
