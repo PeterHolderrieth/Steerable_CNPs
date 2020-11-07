@@ -1,0 +1,13 @@
+Running on the GPU
+
+Time:  2020-11-07 11:08:42.645583
+Group: C4
+Model type: regular_huge
+Number of parameters:  269689
+Epoch: 0 | train loss: 9.14710 | train log ll:  -9.14710 | val log ll: -6.70055
+Epoch: 1 | train loss: 5.86512 | train log ll:  -5.86512 | val log ll: -7.36808
+Epoch: 2 | train loss: 6.51327 | train log ll:  -6.51327 | val log ll: -5.19687
+Time finished with training:  2020-11-07 11:08:50.908397
+Final test log ll: -5.977466583251953
+Time finished with testing:  2020-11-07 11:13:16.775869
+
