@@ -78,8 +78,8 @@ ap.set_defaults(
     SEED=None,
     CONTINUE=None,
     FILENAME=None,
-    N_TEST_SAMPLES_US=None,
-    N_TEST_SAMPLES_CHINA=None
+    N_PASSES_US=None,
+    N_PASSES_CHINA=None
     )
 
 #Arguments for architecture:
@@ -105,8 +105,8 @@ ap.add_argument("-data","--DATA_SET", type=str, required=False, help="Data set t
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
 ap.add_argument("-n_eval", "--N_EVAL_SAMPLES", type=int, required=False,help="Number of evaluation samples after training.")
-ap.add_argument("-n_test_US", "--N_TEST_SAMPLES_US", type=int, required=False,help="Number of test samples after training on US test set.")
-ap.add_argument("-n_test_China", "--N_TEST_SAMPLES_CHINA", type=int, required=False,help="Number of test samples after training on China test set.")
+ap.add_argument("-n_test_US", "--N_PASSES_US", type=int, required=False,help="Number of test samples after training on US test set.")
+ap.add_argument("-n_test_China", "--N_PASSES_CHINA", type=int, required=False,help="Number of test samples after training on China test set.")
 
 ap.add_argument("-n_equiv_val", "--N_EQUIV_SAMPLES", type=int, required=False,help="Number of samples to evaluate equivariance error.")
 ap.add_argument("-test_G", "--TESTING_GROUP", type=str, required=False, help="Group with respect to which equivariance is tested.")
@@ -212,16 +212,16 @@ if ARGS['N_EVAL_SAMPLES'] is not None:
     print()
 
 #Evaluate on test set on US:
-if ARGS['N_TEST_SAMPLES_US'] is not None:
+if ARGS['N_PASSES_US'] is not None:
     train_dataset_US=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
-    test_log_ll_US=Training.test_CNP(CNP,train_dataset_US,DEVICE,n_samples=ARGS['N_TEST_SAMPLES_US'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
+    test_log_ll_US=Training.test_CNP(CNP,train_dataset_US,DEVICE,n_samples=train_dataset_US.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_US'])
     print("Final log ll:", test_log_ll_US)
     print()
 
 #Evaluate on test set on China:
-if ARGS['N_TEST_SAMPLES_CHINA'] is not None:
+if ARGS['N_PASSES_CHINA'] is not None:
     train_dataset_China=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='CHINA',normalize=True,circular=True)
-    test_log_ll_China=Training.test_CNP(CNP,train_dataset_China,DEVICE,n_samples=ARGS['N_TEST_SAMPLES_CHINA'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
+    test_log_ll_China=Training.test_CNP(CNP,train_dataset_China,DEVICE,n_samples=train_dataset_China.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_CHINA'])
     print("Final log ll:", test_log_ll_China)
     print()
 
