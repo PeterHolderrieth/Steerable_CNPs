@@ -1,7 +1,8 @@
-epochs=30
-it=4000
-n_test_US=20
-n_test_China=20
+epochs=3 #0
+it=4 #000
+n_test_US=2 #0
+n_test_China=2 #0
+n_val=1 #00
 
 for seed in 4 5
 do 
