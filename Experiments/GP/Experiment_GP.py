@@ -40,7 +40,7 @@ import Architectures
 import EquivCNP
 import CNP.CNP_Model as CNP_Model
 import CNP.CNP_Architectures as CNP_Architectures
-import Tasks.GP_Data.GP_loader.load_GP_data_set as DataLoader
+import Tasks.GP_Data.GP_loader as DataLoader
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
@@ -111,7 +111,7 @@ ap.add_argument("-continue","--CONTINUE",type=str,required=False,help="File to c
 ap.add_argument("-n_val", "--N_VAL_SAMPLES", type=int, required=False,help="Number of validation samples.")
 ap.add_argument("-track", "--PRINT_PROGRESS", type=bool, required=False,help="Print output?")
 ap.add_argument("-n_eval", "--N_EVAL_SAMPLES", type=int, required=False,help="Number of evaluation samples after training.")
-ap.add_argument("-n_test", "--N_TEST_SAMPLES", type=int, required=False,help="Number of test samples after training.")
+ap.add_argument("-n_test", "--N_TEST_DATA_PASSES", type=int, required=False,help="Number of data passes after training.")
 ap.add_argument("-n_equiv_val", "--N_EQUIV_SAMPLES", type=int, required=False,help="Number of samples to evaluate equivariance error.")
 ap.add_argument("-test_G", "--TESTING_GROUP", type=str, required=False, help="Group with respect to which equivariance is tested.")
 ap.add_argument("-passes", "--N_DATA_PASSES", type=int, required=False, help="Passes through data used for evaluation.") 
@@ -128,13 +128,13 @@ X_RANGE=[-10,10]
 N_X_AXIS=30
 MIN_N_CONT=5
 MAX_N_CONT=50
-FILEPATH="../../Tasks/GP_Data/GP_div_free_circle/"
+FILEPATH="../../Tasks/GP_Data/"
 DATA_IDENTIFIER="GP_div_free_circle"
 
 
 
-train_dataset=DataLoader(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'train',file_path=FILEPATH)                 
-val_dataset=DataLoader(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'valid',file_path=FILEPATH)                 
+train_dataset=DataLoader.give_GP_data_set(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'train',file_path=FILEPATH)                 
+val_dataset=DataLoader.give_GP_data_set(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'valid',file_path=FILEPATH)                 
 
 print()
 print("Time: ", datetime.datetime.today())
@@ -206,6 +206,8 @@ CNP,_,_=Training.train_CNP(CNP,
                            feature_in=feature_in
                            )
 
+print("Time finished with training: ", datetime.datetime.today())
+
 
 #Final evaluation on validation data set:
 if ARGS['N_EVAL_SAMPLES'] is not None:
@@ -214,8 +216,11 @@ if ARGS['N_EVAL_SAMPLES'] is not None:
     print()
 
 #Final evaluation on test data set:
-if ARGS['N_TEST_SAMPLES'] is not None:
-    test_dataset=DataLoader(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'test',file_path=FILEPATH)                 
-    eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_TEST_SAMPLES'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
+if ARGS['N_TEST_DATA_PASSES'] is not None:
+    test_dataset=DataLoader.give_GP_data_set(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'test',file_path=FILEPATH)                 
+    test_log_ll=Training.test_CNP(CNP,test_dataset,DEVICE,n_samples=test_dataset.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_TEST_DATA_PASSES'])
     print("Final test log ll:", test_log_ll)
-    print()
+    print("Time finished with testing: ", datetime.datetime.today())
+
+print()
+

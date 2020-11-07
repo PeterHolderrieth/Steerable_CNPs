@@ -33,7 +33,6 @@ import EquivDeepSets
 from Cov_Converter import cov_converter
 import Decoder_Models as models
 import Architectures
-import Tasks.GP_Data.GP_div_free_circle.loader as DataLoader
 
 #HYPERPARAMETERS and set seed:
 torch.set_default_dtype(torch.float)
