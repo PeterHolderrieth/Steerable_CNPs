@@ -1,4 +1,4 @@
-epochs=30
+eochs=30
 it=1500
 n_test_US=20
 n_test_China=20
