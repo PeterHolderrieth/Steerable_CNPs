@@ -1,6 +1,6 @@
 Running on the GPU
 
-Time:  2020-11-07 12:49:39.364717
+Time:  2020-11-07 16:48:34.472623
 Group: D8
 Model type: regular_huge
 Number of parameters:  1036921
@@ -34,7 +34,7 @@ Epoch: 26 | train loss: 4.30073 | train log ll:  -4.30073 | val log ll: -4.23494
 Epoch: 27 | train loss: 4.49650 | train log ll:  -4.49650 | val log ll: -4.82367
 Epoch: 28 | train loss: 4.44463 | train log ll:  -4.44463 | val log ll: -4.77555
 Epoch: 29 | train loss: 4.33083 | train log ll:  -4.33083 | val log ll: -5.18802
-Time finished with training:  2020-11-07 12:50:15.267756
+Time finished with training:  2020-11-07 16:49:16.483630
 Final test log ll: -4.6687774658203125
-Time finished with testing:  2020-11-07 13:16:29.852934
+Time finished with testing:  2020-11-07 17:16:16.985667
 
