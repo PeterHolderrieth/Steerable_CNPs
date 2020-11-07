@@ -1,8 +1,8 @@
 #Get the number of iterations, epochs and tests needed!
-epochs=30
-it=1500
-n_test=20
-n_val=100
+epochs=3 #0
+it=1 #500
+n_test=2 #0
+n_val=1 #00
 track=True
 
 for seed in 1 2 3 4 5 
