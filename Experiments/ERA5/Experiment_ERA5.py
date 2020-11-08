@@ -220,7 +220,7 @@ if ARGS['N_PASSES_US'] is not None:
 
 #Evaluate on test set on China:
 if ARGS['N_PASSES_CHINA'] is not None:
-    train_dataset_China=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='CHINA',normalize=True,circular=True)
+    train_dataset_China=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='China',normalize=True,circular=True)
     test_log_ll_China=Training.test_CNP(CNP,train_dataset_China,DEVICE,n_samples=train_dataset_China.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_CHINA'])
     print("Final log ll:", test_log_ll_China)
     print()
