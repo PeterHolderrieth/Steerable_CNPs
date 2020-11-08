@@ -186,7 +186,9 @@ def train_CNP(CNP, train_dataset,val_dataset, data_identifier,device,minibatch_s
         #Return the model and the loss memory:
         return(CNP,train_loss_tracker,complete_filename)
 
-def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1,n_data_passes=1):
+def test_CNP(CNP,val_dataset,device,n_samples=400,batch_size=1,n_data_passes=1,send_to_device=False):
+        if send_to_device:
+            CNP=CNP.to(device)
         with torch.no_grad():
             n_obs=val_dataset.n_obs
             n_samples_max=min(n_samples,n_obs)
