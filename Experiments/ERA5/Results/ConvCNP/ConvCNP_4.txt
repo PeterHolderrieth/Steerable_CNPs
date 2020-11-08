@@ -1,0 +1,43 @@
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17472, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+
+Time:  2020-11-08 17:16:20.216706
+Number of grid points per axis:  20
+Group: CNP
+Model type: thin
+Number of parameters:  794884
+Epoch: 0 | train loss: 2.16337 | train log ll:  -2.16337 | val log ll: -1.99393
+Epoch: 1 | train loss: 2.20285 | train log ll:  -2.20285 | val log ll: -2.28917
+Epoch: 2 | train loss: 2.15504 | train log ll:  -2.15504 | val log ll: -1.88672
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+

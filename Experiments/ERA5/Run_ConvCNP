@@ -6,7 +6,7 @@ n_val=1 #00
 
 for seed in 4 5
 do 
-    python Experiment_ERA5.py -lr 1e-4 -epochs $epochs -A thin -it $it -track True -G CNP  -n_val $n_val -l 3. -batch 15 -data big -seed $seed -n_test_US $n_test_US -n_test_China $n_test_China > Results/ConvCNP/ConvCNP_${seed}.txt
+    python Experiment_ERA5.py -lr 1e-4 -epochs $epochs -A thin -it $it -track True -G CNP  -n_val $n_val -l 3. -batch 15 -data big -seed $seed -n_test_US $n_test_US -n_test_China $n_test_China #> Results/ConvCNP/ConvCNP_${seed}.txt
 done
 
 
