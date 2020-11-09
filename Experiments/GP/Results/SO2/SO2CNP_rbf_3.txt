@@ -1,0 +1,16 @@
+Running on the GPU
+
+Time:  2020-11-09 05:50:47.206528
+Group: SO2
+Model type: irrep_big
+Number of parameters:  655233
+Epoch: 0 | train loss: 26.77421 | train log ll:  -26.77421 | val log ll: -16.56428
+Epoch: 1 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 2 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 3 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 4 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 5 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 6 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 7 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 8 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 9 | train loss: nan | train log ll:  nan | val log ll: nan
