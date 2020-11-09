@@ -216,7 +216,7 @@ if ARGS['N_PASSES_US'] is not None:
     PATH_TO_TEST_FILE_US="../../Tasks/ERA5/ERA5_US/Data/Test_Big_ERA5_US.nc"
     train_dataset_US=Dataset.ERA5Dataset(PATH_TO_TEST_FILE_US,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
     test_log_ll_US=Training.test_CNP(CNP,train_dataset_US,DEVICE,n_samples=train_dataset_US.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_US'],send_to_device=True)
-    print("Final log ll:", test_log_ll_US)
+    print("Test log ll US:", test_log_ll_US)
     print()
 
 #Evaluate on test set on China:
@@ -224,6 +224,6 @@ if ARGS['N_PASSES_CHINA'] is not None:
     PATH_TO_TEST_FILE_CHINA="../../Tasks/ERA5/ERA5_China/Data/Test_Big_ERA5_China.nc"
     train_dataset_China=Dataset.ERA5Dataset(PATH_TO_TEST_FILE_CHINA,MIN_N_CONT,MAX_N_CONT,place='China',normalize=True,circular=True)
     test_log_ll_China=Training.test_CNP(CNP,train_dataset_China,DEVICE,n_samples=train_dataset_China.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_CHINA'],send_to_device=True)
-    print("Final log ll:", test_log_ll_China)
+    print("Test log ll China:", test_log_ll_China)
     print()
 

@@ -1,0 +1,4 @@
+scp Tasks/ERA5/ERA5_China/Data/Test_Big_ERA5_China.nc peholder@ziz2:/homes/peholder/Equiv_CNPs_Dissertation_2020/Tasks/ERA5/ERA5_China/Data
+scp Tasks/ERA5/ERA5_China/Data/Test_Big_ERA5_China.nc peholder@ziz3:/homes/peholder/Equiv_CNPs_Dissertation_2020/Tasks/ERA5/ERA5_China/Data
+scp Tasks/ERA5/ERA5_China/Data/Test_Big_ERA5_China.nc peholder@ziz1:/homes/peholder/Equiv_CNPs_Dissertation_2020/Tasks/ERA5/ERA5_China/Data
+
