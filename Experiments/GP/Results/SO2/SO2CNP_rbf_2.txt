@@ -1,0 +1,40 @@
+Running on the GPU
+
+Time:  2020-11-08 12:26:24.621587
+Group: SO2
+Model type: irrep_big
+Number of parameters:  655233
+Epoch: 0 | train loss: 23.76015 | train log ll:  -23.76015 | val log ll: -14.19656
+Epoch: 1 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 2 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 3 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 4 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 5 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 6 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 7 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 8 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 9 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 10 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 11 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 12 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 13 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 14 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 15 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 16 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 17 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 18 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 19 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 20 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 21 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 22 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 23 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 24 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 25 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 26 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 27 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 28 | train loss: nan | train log ll:  nan | val log ll: nan
+Epoch: 29 | train loss: nan | train log ll:  nan | val log ll: nan
+Time finished with training:  2020-11-09 05:20:40.392423
+Final test log ll: nan
+Time finished with testing:  2020-11-09 05:50:33.485765
+
