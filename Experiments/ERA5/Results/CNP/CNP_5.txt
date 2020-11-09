@@ -22,24 +22,19 @@ Grid points per map:  1681
 ________________________
 
 
-Time:  2020-11-07 16:52:59.825162
+Time:  2020-11-08 22:40:28.669446
 Number of grid points per axis:  20
 Group: CNP
 Model type: thin
 Number of parameters:  794884
-Epoch: 0 | train loss: 2.11409 | train log ll:  -2.11409 | val log ll: -2.01416
-Epoch: 1 | train loss: 2.13352 | train log ll:  -2.13352 | val log ll: -2.64351
-Epoch: 2 | train loss: 2.14132 | train log ll:  -2.14132 | val log ll: -2.34365
 
 _______________________
 Loaded weather data: 
 -----
-Shape:  (34560, 41, 41, 4)
+Shape:  (17280, 41, 41, 4)
 Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
 West-East Longtitude:  -96.0 -86.0
 South-North Latitude:  30.0 40.0
 Grid points per map:  1681
 ________________________
-
-Final log ll: -2.1308600902557373
 
