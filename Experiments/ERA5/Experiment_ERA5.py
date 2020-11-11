@@ -137,7 +137,7 @@ else:
     sys.exit("Unknown data set.")
 
 train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
-val_dataset=Dataset.ERA5Dataset(PATH_T0O_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+val_dataset=Dataset.ERA5Dataset(PATH_TO_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
 
 print()
 print("Time: ", datetime.datetime.today())
