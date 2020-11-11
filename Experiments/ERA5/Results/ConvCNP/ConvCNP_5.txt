@@ -22,7 +22,7 @@ Grid points per map:  1681
 ________________________
 
 
-Time:  2020-11-10 22:48:39.233341
+Time:  2020-11-11 02:10:12.870004
 Number of grid points per axis:  20
 Group: CNN
 Model type: big
@@ -38,7 +38,7 @@ South-North Latitude:  30.0 40.0
 Grid points per map:  1681
 ________________________
 
-Test log ll US: -386.0547607421875
+Test log ll US: -418.56982421875
 
 
 _______________________
@@ -51,5 +51,5 @@ South-North Latitude:  25.0 35.0
 Grid points per map:  1681
 ________________________
 
-Test log ll China: -151.76954345703126
+Test log ll China: -152.06181640625
 
