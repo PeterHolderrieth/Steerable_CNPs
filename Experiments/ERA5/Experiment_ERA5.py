@@ -137,7 +137,7 @@ else:
     sys.exit("Unknown data set.")
 
 train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
-val_dataset=Dataset.ERA5Dataset(PATH_TO_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+val_dataset=Dataset.ERA5Dataset(PATH_T0O_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
 
 print()
 print("Time: ", datetime.datetime.today())
@@ -185,7 +185,7 @@ else:
     feature_in=None
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
-'''
+
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,
@@ -210,7 +210,7 @@ if ARGS['N_EVAL_SAMPLES'] is not None:
     eval_log_ll=Training.test_CNP(CNP,val_dataset,DEVICE,n_samples=ARGS['N_EVAL_SAMPLES'],batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_DATA_PASSES'])
     print("Final log ll:", eval_log_ll)
     print()
-'''
+
 #Evaluate on test set on US:
 if ARGS['N_PASSES_US'] is not None:
     PATH_TO_TEST_FILE_US="../../Tasks/ERA5/ERA5_US/Data/Test_Big_ERA5_US.nc"
