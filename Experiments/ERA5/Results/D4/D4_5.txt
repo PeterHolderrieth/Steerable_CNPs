@@ -22,7 +22,11 @@ Grid points per map:  1681
 ________________________
 
 
+<<<<<<< HEAD
 Time:  2020-11-12 21:14:13.911905
+=======
+Time:  2020-11-12 06:13:33.272952
+>>>>>>> 49fb16a6adf7fead033fff0a7ce36196cb41c869
 Number of grid points per axis:  20
 Group: D4
 Model type: regular_big
