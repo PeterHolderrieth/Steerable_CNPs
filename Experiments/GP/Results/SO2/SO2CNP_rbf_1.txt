@@ -1,6 +1,0 @@
-Running on the GPU
-
-Time:  2020-11-14 09:32:25.166116
-Group: SO2
-Model type: irrep_middle
-Number of parameters:  101845
