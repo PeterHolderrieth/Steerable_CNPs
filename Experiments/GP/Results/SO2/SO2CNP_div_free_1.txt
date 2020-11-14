@@ -1,6 +1,6 @@
 Running on the GPU
 
-Time:  2020-11-14 00:47:27.500325
+Time:  2020-11-14 09:33:21.256033
 Group: SO2
-Model type: irrep_big
-Number of parameters:  655233
+Model type: irrep_middle
+Number of parameters:  101845
