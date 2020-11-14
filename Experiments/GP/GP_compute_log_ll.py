@@ -4,11 +4,13 @@ import torch.nn.functional as F
 import numpy as np
 
 import sys
+import argparse
 sys.path.append('../..')
 
-import My_Tools
+#Own files:
 import Kernel_and_GP_tools as GP
-import Tasks.GP_Data.GP_div_free_circle.loader as GP_load_data
+import My_Tools
+import Tasks.GP_Data.GP_loader as DataLoader
 
 #Set device:
 if torch.cuda.is_available():
@@ -18,10 +20,29 @@ else:
     DEVICE = torch.device("cpu")
     print("Running on the CPU")
 
+# Construct the argument parser
+ap = argparse.ArgumentParser()
+ap.set_defaults(
+    N_SAMPLES=None
+    BATCH_SIZE=30
+    N_DATA_PASSES=30)
+
+#Arguments for task:
+ap.add_argument("-data", "--DATA", type=str, required=True,help="Data to use.")
+ap.add_argument("-n_passes", "--N_DATA_PASSES", type=int, required=False,help="Number of data passes.")
+ap.add_argument("-n_samples", "--N_SAMPLES", type=int, required=False,help="Number of data samples (only not None for debugging).")
+
+
+#Pass the arguments:
+ARGS = vars(ap.parse_args())
+
+
 #Compute the log-ll of the GP posterior on the data by sampling:
-def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=1,n_data_passes=1):
+def Compute_GP_log_ll(GP_parameters,dataset,device,n_samples=None,batch_size=1,n_data_passes=1):
         with torch.no_grad():
-            n_obs=val_dataset.n_obs
+            n_obs=dataset.n_obs
+            if n_samples is None: 
+                n_samples=n_obs
             n_samples_max=min(n_samples,n_obs)
             n_iterat=max(n_samples_max//batch_size,1)
             log_ll=torch.tensor(0.0, device=device)
@@ -32,7 +53,7 @@ def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=
 
                 for it in range(n_iterat):
                     #Get random minibatch:
-                    x_context,y_context,x_target,y_target=val_dataset.get_batch(inds=batch_ind_list[it],cont_in_target=False)
+                    x_context,y_context,x_target,y_target=dataset.get_batch(inds=batch_ind_list[it],cont_in_target=False)
                     
                     #Load data to device:
                     x_context=x_context.to(device)
@@ -55,21 +76,31 @@ def Compute_GP_log_ll(GP_parameters,val_dataset,device,n_samples=400,batch_size=
                                         
         return(log_ll.item()/n_data_passes)
 
-#Get the data set:
-dataset_type=str(sys.argv[1])
-if dataset_type=='valid':
-    DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='valid',file_path='GP_div_free_circle/')
-elif dataset_type=='test':
-    DATASET=GP_load_data.give_GP_div_free_data_set(2,50,data_set='test',file_path='GP_div_free_circle/')
 
-#Set hyperparameters:
-N_SAMPLES=10000
-BATCH_SIZE=30
-N_DATA_PASSES=30
-GP_PARAMETERS={'l_scale':5.,
-'sigma_var': 10., 
-'kernel_type':"div_free",
-'obs_noise':0.02}
+#Fixed hyperparameters:
+FILEPATH="../../Tasks/GP_Data/"
+MIN_N_CONT=5
+MAX_N_CONT=50
+
+DATASET=DataLoader.give_GP_data_set(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'test',file_path=FILEPATH)                 
+
+if ARGS['DATA']=='rbf':
+    GP_PARAMETERS={'l_scale':5.,
+    'sigma_var': 10., 
+    'kernel_type':"div_free",
+    'obs_noise':0.02}
+
+elif ARGS['DATA']=='div_free':
+    GP_PARAMETERS={'l_scale':5.,
+    'sigma_var': 10., 
+    'kernel_type':"div_free",
+    'obs_noise':0.02}
+
+elif ARGS['DATA']=='curl_free':
+    GP_PARAMETERS={'l_scale':5.,
+    'sigma_var': 10., 
+    'kernel_type':"div_free",
+    'obs_noise':0.02}
 
 #Run:
 log_ll=Compute_GP_log_ll(GP_PARAMETERS,DATASET,DEVICE,N_SAMPLES,BATCH_SIZE,N_DATA_PASSES)
@@ -77,5 +108,4 @@ log_ll=Compute_GP_log_ll(GP_PARAMETERS,DATASET,DEVICE,N_SAMPLES,BATCH_SIZE,N_DAT
 #Print:
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
-print("Number of samples per data pass:", N_SAMPLES)
 print("Number of data passes: ", N_DATA_PASSES)
