@@ -23,14 +23,16 @@ else:
 # Construct the argument parser
 ap = argparse.ArgumentParser()
 ap.set_defaults(
-    N_SAMPLES=None
-    BATCH_SIZE=30
+    DATA=None,
+    N_SAMPLES=None,
+    BATCH_SIZE=30,
     N_DATA_PASSES=30)
 
 #Arguments for task:
 ap.add_argument("-data", "--DATA", type=str, required=True,help="Data to use.")
 ap.add_argument("-n_passes", "--N_DATA_PASSES", type=int, required=False,help="Number of data passes.")
 ap.add_argument("-n_samples", "--N_SAMPLES", type=int, required=False,help="Number of data samples (only not None for debugging).")
+ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
 
 
 #Pass the arguments:
@@ -85,27 +87,29 @@ MAX_N_CONT=50
 DATASET=DataLoader.give_GP_data_set(MIN_N_CONT,MAX_N_CONT,ARGS['DATA'],'test',file_path=FILEPATH)                 
 
 if ARGS['DATA']=='rbf':
-    GP_PARAMETERS={'l_scale':5.,
+    GP_parameters={'l_scale':5.,
     'sigma_var': 10., 
-    'kernel_type':"div_free",
+    'kernel_type':"rbf",
     'obs_noise':0.02}
 
 elif ARGS['DATA']=='div_free':
-    GP_PARAMETERS={'l_scale':5.,
+    GP_parameters={'l_scale':5.,
     'sigma_var': 10., 
     'kernel_type':"div_free",
     'obs_noise':0.02}
 
 elif ARGS['DATA']=='curl_free':
-    GP_PARAMETERS={'l_scale':5.,
+    GP_parameters={'l_scale':5.,
     'sigma_var': 10., 
     'kernel_type':"div_free",
     'obs_noise':0.02}
+else: 
+    sys.exit("Unknown data type.")
 
 #Run:
-log_ll=Compute_GP_log_ll(GP_PARAMETERS,DATASET,DEVICE,N_SAMPLES,BATCH_SIZE,N_DATA_PASSES)
+log_ll=Compute_GP_log_ll(GP_parameters,DATASET,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
 
 #Print:
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
-print("Number of data passes: ", N_DATA_PASSES)
+print("Number of data passes: ", ARGS['N_DATA_PASSES'])
