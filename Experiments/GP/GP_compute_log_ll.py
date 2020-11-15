@@ -5,6 +5,7 @@ import numpy as np
 
 import sys
 import argparse
+import datetime
 sys.path.append('../..')
 
 #Own files:
@@ -101,16 +102,18 @@ elif ARGS['DATA']=='div_free':
 elif ARGS['DATA']=='curl_free':
     GP_parameters={'l_scale':5.,
     'sigma_var': 10., 
-    'kernel_type':"div_free",
+    'kernel_type':"curl_free",
     'obs_noise':0.02}
 else: 
     sys.exit("Unknown data type.")
 
+print("Start time:", datetime.datetime.today())
 #Run:
 log_ll=Compute_GP_log_ll(GP_parameters,DATASET,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
 
 #Print:
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
+print("End time: ", datetime.datetime.today())
 print("GP data set with kernel: ", ARGS['DATA'])
 print("Number of data passes: ", ARGS['N_DATA_PASSES'])
