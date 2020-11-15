@@ -5,12 +5,8 @@ n_test=5
 n_val=100
 track=True
 
-for seed in 3 # 4 5 
+for seed in 3  
 do 
-    python Experiment_GP.py -lr 5e-4 -batch 5 -epochs $epochs -it $it -track True -G C16 -A regular_big -n_test $n_test -n_val $n_val -l 3.  -seed $seed -data div_free > Results/C16/C16CNP_div_free_${seed}.txt
+    python Experiment_GP.py -lr 5e-4 -batch 5 -epochs $epochs -it $it -track True -G C16 -A regular_big -n_test $n_test -n_val $n_val -l 3.  -seed $seed -data rbf > Results/C16/C16CNP_rbf_${seed}.txt
 done  
-
-for seed in 1 2 3 4 5 
-do 
-    python Experiment_GP.py -lr 5e-4 -batch 5 -epochs $epochs -it $it -track True -G C16 -A regular_big -n_test $n_test -n_val $n_val -l 3.  -seed $seed -data curl_free > Results/C16/C16CNP_curl_free_${seed}.txt
-done  
+  
