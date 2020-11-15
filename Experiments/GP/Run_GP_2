@@ -1,0 +1,5 @@
+n_passes=1
+batch=30
+python GP_compute_log_ll.py -data rbf -n_passes $n_passes -batch $batch
+python GP_compute_log_ll.py -data div_free -n_passes $n_passes -batch $batch
+python GP_compute_log_ll.py -data curl_free -n_passes $n_passes -batch $batch
