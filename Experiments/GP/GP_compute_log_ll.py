@@ -112,4 +112,5 @@ log_ll=Compute_GP_log_ll(GP_parameters,DATASET,DEVICE,ARGS['N_SAMPLES'],ARGS['BA
 #Print:
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
+print("GP data set with kernel: ", ARGS['DATA'])
 print("Number of data passes: ", ARGS['N_DATA_PASSES'])
