@@ -3,7 +3,7 @@ a curl-free kernel.
 The parameters for the GP are:
 GP_parameters={'l_scale':5.,
 'sigma_var': 10., 
-'kernel_type':"div_free",
+'kernel_type':"curl_free",
 'obs_noise':0.02}
 
 The mean log-likelihood on the data from the GP itself is:
