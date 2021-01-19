@@ -6,7 +6,7 @@ n_val=100
 track=True
 
 
-for seed in 1 2 3 4 5 
+for seed in 5 
 do 
     python Experiment_GP.py -lr 5e-4 -epochs 30 -it $it -track True -G SO2 -A irrep_middle -n_test $n_test -n_val $n_val -l 3. -cov 4  -seed $seed -data div_free > Results/SO2/SO2CNP_div_free_${seed}.txt
 done
