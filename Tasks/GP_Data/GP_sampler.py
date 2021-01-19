@@ -15,7 +15,7 @@ import My_Tools
 
 #This functions create n_samples of a GP on a radial grid:
 def Cyclic_GP_Sampler(n_samples,min_x,max_x,n_grid_points,l_scale=1.,sigma_var=1., 
-                        kernel_type="div_free",obs_noise=1e-2):
+                        kernel_type="div_free",obs_noise=1e-2,cyclic=True):
     '''
     Input:
     n_samples - int - number of samples to compute 
@@ -32,7 +32,10 @@ def Cyclic_GP_Sampler(n_samples,min_x,max_x,n_grid_points,l_scale=1.,sigma_var=1
 
     '''
     #Get a radial grid:
-    X_Grid=My_Tools.Radial_Grid(min=min_x,max=max_x,n_axis=n_grid_points)
+    if cyclic:
+        X_Grid=My_Tools.Radial_Grid(min=min_x,max=max_x,n_axis=n_grid_points)
+    else:
+        X_Grid=My_Tools.Give_2d_Grid(min_x=min_x,max_x=max_x,n_x_axis=n_grid_points,flatten=True)
     n=X_Grid.size(0)
     #Create empty data arrays:
     X_data=torch.empty((n_samples,n,2))
