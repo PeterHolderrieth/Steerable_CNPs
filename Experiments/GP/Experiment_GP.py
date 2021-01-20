@@ -163,6 +163,8 @@ else:
         decoder=models.get_SO2_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
     elif ARGS['GROUP']=='C4':
         decoder=models.get_C4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
+    elif ARGS['GROUP']=='C8':
+        decoder=models.get_C8_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[1])
     elif ARGS['GROUP']=='CNN':
         decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=2) 
     else:
@@ -188,6 +190,7 @@ else:
 
 
 print("Number of parameters: ", My_Tools.count_parameters(CNP,print_table=False))
+
 CNP,_,_=Training.train_CNP(CNP,
                            train_dataset=train_dataset,
                            val_dataset=val_dataset,

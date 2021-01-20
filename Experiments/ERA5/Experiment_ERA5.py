@@ -166,6 +166,8 @@ else:
         decoder=models.get_SO2_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
     elif ARGS['GROUP']=='C4':
         decoder=models.get_C4_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
+    elif ARGS['GROUP']=='C8':
+        decoder=models.get_C8_Decoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],context_rep_ids=[0,0,1])
     elif ARGS['GROUP']=='CNN':
         decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=4) 
     else:

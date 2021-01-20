@@ -1,4 +1,3 @@
-#Get the number of iterations, epochs and tests needed!
 epochs=30
 it=1500
 n_test=5
