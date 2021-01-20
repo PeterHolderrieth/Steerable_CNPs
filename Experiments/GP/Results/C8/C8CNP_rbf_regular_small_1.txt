@@ -1,0 +1,11 @@
+Running on the GPU
+
+Time:  2021-01-20 13:41:54.840460
+Group: C8
+Model type: regular_small
+Number of parameters:  11209
+Epoch: 0 | train loss: 6.08253 | train log ll:  -6.08253 | val log ll: -5.86002
+Epoch: 1 | train loss: 5.59728 | train log ll:  -5.59728 | val log ll: -5.19011
+Epoch: 2 | train loss: 5.22587 | train log ll:  -5.22587 | val log ll: -5.12207
+Time finished with training:  2021-01-20 13:42:08.652547
+
