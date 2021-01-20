@@ -1,7 +1,7 @@
-epochs=3 #0
-it=1 #500
-n_test=1 #5
-n_val=1 #100
+epochs=30
+it=1500
+n_test=2
+n_val=100
 track=True
 seed=1
 for arch in regular_middle regular_big 
