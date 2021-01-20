@@ -70,7 +70,7 @@ else:
 ap = argparse.ArgumentParser()
 ap.set_defaults(
     BATCH_SIZE=30,
-    iN_EPOCHS=3,
+    N_EPOCHS=3,
     PRINT_PROGRESS=True,
     N_ITERAT_PER_EPOCH=1,
     LEARNING_RATE=1e-4, 

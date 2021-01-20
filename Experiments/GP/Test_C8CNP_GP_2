@@ -4,7 +4,7 @@ n_test=1 #5
 n_val=1 #100
 track=True
 seed=1
-for arch in regular_small regular_huge
+for arch in regular_middle regular_big 
 do 
     python Experiment_GP.py -seed $seed -lr 5e-4 -epochs $epochs -it $it -track True -G C8 -A $arch -n_val $n_val -l 3. -batch 5 -cov 4 -data rbf > Results/C8/C8CNP_rbf_${arch}_${seed}.txt -n_test $n_test
 done
