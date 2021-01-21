@@ -22,14 +22,14 @@ Grid points per map:  1681
 ________________________
 
 
-Time:  2021-01-21 17:45:49.282007
+Time:  2021-01-21 18:03:03.150074
 Number of grid points per axis:  20
 Group: C8
 Model type: regular_middle
 Number of parameters:  71713
-Epoch: 0 | train loss: 4.61766 | train log ll:  -4.61766 | val log ll: -4.43534
-Epoch: 1 | train loss: 3.06483 | train log ll:  -3.06483 | val log ll: -1.83431
-Epoch: 2 | train loss: 2.32452 | train log ll:  -2.32452 | val log ll: -2.13369
+Epoch: 0 | train loss: 7.84562 | train log ll:  -7.84562 | val log ll: -3.57079
+Epoch: 1 | train loss: 2.67465 | train log ll:  -2.67465 | val log ll: -1.47061
+Epoch: 2 | train loss: 2.40913 | train log ll:  -2.40913 | val log ll: -2.84321
 
 _______________________
 Loaded weather data: 
@@ -41,7 +41,7 @@ South-North Latitude:  30.0 40.0
 Grid points per map:  1681
 ________________________
 
-Test log ll US: -3.098390817642212
+Test log ll US: -2.5638420581817627
 
 
 _______________________
@@ -54,5 +54,5 @@ South-North Latitude:  25.0 35.0
 Grid points per map:  1681
 ________________________
 
-Test log ll China: -4.0991997718811035
+Test log ll China: -1.9382685422897339
 
