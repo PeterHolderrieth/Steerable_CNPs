@@ -124,11 +124,12 @@ for l_scale,sigma,noise in itertools.product(l_scale_vec,sigma_vec,noise_vec):
 
     #Print:
     #print("Mean log-likelihood on validation data set:")
-    #print(log_ll)
+    print(log_ll)
     #print("End time: ", datetime.datetime.today())
     #print("GP data set with kernel: ", ARGS['DATA'])
     #print("Number of data passes: ", ARGS['N_DATA_PASSES'])
     if log_ll>log_ll_best:
+        print ('improvement')
         log_ll_best=log_ll
         GP_best_parameters=GP_new_parameters
 
