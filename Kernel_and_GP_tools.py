@@ -409,12 +409,12 @@ def GP_inference(X_Context,Y_Context,X_Target,l_scale=1,sigma_var=1, kernel_type
     #Dimensions of data matrices:
     n_context_points=X_Context.size(0)
     n_target_points=X_Target.size(0)
+    d=X_Context.size(1)
     D=Y_Context.size(1)
     #Get matrix K(X_Context,X_Context) and add on the diagonal the observation noise:
     Gram_context=Gram_matrix(X_Context,l_scale=l_scale,sigma_var=sigma_var, kernel_type=kernel_type,B=B,Ker_project=Ker_project)
 
     Noise_matrix_context=(obs_noise+chol_noise)*torch.eye(n_context_points*D).to(X_Context.device)
-    
     Gram_context=Gram_context+Noise_matrix_context
 
     #Get Gram-matrix K(X_Target,X_Target):
