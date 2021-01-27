@@ -34,7 +34,7 @@ ap.set_defaults(
 ap.add_argument("-n_passes", "--N_DATA_PASSES", type=int, required=False,help="Number of data passes.")
 ap.add_argument("-n_samples", "--N_SAMPLES", type=int, required=False,help="Number of data samples (only not None for debugging).")
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
-ap.add_argument("-data", "--DATA_SET", type=str, required=True,help="Data set.")
+ap.add_argument("-data", "--DATA_SET", type=str, required=False,help="Data set.")
 
 
 #Pass the arguments:
