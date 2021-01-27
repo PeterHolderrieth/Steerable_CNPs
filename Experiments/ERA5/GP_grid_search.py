@@ -120,18 +120,23 @@ for l_scale,sigma,noise in itertools.product(l_scale_vec,sigma_vec,noise_vec):
     #print("GP parameters: ", GP_parameters)
     #print("Start time:", datetime.datetime.today())
     #Run:
-    log_ll=Compute_GP_log_ll(GP_new_parameters,train_dataset,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
+    try:
+        log_ll=Compute_GP_log_ll(GP_new_parameters,train_dataset,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
 
-    #Print:
-    #print("Mean log-likelihood on validation data set:")
-    print(log_ll)
-    #print("End time: ", datetime.datetime.today())
-    #print("GP data set with kernel: ", ARGS['DATA'])
-    #print("Number of data passes: ", ARGS['N_DATA_PASSES'])
-    if log_ll>log_ll_best:
-        print ('improvement')
-        log_ll_best=log_ll
-        GP_best_parameters=GP_new_parameters
+        #Print:
+        #print("Mean log-likelihood on validation data set:")
+        print(log_ll)
+        #print("End time: ", datetime.datetime.today())
+        #print("GP data set with kernel: ", ARGS['DATA'])
+        #print("Number of data passes: ", ARGS['N_DATA_PASSES'])
+        if log_ll>log_ll_best:
+            print ('improvement')
+            log_ll_best=log_ll
+            GP_best_parameters=GP_new_parameters
+            print("Parameters: ", GP_best_parameters)
+    except NameError:
+        print("Something did not work.")
+        print("Parameters: ", GP_new_parameters)
 
 print("Best parameters: ")
 print(GP_best_parameters)
