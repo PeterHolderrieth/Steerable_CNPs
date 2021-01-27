@@ -106,6 +106,10 @@ l_scale_vec=np.array([0.1,1.,10.,100.])
 sigma_vec=np.array([0.1,1.,10.,100.])
 noise_vec=np.array([0.,0.001,0.01,0.1,1.,10.])
 
+print("L_Scale: ", l_scale_vec)
+print("Sigma vec: ", sigma_vec)
+print("Noise vec: ", noise_vec)
+
 for l_scale,sigma,noise in itertools.product(l_scale_vec,sigma_vec,noise_vec):
 
     GP_new_parameters={'l_scale':l_scale,
@@ -120,11 +124,12 @@ for l_scale,sigma,noise in itertools.product(l_scale_vec,sigma_vec,noise_vec):
 
     #Print:
     #print("Mean log-likelihood on validation data set:")
-    #print(log_ll)
+    print(log_ll)
     #print("End time: ", datetime.datetime.today())
     #print("GP data set with kernel: ", ARGS['DATA'])
     #print("Number of data passes: ", ARGS['N_DATA_PASSES'])
     if log_ll>log_ll_best:
+        print ('improvement')
         log_ll_best=log_ll
         GP_best_parameters=GP_new_parameters
 
