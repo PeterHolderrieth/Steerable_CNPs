@@ -1,0 +1,3 @@
+{'l_scale': 0.01, 'sigma_var': 0.5, 'kernel_type': 'rbf', 'obs_noise': 0.05}
+log-ll: -2.252943277359009
+
