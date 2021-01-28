@@ -102,10 +102,9 @@ train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place
 log_ll_best=-10e16
 GP_best_parameters=None
 n_grid_points=10
-l_scale_vec=np.array([0.05,0.1,0.5,2.,3.])
-sigma_vec=np.array([0.1,0.25,0.5,1])
-noise_vec=np.array([0.,0.001,0.01,0.1,1.,10.])
-
+l_scale_vec=np.array([0.01,0.05,0.1,])
+sigma_vec=np.array([0.25,0.5,0.75])
+noise_vec=np.array([0.05,0.1,0.15,0.2])
 print("L_Scale: ", l_scale_vec)
 print("Sigma vec: ", sigma_vec)
 print("Noise vec: ", noise_vec)
