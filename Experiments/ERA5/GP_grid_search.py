@@ -71,10 +71,10 @@ def Compute_GP_log_ll(GP_parameters,dataset,device,n_samples=None,batch_size=1,n
                     B=torch.eye(4).to(device)
                     for b in range(batch_size):
                         Means,Sigmas,_=GP.GP_inference(x_context[b],y_context[b],x_target[b],**GP_parameters,B=B)
-                        Means=Means[:,:2]
+                        Means=Means[:,2:]
                         Means_list.append(Means)
                         Sigmas=My_Tools.Get_Block_Diagonal(Sigmas,size=4)
-                        Sigmas=Sigmas[:,:2,:2]
+                        Sigmas=Sigmas[:,2:,2:]
                         Sigmas_list.append(Sigmas)
                     Means=torch.stack(Means_list,dim=0)
                     Sigmas=torch.stack(Sigmas_list,dim=0)
@@ -102,9 +102,9 @@ train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place
 log_ll_best=-10e16
 GP_best_parameters=None
 n_grid_points=10
-l_scale_vec=np.array([0.001,0.005,0.01,0.02])
-sigma_vec=np.array([0.4,0.5,0.6])
-noise_vec=np.array([0.01,0.025,0.05,0.01])
+l_scale_vec=np.array([0.1,1.,5.,10.])
+sigma_vec=np.array([0.1,1.,5.,10.])
+noise_vec=np.array([0.0,0.01,0.1,1.,10.])
 
 
 print("L_Scale: ", l_scale_vec)
