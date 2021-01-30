@@ -1,3 +1,7 @@
-{'l_scale': 0.01, 'sigma_var': 0.5, 'kernel_type': 'rbf', 'obs_noise': 0.05}
 log-ll: -2.252943277359009
-
+{'l_scale': 0.01, 'sigma_var': 0.5, 'kernel_type': 'rbf', 'obs_noise': 0.05}
+log-ll:-0.3862794041633606 
+Parameter: {'l_scale': 5.0, 'sigma_var': 0.1, 'kernel_type': 'rbf', 'obs_noise': 0.01} 
+log-ll: 0.14530381560325623
+improvement
+Parameters:  {'l_scale': 10.0, 'sigma_var': 0.1, 'kernel_type': 'rbf', 'obs_noise': 0.01}
