@@ -6,7 +6,7 @@ do
     do
         for noise in 0.005 0.01 0.02 0.05 0.1 
         do 
-             python Run_GP.py -data small -lscale $lscale -sigma $sigma -noise $noise
+             python Run_GP.py -data big -lscale $lscale -sigma $sigma -noise $noise
         done
     done
 done
