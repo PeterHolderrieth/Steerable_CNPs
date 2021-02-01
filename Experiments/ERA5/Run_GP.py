@@ -97,12 +97,11 @@ if ARGS['DATA_SIZE']=='small':
         PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Small_ERA5_US.nc"
         PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Small_ERA5_US.nc"
         PATH_TO_TEST_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Small_ERA5_US.nc"
-        PATH_TO_TEST_CHINA_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Small_ERA5_China.nc"
 elif ARGS['DATA_SIZE']=='big':
         PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Big_ERA5_US.nc"
         PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Big_ERA5_US.nc"
         PATH_TO_TEST_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Big_ERA5_US.nc"
-        PATH_TO_TEST_CHINA_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Big_ERA5_China.nc"
+        PATH_TO_TEST_CHINA_FILE="../../Tasks/ERA5/ERA5_China/Data/Test_Big_ERA5_China.nc"
 else:
     sys.exit("Unknown data set.")
 

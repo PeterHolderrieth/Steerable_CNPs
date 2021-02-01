@@ -570,3 +570,19 @@ GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.1, 'kernel_type': 'rbf', 'obs_n
 Start time: 2021-02-01 13:40:45.173356
 Mean log-likelihood on validation data set:
 -0.1618005335330963
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.1, 'kernel_type': 'rbf', 'obs_noise': 0.1}
+Start time: 2021-02-01 13:51:32.937912
+Mean log-likelihood on validation data set:
+-0.5389208793640137
