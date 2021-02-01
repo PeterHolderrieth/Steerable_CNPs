@@ -27,14 +27,15 @@ ap = argparse.ArgumentParser()
 ap.set_defaults(
     N_SAMPLES=None,
     BATCH_SIZE=30,
-    N_DATA_PASSES=1)
+    N_DATA_PASSES=1,
+    DATA_SET='train')
 
 #Arguments for task:
 ap.add_argument("-n_passes", "--N_DATA_PASSES", type=int, required=False,help="Number of data passes.")
 ap.add_argument("-n_samples", "--N_SAMPLES", type=int, required=False,help="Number of data samples (only not None for debugging).")
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
 ap.add_argument("-data", "--DATA_SIZE", type=str, required=True,help="Size of data set. 'big' or 'small'.")
-ap.add_argument("-mode","--DATA_SET",type=str,required=True,help="Type of data set: 'train', 'val', or 'test'")
+ap.add_argument("-mode","--DATA_SET",type=str,required=False,help="Type of data set: 'train', 'val', or 'test'")
 ap.add_argument("-lscale", "--LSCALE", type=float, required=True,help="L scale of kernel.")
 ap.add_argument("-sigma", "--SIGMA", type=float, required=True,help="Sigma scale of kernel.")
 ap.add_argument("-noise", "--NOISE", type=float, required=True,help="Noise scale of kernel.")
