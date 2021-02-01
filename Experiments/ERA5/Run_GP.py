@@ -122,6 +122,6 @@ GP_parameters={'l_scale':ARGS['LSCALE'],
 print("GP parameters: ", GP_parameters)
 print("Start time:", datetime.datetime.today())   
 log_ll=Compute_GP_log_ll(GP_parameters,dataset,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
-print("Mean log-likelihood on validation data set:")
+print("Mean log-likelihood on data set:")
 print(log_ll)
 
