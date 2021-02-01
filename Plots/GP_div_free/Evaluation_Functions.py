@@ -46,7 +46,7 @@ def plot_context_and_VF(ax,X_Context=None,Y_Context=None,X_Target=None,Y_Target=
     ax.set_xlim(x1_lim)
     ax.set_ylim(x2_lim)
     if facecolor is not None:
-        ax.set_facecolor('black')
+        ax.set_facecolor(facecolor)
     width=ax.get_xlim()[1]-ax.get_xlim()[0]
     #Plot target vector field
     if X_Target is not None and Y_Target is not None:
