@@ -27,14 +27,14 @@ ap = argparse.ArgumentParser()
 ap.set_defaults(
     N_SAMPLES=None,
     BATCH_SIZE=30,
-    N_DATA_PASSES=1,
-    DATASET='big')
+    N_DATA_PASSES=1)
 
 #Arguments for task:
 ap.add_argument("-n_passes", "--N_DATA_PASSES", type=int, required=False,help="Number of data passes.")
 ap.add_argument("-n_samples", "--N_SAMPLES", type=int, required=False,help="Number of data samples (only not None for debugging).")
 ap.add_argument("-batch", "--BATCH_SIZE", type=int, required=False,help="Batch size.")
-ap.add_argument("-data", "--DATA_SET", type=str, required=False,help="Data set.")
+ap.add_argument("-data", "--DATA_SIZE", type=str, required=True,help="Size of data set. 'big' or 'small'.")
+ap.add_argument("-mode","--DATA_SET",type=str,required=True,help="Type of data set: 'train', 'val', or 'test'")
 ap.add_argument("-lscale", "--LSCALE", type=float, required=True,help="L scale of kernel.")
 ap.add_argument("-sigma", "--SIGMA", type=float, required=True,help="Sigma scale of kernel.")
 ap.add_argument("-noise", "--NOISE", type=float, required=True,help="Noise scale of kernel.")
@@ -92,16 +92,28 @@ def Compute_GP_log_ll(GP_parameters,dataset,device,n_samples=None,batch_size=1,n
 MIN_N_CONT=5
 MAX_N_CONT=50
 
-if ARGS['DATA_SET']=='small':
+if ARGS['DATA_SIZE']=='small':
         PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Small_ERA5_US.nc"
         PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Small_ERA5_US.nc"
-elif ARGS['DATA_SET']=='big':
+        PATH_TO_TEST_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Small_ERA5_US.nc"
+        PATH_TO_TEST_CHINA_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Small_ERA5_China.nc"
+elif ARGS['DATA_SIZE']=='big':
         PATH_TO_TRAIN_FILE="../../Tasks/ERA5/ERA5_US/Data/Train_Big_ERA5_US.nc"
         PATH_TO_VAL_FILE="../../Tasks/ERA5/ERA5_US/Data/Valid_Big_ERA5_US.nc"
+        PATH_TO_TEST_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Big_ERA5_US.nc"
+        PATH_TO_TEST_CHINA_FILE="../../Tasks/ERA5/ERA5_US/Data/Test_Big_ERA5_China.nc"
 else:
     sys.exit("Unknown data set.")
 
-train_dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+if ARGS['DATA_SET']=='train':
+    dataset=Dataset.ERA5Dataset(PATH_TO_TRAIN_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+elif ARGS['DATA_SET']=='val':
+    dataset=Dataset.ERA5Dataset(PATH_TO_VAL_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+elif ARGS['DATA_SET']=='test':
+    dataset=Dataset.ERA5Dataset(PATH_TO_TEST_FILE,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
+elif ARGS['DATA_SET']=='testChina':
+    dataset=Dataset.ERA5Dataset(PATH_TO_TEST_CHINA_FILE,MIN_N_CONT,MAX_N_CONT,place='China',normalize=True,circular=True)
+else:                                                                                                                                                                                                                  sys.exit("Unknown train mode.")
 
 GP_parameters={'l_scale':ARGS['LSCALE'],
 'sigma_var': ARGS['SIGMA'], 
@@ -110,7 +122,7 @@ GP_parameters={'l_scale':ARGS['LSCALE'],
 
 print("GP parameters: ", GP_parameters)
 print("Start time:", datetime.datetime.today())   
-log_ll=Compute_GP_log_ll(GP_parameters,train_dataset,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
+log_ll=Compute_GP_log_ll(GP_parameters,dataset,DEVICE,ARGS['N_SAMPLES'],ARGS['BATCH_SIZE'],ARGS['N_DATA_PASSES'])
 print("Mean log-likelihood on validation data set:")
 print(log_ll)
 
