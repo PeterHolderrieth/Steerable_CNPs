@@ -40,7 +40,6 @@ ap.add_argument("-lscale", "--LSCALE", type=float, required=True,help="L scale o
 ap.add_argument("-sigma", "--SIGMA", type=float, required=True,help="Sigma scale of kernel.")
 ap.add_argument("-noise", "--NOISE", type=float, required=True,help="Noise scale of kernel.")
 
-
 #Pass the arguments:
 ARGS = vars(ap.parse_args())
 

@@ -1,0 +1,5 @@
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-01 14:24:25.871964
+Mean log-likelihood on validation data set:
+0.45809245109558105
+Running on the GPU
