@@ -62,7 +62,7 @@ def plot_context_and_VF(ax,X_Context=None,Y_Context=None,X_Target=None,Y_Target=
             color='red',pivot='mid',label='Context set',scale_units='width',scale=width*scale,headlength=4, headwidth = 2,width=0.005)   
     return(ax)
 
-def plot_Covs(ax,X_Target,Cov_Mat,scale=20,x1_lim=[-10,10],x2_lim=[-10,10],alpha=1.,facecolor='orange',edgecolor='grey'):
+def plot_Covs(ax,X_Target,Cov_Mat,scale=20,x1_lim=[-10,10],x2_lim=[-10,10],alpha=1.,facecolor='orange',edgecolor='grey',linewidth=1.):
     '''
     Inputs: ax - matplotlib.axes._subplots.AxesSubplot - axis to plot on
             X_Target - torch.Tensor - shape (n_t,2) - locations of the target set
@@ -99,7 +99,7 @@ def plot_Covs(ax,X_Target,Cov_Mat,scale=20,x1_lim=[-10,10],x2_lim=[-10,10],alpha
             width=2*chi_sq_quantile*torch.sqrt(D[0])/scale
             height=2*chi_sq_quantile*torch.sqrt(D[1])/scale
             #Plot the Ellipse:
-            E=Ellipse(xy=X_Target[j,].numpy(),width=width,height=height,angle=angle,alpha=alpha,zorder=0,facecolor=facecolor,edgecolor=edgecolor,linewidth=1.)
+            E=Ellipse(xy=X_Target[j,].numpy(),width=width,height=height,angle=angle,alpha=alpha,zorder=0,facecolor=facecolor,edgecolor=edgecolor,linewidth=linewidth)
             #E.set_color(colormap(traces[j].item()))
             #E.set_facecolor(colormap(traces[j].item()))
             ax.add_patch(E)
