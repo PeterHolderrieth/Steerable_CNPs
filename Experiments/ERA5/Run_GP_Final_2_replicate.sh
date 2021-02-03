@@ -6,7 +6,7 @@ data=big
 mode='test'
 passes=5
 
-python Run_GP.py -data $data -lscale $lscale -sigma $sigma -noise $noise -mode $mode -n_passes $passes
+python Run_GP.py -data $data -lscale s$lscale -sigma $sigma -noise $noise -mode $mode -n_passes $passes
 
 mode='testChina'
 
