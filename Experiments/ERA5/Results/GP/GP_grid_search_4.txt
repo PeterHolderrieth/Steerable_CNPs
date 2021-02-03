@@ -348,3 +348,67 @@ GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_
 Start time: 2021-02-03 18:30:48.745600
 Mean log-likelihood on data set:
 0.382991224527359
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.009}
+Start time: 2021-02-03 18:53:50.116575
+Mean log-likelihood on data set:
+0.38514378666877747
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-03 19:10:04.658559
+Mean log-likelihood on data set:
+0.368457555770874
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.011}
+Start time: 2021-02-03 19:26:38.355721
+Mean log-likelihood on data set:
+0.4013802707195282
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 19:43:52.602626
+Mean log-likelihood on data set:
+0.39523985981941223
