@@ -1,6 +1,6 @@
-for lscale in 10.
+for lscale in 15.
 do
-    for sigma in 0.07 0.08 0.09 0.1 
+    for sigma in 0.007 0.008 0.009 0.01 0.011 0.012 0.013 
     do
         for noise in 0.007 0.009 0.01 0.011 0.013  
         do 

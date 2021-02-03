@@ -1,3 +1,8 @@
+GP parameters:  {'l_scale': 10.0, 'sigma_var': 0.13, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 02:23:06.476634
+Mean log-likelihood on data set:
+0.30479973554611206
+
 GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
 Start time: 2021-02-01 14:24:25.871964
 Mean log-likelihood on validation data set:
