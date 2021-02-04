@@ -1,4 +1,5 @@
 Running on the GPU
+Running on the GPU
 
 _______________________
 Loaded weather data: 
@@ -11,9 +12,9 @@ Grid points per map:  1681
 ________________________
 
 GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
-Start time: 2021-02-03 12:38:14.845421
+Start time: 2021-02-03 22:26:37.464303
 Mean log-likelihood on data set:
-0.3808800458908081
+0.38715200424194335
 Running on the GPU
 
 _______________________
@@ -27,6 +28,6 @@ Grid points per map:  1681
 ________________________
 
 GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
-Start time: 2021-02-03 15:59:43.875117
+Start time: 2021-02-04 00:49:18.881082
 Mean log-likelihood on data set:
--0.754615306854248
+-0.7551882266998291

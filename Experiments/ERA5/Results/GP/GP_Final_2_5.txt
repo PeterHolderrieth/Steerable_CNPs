@@ -11,9 +11,9 @@ Grid points per map:  1681
 ________________________
 
 GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
-Start time: 2021-02-03 12:38:14.845421
+Start time: 2021-02-03 22:28:22.160252
 Mean log-likelihood on data set:
-0.3808800458908081
+0.38926267623901367
 Running on the GPU
 
 _______________________
@@ -27,6 +27,6 @@ Grid points per map:  1681
 ________________________
 
 GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
-Start time: 2021-02-03 15:59:43.875117
+Start time: 2021-02-04 00:54:46.541432
 Mean log-likelihood on data set:
--0.754615306854248
+-0.7547227382659912
