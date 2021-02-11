@@ -1,0 +1,414 @@
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.007, 'kernel_type': 'rbf', 'obs_noise': 0.007}
+Start time: 2021-02-03 12:24:46.369512
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.15, 'kernel_type': 'rbf', 'obs_noise': 0.007}
+Start time: 2021-02-03 12:34:06.665902
+Mean log-likelihood on data set:
+0.2135879099369049
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.15, 'kernel_type': 'rbf', 'obs_noise': 0.009}
+Start time: 2021-02-03 12:48:18.708708
+Mean log-likelihood on data set:
+0.31190237402915955
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.15, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-03 13:05:54.260264
+Mean log-likelihood on data set:
+0.2985164523124695
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.15, 'kernel_type': 'rbf', 'obs_noise': 0.011}
+Start time: 2021-02-03 13:21:56.576705
+Mean log-likelihood on data set:
+0.3167475759983063
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.15, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 13:48:01.985759
+Mean log-likelihood on data set:
+0.28629258275032043
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.2, 'kernel_type': 'rbf', 'obs_noise': 0.007}
+Start time: 2021-02-03 14:07:36.464820
+Mean log-likelihood on data set:
+0.2975534200668335
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.2, 'kernel_type': 'rbf', 'obs_noise': 0.009}
+Start time: 2021-02-03 14:21:51.950286
+Mean log-likelihood on data set:
+0.3586583435535431
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.2, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-03 14:35:24.198618
+Mean log-likelihood on data set:
+0.34720751643180847
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.2, 'kernel_type': 'rbf', 'obs_noise': 0.011}
+Start time: 2021-02-03 14:49:37.589461
+Mean log-likelihood on data set:
+0.37063050270080566
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.2, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 15:00:09.120541
+Mean log-likelihood on data set:
+0.3820514976978302
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.007}
+Start time: 2021-02-03 15:10:24.958702
+Mean log-likelihood on data set:
+0.33532246947288513
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.009}
+Start time: 2021-02-03 15:20:37.586289
+Mean log-likelihood on data set:
+0.34476470947265625
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-03 15:30:50.491530
+Mean log-likelihood on data set:
+0.3416421711444855
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.011}
+Start time: 2021-02-03 15:47:14.011995
+Mean log-likelihood on data set:
+0.36893534660339355
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.25, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 16:10:23.416782
+Mean log-likelihood on data set:
+0.3864433169364929
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.28, 'kernel_type': 'rbf', 'obs_noise': 0.007}
+Start time: 2021-02-03 16:33:52.557863
+Mean log-likelihood on data set:
+0.3098706305027008
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.28, 'kernel_type': 'rbf', 'obs_noise': 0.009}
+Start time: 2021-02-03 16:56:51.961740
+Mean log-likelihood on data set:
+0.33879926800727844
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.28, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-03 17:19:33.795228
+Mean log-likelihood on data set:
+0.3777300715446472
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.28, 'kernel_type': 'rbf', 'obs_noise': 0.011}
+Start time: 2021-02-03 17:42:56.899194
+Mean log-likelihood on data set:
+0.37631914019584656
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.28, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 18:06:52.006169
+Mean log-likelihood on data set:
+0.3761846125125885
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.007}
+Start time: 2021-02-03 18:30:48.745600
+Mean log-likelihood on data set:
+0.382991224527359
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.009}
+Start time: 2021-02-03 18:53:50.116575
+Mean log-likelihood on data set:
+0.38514378666877747
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.01}
+Start time: 2021-02-03 19:10:04.658559
+Mean log-likelihood on data set:
+0.368457555770874
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.011}
+Start time: 2021-02-03 19:26:38.355721
+Mean log-likelihood on data set:
+0.4013802707195282
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+GP parameters:  {'l_scale': 15.0, 'sigma_var': 0.35, 'kernel_type': 'rbf', 'obs_noise': 0.013}
+Start time: 2021-02-03 19:43:52.602626
+Mean log-likelihood on data set:
+0.39523985981941223

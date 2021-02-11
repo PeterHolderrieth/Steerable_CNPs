@@ -5,12 +5,12 @@ In this repository, you can find an implementation of **Equivariant Conditional 
 a model which I developped as part of my master's dissertation. 
 It it a meta-learning method which exploits the geometry of data.
 
-![GP_Predictions](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Plots/GP_div_free/Example_predictions_EquivCNP.png?raw=true)
+![GP_Predictions](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/Plots/gp_div_free/Example_predictions_SteerCNP.png?raw=true)
 
 ## Model 
 
 Equivariant Conditional Neural Processes are an extension of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613). The image above depicts example
-predictions of the EquivCNP in the case of vector fields. Inputs are the red arrows and the model extracts the whole
+predictions of the SteerCNP in the case of vector fields. Inputs are the red arrows and the model extracts the whole
 vector field.
 
 The model consists of an encoder called **EquivDeepSet** and a decoder which is an equivariant neural network 
@@ -31,7 +31,7 @@ for any group-related tasks.
 - We used the [ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=overview) data set giving grided global weather data. 
 
 ## Structure of the repository
-The core implementation of EquivCNPs are all files in the root. The folder "Tasks" gives the two main tasks which we have given our model: GP vector field data and
+The core implementation of SteerCNPs are all files in the root. The folder "tasks" gives the two main tasks which we have given our model: GP vector field data and
 real-world weather data. The folder "Experiments" gives the main execution file per task and "Plots"
 gives all visual evaluation scripts. The folder CNP gives an implementation of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613)
 to compare our results.

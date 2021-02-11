@@ -1,0 +1,7 @@
+This folder contains a data set of GP samples from a 2d vector field with 
+a divergence-free kernel.
+The parameters for the GP are:
+GP_parameters={'l_scale':5.,
+'sigma_var': 10., 
+'kernel_type':"div_free",
+'obs_noise':0.02}

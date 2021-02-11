@@ -1,0 +1,7 @@
+Running on the GPU
+Start time: 2020-11-15 11:29:50.299309
+Mean log-likelihood on validation data set:
+-3.512652587890625
+End time:  2020-11-15 13:07:35.066552
+GP data set with kernel:  rbf
+Number of data passes:  5

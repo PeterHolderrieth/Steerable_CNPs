@@ -1,0 +1,85 @@
+Running on the GPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17472, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+
+Time:  2021-01-27 14:20:27.305382
+Number of grid points per axis:  20
+Group: C8
+Model type: regular_big
+Number of parameters:  326041
+Epoch: 0 | train loss: -0.24687 | train log ll:  0.24687 | val log ll: 0.53877
+Epoch: 1 | train loss: -0.57417 | train log ll:  0.57417 | val log ll: 0.60537
+Epoch: 2 | train loss: -0.66024 | train log ll:  0.66024 | val log ll: 0.76674
+Epoch: 3 | train loss: -0.68121 | train log ll:  0.68121 | val log ll: 0.78527
+Epoch: 4 | train loss: -0.75689 | train log ll:  0.75689 | val log ll: 0.45941
+Epoch: 5 | train loss: -0.79103 | train log ll:  0.79103 | val log ll: 0.89093
+Epoch: 6 | train loss: -0.81487 | train log ll:  0.81487 | val log ll: 1.14213
+Epoch: 7 | train loss: -0.85323 | train log ll:  0.85323 | val log ll: 0.78627
+Epoch: 8 | train loss: -0.85504 | train log ll:  0.85504 | val log ll: 0.89169
+Epoch: 9 | train loss: -0.88599 | train log ll:  0.88599 | val log ll: 0.82560
+Epoch: 10 | train loss: -0.86584 | train log ll:  0.86584 | val log ll: 0.98713
+Epoch: 11 | train loss: -0.93968 | train log ll:  0.93968 | val log ll: 1.07907
+Epoch: 12 | train loss: -0.94562 | train log ll:  0.94562 | val log ll: 0.78872
+Epoch: 13 | train loss: -1.00097 | train log ll:  1.00097 | val log ll: 0.89648
+Epoch: 14 | train loss: -0.95803 | train log ll:  0.95803 | val log ll: 0.93597
+Epoch: 15 | train loss: -0.98331 | train log ll:  0.98331 | val log ll: 1.10260
+Epoch: 16 | train loss: -0.99903 | train log ll:  0.99903 | val log ll: 0.86283
+Epoch: 17 | train loss: -0.99072 | train log ll:  0.99072 | val log ll: 1.09119
+Epoch: 18 | train loss: -0.99190 | train log ll:  0.99190 | val log ll: 0.97305
+Epoch: 19 | train loss: -1.00782 | train log ll:  1.00782 | val log ll: 0.97037
+Epoch: 20 | train loss: -1.02528 | train log ll:  1.02528 | val log ll: 1.40272
+Epoch: 21 | train loss: -1.04970 | train log ll:  1.04970 | val log ll: 1.19126
+Epoch: 22 | train loss: -1.01557 | train log ll:  1.01557 | val log ll: 0.83073
+Epoch: 23 | train loss: -1.01639 | train log ll:  1.01639 | val log ll: 1.13037
+Epoch: 24 | train loss: -1.04508 | train log ll:  1.04508 | val log ll: 0.90326
+Epoch: 25 | train loss: -1.05364 | train log ll:  1.05364 | val log ll: 1.05006
+Epoch: 26 | train loss: -1.06230 | train log ll:  1.06230 | val log ll: 1.16570
+Epoch: 27 | train loss: -1.04390 | train log ll:  1.04390 | val log ll: 1.13948
+Epoch: 28 | train loss: -1.05941 | train log ll:  1.05941 | val log ll: 1.25497
+Epoch: 29 | train loss: -1.08222 | train log ll:  1.08222 | val log ll: 1.22716
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+Test log ll US: 1.0575619697570802
+
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (34560, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  105.0 115.0
+South-North Latitude:  25.0 35.0
+Grid points per map:  1681
+________________________
+
+Test log ll China: -0.6426336765289306
+

@@ -1,7 +1,0 @@
-
-MIN=1984
-MAX=2018
-for (( c=$MIN; c<=$MAX; c++ ))
-do 
-	scp peholder@ziz2:/homes/peholder/Equiv_CNPs_Dissertation_2020/Tasks/ERA5/ERA5_US/Data/"$c"_ERA5_US.grib Data/
-done

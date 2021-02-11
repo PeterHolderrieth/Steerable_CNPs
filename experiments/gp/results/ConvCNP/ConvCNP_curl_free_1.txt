@@ -1,0 +1,40 @@
+Running on the GPU
+
+Time:  2020-11-09 06:12:49.425665
+Group: CNN
+Model type: big
+Number of parameters:  409887
+Epoch: 0 | train loss: 1.84008 | train log ll:  -1.84008 | val log ll: -1.17919
+Epoch: 1 | train loss: 0.89781 | train log ll:  -0.89781 | val log ll: -0.85955
+Epoch: 2 | train loss: 0.75126 | train log ll:  -0.75126 | val log ll: -0.70873
+Epoch: 3 | train loss: 0.70046 | train log ll:  -0.70046 | val log ll: -0.73052
+Epoch: 4 | train loss: 0.67575 | train log ll:  -0.67575 | val log ll: -0.75743
+Epoch: 5 | train loss: 0.64190 | train log ll:  -0.64190 | val log ll: -0.72252
+Epoch: 6 | train loss: 0.62658 | train log ll:  -0.62658 | val log ll: -0.68591
+Epoch: 7 | train loss: 0.60412 | train log ll:  -0.60412 | val log ll: -0.68546
+Epoch: 8 | train loss: 0.60390 | train log ll:  -0.60390 | val log ll: -0.60785
+Epoch: 9 | train loss: 0.60005 | train log ll:  -0.60005 | val log ll: -0.62108
+Epoch: 10 | train loss: 0.58098 | train log ll:  -0.58098 | val log ll: -0.73626
+Epoch: 11 | train loss: 0.57230 | train log ll:  -0.57230 | val log ll: -0.60873
+Epoch: 12 | train loss: 0.54939 | train log ll:  -0.54939 | val log ll: -0.56656
+Epoch: 13 | train loss: 0.55427 | train log ll:  -0.55427 | val log ll: -0.57032
+Epoch: 14 | train loss: 0.53763 | train log ll:  -0.53763 | val log ll: -0.54103
+Epoch: 15 | train loss: 0.53215 | train log ll:  -0.53215 | val log ll: -0.53418
+Epoch: 16 | train loss: 0.53150 | train log ll:  -0.53150 | val log ll: -0.59765
+Epoch: 17 | train loss: 0.52762 | train log ll:  -0.52762 | val log ll: -0.57874
+Epoch: 18 | train loss: 0.53672 | train log ll:  -0.53672 | val log ll: -0.51591
+Epoch: 19 | train loss: 0.51605 | train log ll:  -0.51605 | val log ll: -0.68294
+Epoch: 20 | train loss: 0.52295 | train log ll:  -0.52295 | val log ll: -0.54232
+Epoch: 21 | train loss: 0.51216 | train log ll:  -0.51216 | val log ll: -0.68756
+Epoch: 22 | train loss: 0.50829 | train log ll:  -0.50829 | val log ll: -0.66394
+Epoch: 23 | train loss: 0.51094 | train log ll:  -0.51094 | val log ll: -0.47202
+Epoch: 24 | train loss: 0.51424 | train log ll:  -0.51424 | val log ll: -0.55332
+Epoch: 25 | train loss: 0.50613 | train log ll:  -0.50613 | val log ll: -0.65074
+Epoch: 26 | train loss: 0.49959 | train log ll:  -0.49959 | val log ll: -0.55198
+Epoch: 27 | train loss: 0.50445 | train log ll:  -0.50445 | val log ll: -0.56646
+Epoch: 28 | train loss: 0.49454 | train log ll:  -0.49454 | val log ll: -0.46562
+Epoch: 29 | train loss: 0.48891 | train log ll:  -0.48891 | val log ll: -0.42064
+Time finished with training:  2020-11-09 09:36:34.101688
+Final test log ll: -0.5423914909362793
+Time finished with testing:  2020-11-09 09:49:27.864353
+

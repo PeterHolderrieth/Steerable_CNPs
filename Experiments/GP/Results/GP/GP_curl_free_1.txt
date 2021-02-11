@@ -1,7 +1,0 @@
-Running on the GPU
-Start time: 2020-11-15 14:57:48.682777
-Mean log-likelihood on validation data set:
--0.408647346496582
-End time:  2020-11-15 16:44:52.336304
-GP data set with kernel:  curl_free
-Number of data passes:  5
