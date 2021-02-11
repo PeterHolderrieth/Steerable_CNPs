@@ -12,7 +12,7 @@ import torch.utils.data as utils
 from torch.utils.data import dataset, dataloader
 from torchvision import transforms, utils
 
-#E(2)-steerable CNNs - librar"y:
+#E(2)-steerable CNNs - library:
 from e2cnn import gspaces    
 from e2cnn import nn as g_cnn   
 import e2cnn

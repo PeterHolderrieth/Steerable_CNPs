@@ -1,0 +1,43 @@
+Running on the CPU
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (6504, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (2160, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+
+
+Time:  2021-02-11 23:22:10.793420
+Number of grid points per axis:  20
+Group: CNN
+Model type: big
+Number of parameters:  413807
+Epoch: 0 | train loss: 397.20294 | train log ll:  -397.20294 | val log ll: -228.28557
+Epoch: 1 | train loss: 463.67758 | train log ll:  -463.67758 | val log ll: -486.64819
+Epoch: 2 | train loss: 521.11511 | train log ll:  -521.11511 | val log ll: -394.74106
+
+_______________________
+Loaded weather data: 
+-----
+Shape:  (17280, 41, 41, 4)
+Variables:  ['sp_in_kPa', 't_in_Cels', 'wind_10m_east', 'wind_10m_north']
+West-East Longtitude:  -96.0 -86.0
+South-North Latitude:  30.0 40.0
+Grid points per map:  1681
+________________________
+

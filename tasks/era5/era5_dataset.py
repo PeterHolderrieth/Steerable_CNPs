@@ -16,13 +16,13 @@ sys.path.append("../../")
 
 import my_utils
 
-#Set default as double:
+#Set default as float:
 torch.set_default_dtype(torch.float)
 
 '''
 A data set class to deal with the ERA5 weather data set.
 '''
-class ERA5Dataset(utils.dataset):
+class ERA5Dataset(utils.Dataset):
     def __init__(self, path_to_nc_file,Min_n_cont,Max_n_cont,circular=True, normalize=True,place='US'):
         '''
         path_to_nc_file - string - gives filepath to a netCDF file which can be loaded as an xarray dataset
@@ -67,7 +67,7 @@ class ERA5Dataset(utils.dataset):
         self.circular=circular
 
         if self.circular:
-            self.circular_indices=utils.get_inner_circle_indices(self.n_per_axis,flat=True)
+            self.circular_indices=my_utils.get_inner_circle_indices(self.n_per_axis,flat=True)
         
         
         #Control inputs:    

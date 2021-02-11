@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 25 09:49:27 2020
-
-@author: 49157
-"""
 #Libraries:
 #Tensors:
 import torch
@@ -30,13 +24,13 @@ from prettytable import PrettyTable
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
-#E(2)-steerable CNNs - librar"y:
+#E(2)-steerable CNNs - library:
 from e2cnn import gspaces    
 import e2cnn
 from e2cnn import nn as G_CNN   
 
 #HYPERPARAMETERS:
-#Set default as double:
+#Set default as float:
 torch.set_default_dtype(torch.float)
 
 

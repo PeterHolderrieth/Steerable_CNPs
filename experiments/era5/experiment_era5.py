@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
 
-#E(2)-steerable CNNs - librar"y:
+#E(2)-steerable CNNs - library:
 from e2cnn import gspaces    
 from e2cnn import nn as G_CNN   
 import e2cnn
@@ -128,11 +128,11 @@ MAX_N_CONT=50
 data_IDENTIFIER="ERA5_data"
 
 if ARGS['data_SET']=='small':
-        PATH_TO_TRAIN_FILE="../../tasks/ERA5/ERA5_US/data/Train_Small_ERA5_US.nc"
-        PATH_TO_VAL_FILE="../../tasks/ERA5/ERA5_US/data/Valid_Small_ERA5_US.nc"
+        PATH_TO_TRAIN_FILE="../../tasks/era5/era5_us/data/Train_Small_ERA5_US.nc"
+        PATH_TO_VAL_FILE="../../tasks/era5/era5_us/data/Valid_Small_ERA5_US.nc"
 elif ARGS['data_SET']=='big':
-        PATH_TO_TRAIN_FILE="../../tasks/ERA5/ERA5_US/data/Train_Big_ERA5_US.nc"
-        PATH_TO_VAL_FILE="../../tasks/ERA5/ERA5_US/data/Valid_Big_ERA5_US.nc"
+        PATH_TO_TRAIN_FILE="../../tasks/era5/era5_us/data/Train_Big_ERA5_US.nc"
+        PATH_TO_VAL_FILE="../../tasks/era5/era5_us/data/Valid_Big_ERA5_US.nc"
 else:
     sys.exit("Unknown data set.")
 
@@ -145,7 +145,7 @@ print("Number of grid points per axis: ", N_X_AXIS)
 print("Group:", ARGS['GROUP'])
 print('Model type:', ARGS['ARCHITECTURE'])
 #Define the encoder:
-encoder=EquivEncoder.EquivEncoder(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=ARGS['LENGTH_SCALE_IN'])
+encoder=equiv_encoder.EquivEncoder(x_range=X_RANGE,n_x_axis=N_X_AXIS,l_scale=ARGS['LENGTH_SCALE_IN'])
 
 #Define the correct encoder:
 if ARGS['GROUP']=='CNP':
@@ -172,7 +172,7 @@ else:
         decoder=models.get_CNNDecoder(ARGS['ARCHITECTURE'],dim_cov_est=ARGS['DIM_COV_EST'],dim_features_inp=4) 
     else:
         sys.exit("Unknown architecture type.")
-    CNP=SteerCNP.SteerCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=4,l_scale=ARGS['LENGTH_SCALE_OUT'])
+    CNP=steercnp.SteerCNP(encoder,decoder,ARGS['DIM_COV_EST'],dim_context_feat=4,l_scale=ARGS['LENGTH_SCALE_OUT'])
 
 #If equivariance is wanted, create the group and the fieldtype for the equivariance:
 
@@ -215,7 +215,7 @@ if ARGS['N_EVAL_SAMPLES'] is not None:
 
 #Evaluate on test set on US:
 if ARGS['N_PASSES_US'] is not None:
-    PATH_TO_TEST_FILE_US="../../tasks/ERA5/ERA5_US/data/Test_Big_ERA5_US.nc"
+    PATH_TO_TEST_FILE_US="../../tasks/era5/era5_us/data/Test_Big_ERA5_US.nc"
     train_dataset_US=dataset.ERA5Dataset(PATH_TO_TEST_FILE_US,MIN_N_CONT,MAX_N_CONT,place='US',normalize=True,circular=True)
     test_log_ll_US=training.test_cnp(CNP,train_dataset_US,DEVICE,n_samples=train_dataset_US.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_US'],send_to_device=True)
     print("Test log ll US:", test_log_ll_US)
@@ -223,7 +223,7 @@ if ARGS['N_PASSES_US'] is not None:
 
 #Evaluate on test set on China:
 if ARGS['N_PASSES_CHINA'] is not None:
-    PATH_TO_TEST_FILE_CHINA="../../tasks/ERA5/ERA5_China/data/Test_Big_ERA5_China.nc"
+    PATH_TO_TEST_FILE_CHINA="../../tasks/era5/era5_china/data/Test_Big_ERA5_China.nc"
     train_dataset_China=dataset.ERA5Dataset(PATH_TO_TEST_FILE_CHINA,MIN_N_CONT,MAX_N_CONT,place='China',normalize=True,circular=True)
     test_log_ll_China=training.test_cnp(CNP,train_dataset_China,DEVICE,n_samples=train_dataset_China.n_obs,batch_size=ARGS['BATCH_SIZE'],n_data_passes=ARGS['N_PASSES_CHINA'],send_to_device=True)
     print("Test log ll China:", test_log_ll_China)

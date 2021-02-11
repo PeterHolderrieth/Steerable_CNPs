@@ -1,7 +1,7 @@
 
-# Equivariant Conditional Neural Processes
+# Steerable Conditional Neural Processes
 
-In this repository, you can find an implementation of **Equivariant Conditional Neural Processes**,
+In this repository, you can find an implementation of **Steerable Conditional Neural Processes**,
 a model which I developped as part of my master's dissertation. 
 It it a meta-learning method which exploits the geometry of data.
 
@@ -9,7 +9,7 @@ It it a meta-learning method which exploits the geometry of data.
 
 ## Model 
 
-Equivariant Conditional Neural Processes are an extension of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613). The image above depicts example
+Steerable Conditional Neural Processes are an extension of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613). The image above depicts example
 predictions of the SteerCNP in the case of vector fields. Inputs are the red arrows and the model extracts the whole
 vector field.
 

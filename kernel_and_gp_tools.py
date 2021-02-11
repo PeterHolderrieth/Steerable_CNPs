@@ -15,7 +15,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.patches import Ellipse
 from matplotlib.colors import Normalize
 import matplotlib.cm as cm
-#get_ipython().run_line_magic('matplotlib', 'inline')
 
 #Tools:
 from itertools import product, combinations
@@ -29,12 +28,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 #Own files:
 import my_utils
 
-
-
-
-
-#HYPERPARAMETERS:
-#Set default as double:
+#Set float as default:
 torch.set_default_dtype(torch.float)
 
 '''

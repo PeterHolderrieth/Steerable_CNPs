@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as utils
 
-#E(2)-steerable CNNs - librar"y:
+#E(2)-steerable CNNs - library:
 from e2cnn import gspaces    
 from e2cnn import nn as G_CNN   
 import e2cnn
