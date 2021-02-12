@@ -21,12 +21,13 @@ It gets measurements of wind, temperature and pressure from places marked in red
 
 ## Installation
 
-To install this repository
+To use this repository, one can simply clone it and  install requirements specified in `requirements.txt`.
+Please note this installs additional packages used for visualization. In particular, we use:
 
-- We used [PyTorch](https://https://pytorch.org/) as a library for automatic differentation.
-- We made use of the library [E(2)-Steerable CNNs](https://github.com/QUVA-Lab/e2cnn)
-for any group-related tasks.
-- We used the [ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=overview) data set giving grided global weather data. 
+- [PyTorch](https://https://pytorch.org/) as a library for automatic differentation.
+-  the library [E(2)-Steerable CNNs](https://github.com/QUVA-Lab/e2cnn) for any group-related tasks and an implementation of Steerable CNNs.
+- the [ERA5](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-land?tab=overview) data set giving grided global weather data. We share a full download and pre-processing script to 
+extract the data set we use.
 
 ## Structure of the repository
 The core implementation of SteerCNPs are all files in the root. The folder "tasks" gives the two main tasks (data sets+ data loading scripts) which we have given our model: GP vector field data and
