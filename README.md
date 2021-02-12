@@ -7,7 +7,7 @@ Steerable Conditional Neural Processes (SteerCNPs) are an extension of [Conditio
 
 The image below depicts example predictions of the SteerCNP in the case of vector fields. Inputs are the red arrows and the model extracts the whole vector field.
 
-![GP_Predictions](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/plots/Example_predictions_SteerCNP.png?raw=true)
+![GP_Predictions](https://github.com/PeterHolderrieth/Steerable_CNPs/blob/master/plots/Example_predictions_SteerCNP.png?raw=true)
 
 ## Repository
 
@@ -17,7 +17,7 @@ We tested our model on two data sets: a Gaussian process regression task and rea
 Below, the model predicts the wind in a cyclic region of 500km radius around Memphis in the South of the US.
 It gets measurements of wind, temperature and pressure from places marked in red.
 
-![ERA5Predictions](https://github.com/PeterHolderrieth/EquivariantCNPs/blob/master/plots/era5/ERA5_predictions.png?raw=true)
+![ERA5Predictions](https://github.com/PeterHolderrieth/Steerable_CNPs/blob/master/plots/era5/ERA5_predictions.png?raw=true)
 
 ## Installation
 
