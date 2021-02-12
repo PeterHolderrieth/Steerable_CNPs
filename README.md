@@ -7,7 +7,7 @@ Steerable Conditional Neural Processes (SteerCNPs) are an extension of [Conditio
 
 The image below depicts example predictions of the SteerCNP in the case of vector fields. Inputs are the red arrows and the model extracts the whole vector field.
 
-![GP_Predictions](https://github.com/PeterHolderrieth/Steerable_CNPs/blob/master/plots/Example_predictions_SteerCNP.png?raw=true)
+![GP_Predictions](https://github.com/PeterHolderrieth/Steerable_CNPs/blob/master/plots/gp/Example_predictions_SteerCNP.png?raw=true)
 
 ## Repository
 
