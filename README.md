@@ -1,7 +1,7 @@
 
 # Steerable Conditional Neural Processes
 
-In this repository, you can find an implementation of **Steerable Conditional Neural Processes**, a joint work with Michael Hutchinson (University of Oxford) and Yee Whye Teh (University of Oxford, Google DeepMind).
+In this repository, you can find an implementation of **Steerable Conditional Neural Processes**.
 
 Steerable Conditional Neural Processes (SteerCNPs) are an extension of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613). The model consists of an encoder which is based on the work of [Gordon et al (2020)](https://arxiv.org/abs/1910.13556) and a decoder which is an equivariant neural network of the form outlined in the work of [Weiler et al (2019)](https://arxiv.org/abs/1911.08251).
 
@@ -35,6 +35,3 @@ real-world weather data. The folder "experiments" gives the main execution file 
 The folder CNP gives an implementation of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613)
 to compare our results.
 
-## Contact
-
-If you have any questions, feel free to contact me (peter.holderrieth@new.ox.ac.uk).
