@@ -1,7 +1,7 @@
 
 # Steerable Conditional Neural Processes
 
-In this repository, you can find an implementation of **Steerable Conditional Neural Processes**.
+In this repository, you can find an implementation of **Steerable Conditional Neural Processes**, a work published at ICML 2021 that you find [here](http://proceedings.mlr.press/v139/holderrieth21a/holderrieth21a.pdf).
 
 Steerable Conditional Neural Processes (SteerCNPs) are an extension of [Conditional Neural Processes](https://arxiv.org/abs/1807.01613). The model consists of an encoder which is based on the work of [Gordon et al (2020)](https://arxiv.org/abs/1910.13556) and a decoder which is an equivariant neural network of the form outlined in the work of [Weiler et al (2019)](https://arxiv.org/abs/1911.08251).
 
